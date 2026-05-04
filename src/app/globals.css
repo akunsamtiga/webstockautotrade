@@ -2,32 +2,846 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+/* ============================================================
+   DIGITAL CLOCK FONT — DSEG7 Classic (7-segment LCD style)
+   Install: npm install @fontsource/dseg7-classic
+   Di-bundle ke app, tidak bergantung CDN → reliable di Capacitor
+   ============================================================ */
+@import '@fontsource/dseg7-classic/400.css';
+@import '@fontsource/dseg7-classic/700.css';
+
+/* ============================================================
+   ANIMATED BORDER PROPERTY REGISTRATION
+   ============================================================ */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+
+/* ============================================================
+   SAFE AREA — Capacitor / iOS / Android
+   env(safe-area-inset-*) hanya aktif saat viewport-fit=cover
+   ============================================================ */
+:root {
+  --sat: env(safe-area-inset-top,    0px);
+  --sar: env(safe-area-inset-right,  0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left,   0px);
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;  /* Clipping boundary — scroll terjadi di main, bukan body */
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  /* Safe area Capacitor/iOS — kanan & kiri saja, bukan atas/bawah */
+  padding-top:    0 !important;
+  padding-bottom: 0 !important;
+  padding-right:  var(--sar);
+  padding-left:   var(--sal);
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* ============================================================
+   DESIGN TOKENS — Dark & Light Mode dengan tema warna menarik
+   ============================================================ */
+
+/* DARK MODE (Default) — Matched to Kotlin DarkColors
+   background=#161616  surface=#1F1F1F  cardBackground=#323232
+   textPrimary=#EBEBEB  textSecondary=#BAC1CB  textMuted=rgba(126,126,126,.73)
+   successColor=#10B981  errorColor=#EF4444  warningColor=#FBBF24
+   borderColor=#494949   chartLine=Cyan */
+:root {
+  /* ── Surfaces ── */
+  --bg:          #161616;        /* Kotlin: background */
+  --s1:          #1F1F1F;        /* Kotlin: surface */
+  --s2:          #2C2C2C;        /* Kotlin: cardBackground ~#323232, softer */
+  --s3:          #383838;        /* Kotlin: cardBackground elevated */
+
+  /* ── Emerald accent = Kotlin successColor ── */
+  --blue:        #10B981;
+  --blue-dim:    rgba(16, 185, 129, 0.18);
+  --blue-glow:   rgba(16, 185, 129, 0.10);
+  --blue-bdr:    rgba(16, 185, 129, 0.40);
+
+  /* ── Status colors — exact Kotlin values ── */
+  --coral:       #EF4444;        /* Kotlin: errorColor */
+  --coral-dim:   rgba(239, 68, 68, 0.16);
+  --amber:       #FBBF24;        /* Kotlin: warningColor */
+  --amber-dim:   rgba(251, 191, 36, 0.15);
+  --violet:      #C96CF5;
+  --violet-dim:  rgba(201, 108, 245, 0.14);
+
+  /* ── Borders — Kotlin: #494949 ── */
+  --bdr:         rgba(73, 73, 73, 0.75);
+  --bdr-act:     rgba(16, 185, 129, 0.60);
+  --faint:       rgba(16, 185, 129, 0.08);
+
+  /* ── Typography — Kotlin textPrimary/Secondary/Muted ── */
+  --text:        #EBEBEB;
+  --sub:         #BAC1CB;
+  --muted:       rgba(126, 126, 126, 0.80);
+
+  --font-exo:    var(--font-geist-sans), 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:   ui-monospace, 'SF Mono', 'Courier New', monospace;
+}
+
+/* LIGHT MODE — Matched to Kotlin LightColors
+   background=#F8F9FA  surface=#FFFFFF  surface3=#EBEBEB
+   textPrimary=#1F2937  textSecondary=#6B7280  textMuted=#9CA3AF
+   successColor=#059669  errorColor=#DC2626  warningColor=#D97706
+   borderColor=#D6DADF */
+[data-theme="light"] {
+  /* ── Surfaces ── */
+  --bg:          #F8F9FA;        /* Kotlin: background */
+  --s1:          #FFFFFF;        /* Kotlin: surface */
+  --s2:          #FFFFFF;        /* Kotlin: cardBackground */
+  --s3:          #EBEBEB;        /* Kotlin: surface3 */
+
+  --blue:        #059669;        /* Kotlin: successColor light */
+  --blue-dim:    rgba(5, 150, 105, 0.12);
+  --blue-glow:   rgba(5, 150, 105, 0.06);
+  --blue-bdr:    rgba(5, 150, 105, 0.35);
+
+  --coral:       #DC2626;        /* Kotlin: errorColor light */
+  --coral-dim:   rgba(220, 38, 38, 0.12);
+  --amber:       #D97706;        /* Kotlin: warningColor light */
+  --amber-dim:   rgba(217, 119, 6, 0.12);
+  --violet:      #9333EA;
+  --violet-dim:  rgba(147, 51, 234, 0.12);
+
+  --bdr:         rgba(214, 218, 223, 0.95);  /* Kotlin: #D6DADF */
+  --bdr-act:     rgba(5, 150, 105, 0.50);
+  --faint:       rgba(5, 150, 105, 0.06);
+
+  --text:        #1F2937;        /* Kotlin: textPrimary light */
+  --sub:         #6B7280;        /* Kotlin: textSecondary light */
+  --muted:       #9CA3AF;        /* Kotlin: textMuted light */
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-exo);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
+  position: relative;
+  overscroll-behavior: none;
+}
+
+/* ============================================================
+   BACKGROUND PATTERNS
+   ============================================================ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      var(--bdr) 1px,
+      transparent 2px,
+      transparent 44px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      var(--bdr) 1px,
+      transparent 2px,
+      transparent 44px
+    );
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+  /* Promote grid ke own layer → tidak direpaint saat scroll main */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Dark mode gradient — subtle, befitting Kotlin's #161616 base */
+body:not([data-theme="light"])::after {
+  background:
+    linear-gradient(
+      112deg,
+      transparent 0%,
+      rgba(16,185,129,0.0)  20%,
+      rgba(16,185,129,0.04) 45%,
+      rgba(180,255,220,0.03) 50%,
+      rgba(16,185,129,0.04) 55%,
+      rgba(16,185,129,0.0)  80%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(16, 185, 129, 0.10) 0%,
+      rgba(16, 185, 129, 0.04) 40%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 55% 40% at 95% 105%,
+      rgba(16, 185, 129, 0.05) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 45% 35% at 5% 100%,
+      rgba(191, 90, 242, 0.03) 0%,
+      transparent 55%
+    );
+  background-size: 200% 100%, 100% 100%, 100% 100%, 100% 100%;
+  animation: shimmer-h 22s ease-in-out infinite;
+}
+
+/* Light mode gradient */
+[data-theme="light"]::after {
+  background:
+    radial-gradient(
+      ellipse 70% 40% at 50% -5%,
+      rgba(5, 150, 105, 0.06) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 40% 30% at 90% 100%,
+      rgba(5, 150, 105, 0.03) 0%,
+      transparent 60%
+    );
+}
+
+body > * { position: relative; z-index: 1; }
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar        { width: 3px; height: 3px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--bdr); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--bdr-act); }
+
+/* ── Main scroll container — GPU-accelerated, no jank ──────────────
+   1. height:100% → setara viewport, TIDAK memakai dvh (dvh menyebabkan
+      reflow setiap kali browser chrome iOS muncul/hilang saat scroll).
+   2. overflow-y:scroll (bukan auto) → scrollbar slot selalu ada,
+      tidak ada layout shift saat konten pendek → panjang.
+   3. will-change:transform → promotes ke own compositor layer, GPU
+      menangani scroll tanpa blocking main thread.
+   4. contain:strict → isolasi reflow/paint dari sisa halaman.
+   5. -webkit-overflow-scrolling sudah deprecated sejak Safari 13,
+      tapi tidak berbahaya; hapus saja. ────────────────────────────── */
+main {
+  height: 100%;
+  overflow-y: scroll;   /* scroll bukan auto → tidak ada layout shift */
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* ⚠️  JANGAN tambahkan will-change:transform atau contain:strict di sini!
+     Keduanya membuat new stacking context → position:fixed di dalam children
+     (modal, overlay) menjadi fixed ke main, BUKAN ke viewport. */
+}
+main::-webkit-scrollbar { display: none; }
+
+input, textarea, select {
+  font-size: max(16px, 1em); /* cegah iOS auto-zoom */
+}
+
+/* ============================================================
+   DS-INPUT
+   ============================================================ */
+.ds-input {
+  display: block;
+  width: 100%;
+  padding: 10px 13px;
+  background: var(--s1) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--bdr) !important;
+  border-radius: 12px !important;
+  font-family: var(--font-exo) !important;
+  font-size: 16px !important;
+  outline: none !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  line-height: 1.4;
+  -webkit-appearance: none;
+  clip-path: none !important;
+}
+.ds-input:focus {
+  border-color: var(--bdr-act) !important;
+  box-shadow: 0 0 0 3px var(--blue-glow) !important;
+  background: var(--faint) !important;
+}
+.ds-input::placeholder { color: var(--muted) !important; }
+.ds-input:disabled { opacity: 0.38; cursor: not-allowed; }
+
+select.ds-input {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2310B981' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  padding-right: 36px !important;
+}
+
+/* Light mode select icon */
+[data-theme="light"] select.ds-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23059669' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+}
+
+select.ds-input option { background: var(--s2); color: var(--text); }
+select.ds-input option:checked { background: var(--blue-dim); color: var(--blue); font-weight: 700; }
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+textarea.ds-input { resize: vertical; min-height: 80px; }
+
+/* ============================================================
+   DS-CARD
+   ============================================================ */
+
+.ds-card {
+  background: var(--s2);
+  border: 1px solid var(--bdr);
+  border-radius: 18px !important;
+  position: relative;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.045) inset,   /* subtle top highlight gloss */
+    0 6px 24px rgba(0, 0, 0, 0.60),
+    0 2px 6px  rgba(0, 0, 0, 0.40),
+    0 0 0 0    transparent;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ds-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 12px 44px rgba(0, 0, 0, 0.65),
+    0 4px 12px  rgba(0, 0, 0, 0.45),
+    0 0 28px    rgba(16, 185, 129, 0.05);  /* emerald ambient on hover */
+}
+
+.ds-card.active {
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.05) inset,
+    0 0 0 1px rgba(16, 185, 129, 0.50),
+    0 8px 32px rgba(16, 185, 129, 0.14),
+    0 0 60px  rgba(16, 185, 129, 0.06);
+}
+
+/* Light mode card */
+[data-theme="light"] .ds-card {
+  background: #ffffff;
+  border-color: rgba(214, 218, 223, 0.95);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="light"] .ds-card:hover {
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.03),
+    0 0 20px rgba(5, 150, 105, 0.08);
+}
+
+/* ============================================================
+   SCHEDULE ITEM
+   ============================================================ */
+.schedule-item {
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.schedule-item:hover {
+  background: var(--faint) !important;
+  transform: translateX(2px);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes spin           { to { transform: rotate(360deg); } }
+@keyframes ping           { 0% { transform: scale(1); opacity: .8; } 70%, 100% { transform: scale(2.2); opacity: 0; } }
+@keyframes slide-up       { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fade-in        { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pulse          { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+@keyframes float          { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes countUp        { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shimmer-h {
+  0%   { background-position:  100% center; }
+  100% { background-position: -100% center; }
+}
+@keyframes shimmer-v {
+  0%   { background-position: 0   0%; }
+  100% { background-position: 0 200%; }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; filter: blur(0px); }
+  50%       { opacity: 1.0; filter: blur(1px); }
+}
+@keyframes skeleton-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.85; } }
+@keyframes ticker         { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+@keyframes win-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  15%  { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.65), 0 0 50px rgba(16, 185, 129, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+@keyframes lose-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+  15%  { box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.65), 0 0 50px rgba(255, 77, 77, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+}
+@keyframes profit-slide-up   { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes profit-slide-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes skel-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@keyframes bd-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop-in { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+
+/* ============================================================
+   HEADER IMAGE — SHIMMER OVERLAY (diagonal light sweep)
+   ============================================================ */
+.header-shimmer-wrap {
+  position: relative;
+  overflow: hidden;
+  line-height: 0;
+}
+
+/* primary shimmer sweep */
+.header-shimmer-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    108deg,
+    transparent   0%,
+    transparent  30%,
+    rgba(255,255,255,0.04) 38%,
+    rgba(255,255,255,0.22) 46%,
+    rgba(180,255,220,0.28) 50%,
+    rgba(255,255,255,0.22) 54%,
+    rgba(255,255,255,0.04) 62%,
+    transparent  70%,
+    transparent 100%
+  );
+  background-size: 250% 100%;
+  animation: header-shine 4s cubic-bezier(0.4,0,0.6,1) infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* soft green edge glow */
+.header-shimmer-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom,
+      rgba(16,185,129,0.12) 0%,
+      transparent           35%,
+      transparent           65%,
+      rgba(16,185,129,0.08) 100%
+    );
+  pointer-events: none;
+  z-index: 1;
+  animation: header-glow-pulse 3.5s ease-in-out infinite;
+}
+
+@keyframes header-shine {
+  0%   { background-position: -100% 0; opacity: 0; }
+  8%   { opacity: 1; }
+  55%  { background-position: 220% 0; opacity: 0; }
+  100% { background-position: 220% 0; opacity: 0; }
+}
+
+@keyframes header-glow-pulse {
+  0%,100% { opacity: 0.6; }
+  50%     { opacity: 1; }
+}
+
+/* ============================================================
+   MODE PICKER BUTTON — SHIMMER CARD EFFECT
+   ============================================================ */
+.mode-picker-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+/* spinning conic border glow */
+.mode-picker-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    transparent       0%,
+    transparent      30%,
+    rgba(16,185,129,0.55) 42%,
+    rgba(180,255,220,0.85) 50%,
+    rgba(16,185,129,0.55) 58%,
+    transparent      70%,
+    transparent     100%
+  );
+  animation: mode-border-spin 4s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* inner fill mask to show only border */
+.mode-picker-shimmer-inner {
+  position: absolute;
+  inset: 1px;
+  border-radius: 11px;
+  background: inherit;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* actual children sit above */
+.mode-picker-shimmer > *:not(.mode-picker-shimmer-inner):not(.mode-picker-shimmer-sweep) {
+  position: relative;
+  z-index: 2;
+}
+
+/* diagonal light sweep on top */
+.mode-picker-shimmer-sweep {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  background: linear-gradient(
+    108deg,
+    transparent   0%,
+    transparent  25%,
+    rgba(255,255,255,0.04) 35%,
+    rgba(180,255,220,0.18) 48%,
+    rgba(255,255,255,0.10) 52%,
+    rgba(255,255,255,0.04) 62%,
+    transparent  75%,
+    transparent 100%
+  );
+  background-size: 250% 100%;
+  animation: mode-sweep 5s cubic-bezier(0.4,0,0.6,1) infinite;
+  pointer-events: none;
+}
+
+@keyframes mode-border-spin {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes mode-sweep {
+  0%   { background-position: -100% 0; opacity: 0; }
+  10%  { opacity: 1; }
+  55%  { background-position: 230% 0; opacity: 0; }
+  100% { background-position: 230% 0; opacity: 0; }
+}
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+.animate-spin     { animation: spin 0.7s linear infinite; }
+.animate-ping     { animation: ping 1.6s ease-in-out infinite; }
+.animate-pulse    { animation: pulse 1.8s ease-in-out infinite; }
+.animate-slide-up { animation: slide-up 0.25s cubic-bezier(0.32, 0.72, 0, 1); }
+.animate-fade-in  { animation: fade-in 0.15s ease; }
+.win-flash        { animation: win-flash  2s ease forwards; }
+.lose-flash       { animation: lose-flash 2s ease forwards; }
+
+/* ============================================================
+   SKELETON LOADER
+   ============================================================ */
+.skeleton {
+  background: var(--faint);
+  border-radius: 6px;
+}
+
+/* ============================================================
+   MODAL / BOTTOM SHEET
+   ============================================================ */
+.ds-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  animation: fade-in 0.15s ease;
+}
+.ds-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.50);
+  backdrop-filter: blur(16px) saturate(160%);
+}
+
+/* Light mode backdrop */
+[data-theme="light"] .ds-modal-backdrop {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.ds-modal-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: var(--s1);
+  border-radius: 20px 20px 0 0;
+  border: 1px solid var(--bdr);
+  border-bottom: none;
+  box-shadow:
+    0 -1px 0 var(--bdr) inset,
+    0 -24px 80px rgba(0, 0, 0, 0.20);
+  animation: slide-up 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow: hidden;
+  padding-bottom: var(--sab);
+}
+.ds-modal-sheet::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--blue-bdr), transparent);
+  pointer-events: none;
+}
+.ds-modal-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--bdr);
+  margin: 10px auto 0;
+}
+
+/* ============================================================
+   MINI STATS TILE
+   ============================================================ */
+.ds-stat-tile {
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: var(--s1);
+  border: 1px solid var(--bdr);
+}
+.ds-stat-tile .label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.ds-stat-tile .value {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+/* ============================================================
+   PICKER BUTTON
+   ============================================================ */
+.ds-picker-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--s1);
+  border: 1px solid var(--bdr);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.ds-picker-btn:hover {
+  border-color: var(--bdr-act);
+  background: var(--faint);
+}
+.ds-picker-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ============================================================
+   SECTION LABEL DIVIDER
+   ============================================================ */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  margin-top: 4px;
+}
+.section-label span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--blue-dim), transparent);
+}
+
+/* ============================================================
+   TOGGLE SWITCH
+   ============================================================ */
+.ds-toggle-track {
+  width: 44px;
+  height: 22px;
+  border-radius: 22px;
+  position: relative;
+  transition: all 0.2s;
+  background: var(--s2);
+  border: 1px solid var(--bdr);
+}
+.ds-toggle-track.checked {
+  background: var(--blue-dim);
+  border-color: var(--blue-bdr);
+}
+.ds-toggle-thumb {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transition: left 0.2s;
+  background: var(--muted);
+}
+.ds-toggle-thumb.checked {
+  left: 23px;
+  background: var(--blue);
+}
+
+/* ============================================================
+   CONTROL BUTTON
+   ============================================================ */
+.ds-ctrl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.ds-ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.ds-ctrl-btn:not(:disabled):hover { filter: brightness(1.10); transform: translateY(-1px); }
+
+/* ============================================================
+   STATUS CHIP
+   ============================================================ */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+.status-chip .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.status-chip .dot.pulse { animation: ping 1.6s ease-in-out infinite; }
+
+/* ============================================================
+   MARKET TICKER
+   ============================================================ */
+.market-ticker { display: flex; overflow: hidden; position: relative; }
+.ticker-track  { display: flex; animation: ticker 32s linear infinite; }
+
+/* ============================================================
+   PROFILE PAGE SPECIFIC STYLES
+   ============================================================ */
+.pf-card {
+  background: var(--s1);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 var(--bdr), 0 2px 10px rgba(0,0,0,0.04);
+}
+
+[data-theme="light"] .pf-card {
+  background: #ffffff;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.pf-tap-row:active {
+  background: var(--faint);
+}
+
+.pf-copy-btn:active {
+  opacity: 0.6;
+}
+
+/* ============================================================
+   LIGHT MODE SPECIFIC FIXES
+   ============================================================ */
+
+/* Fix for schedule panel icons in light mode */
+[data-theme="light"] .schedule-item svg {
+  color: var(--sub) !important;
+}
+
+[data-theme="light"] .schedule-item-active svg {
+  color: var(--blue) !important;
+}
+
+/* Fix for modal backgrounds in light mode */
+[data-theme="light"] .ds-modal-content {
+  background: var(--s1);
+  border-color: var(--bdr);
+}
+
+/* Fix for picker items in light mode */
+[data-theme="light"] .picker-item {
+  background: var(--s1);
+  border-color: var(--bdr);
+}
+
+[data-theme="light"] .picker-item:hover {
+  background: var(--faint);
+}
+
+/* Fix for status indicators */
+[data-theme="light"] .status-dot {
+  box-shadow: 0 0 4px currentColor;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 767px) {
+  .badge-text-hide-mobile { display: none; }
+  .ds-modal-sheet {
+    padding-bottom: max(var(--sab), 16px);
+    max-height: calc(100dvh - 112px - var(--sat));
+    display: flex;
+    flex-direction: column;
   }
 }
