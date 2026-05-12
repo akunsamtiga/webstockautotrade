@@ -158,7 +158,6 @@ export default function AssetIcon({
           src={iconUrl}
           alt={`${asset.name} icon`}
           fill
-          sizes="64px"
           className="object-contain"
           onError={() => setImageError(true)}
         />

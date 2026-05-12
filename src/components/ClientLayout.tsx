@@ -3,7 +3,7 @@
   import { useRouter, usePathname } from 'next/navigation';
   import { BottomNav } from '@/components/BottomNav';
   import { isSessionValid, sessionLogout } from '@/lib/storage';
-  import { LanguageProvider } from '@/lib/i18n';
+  import { LanguageProvider } from '@/lib';
   import { DarkModeProvider, useDarkMode } from '@/lib/DarkModeContext';
 
   const PUBLIC_ROUTES = ['/login', '/register'];
@@ -112,9 +112,29 @@
     }, [pathname, router, isPublic]);
 
     useEffect(() => {
-      const handleUnauthorized = () => router.replace('/login');
+      // ✅ FIX: Debounce logout handler agar tidak dipanggil berkali-kali
+      //    ketika loadAll() fire banyak request concurrent dan semuanya
+      //    balik 401 → sebelumnya tiap 401 emit event → logout dipanggil
+      //    puluhan kali sekaligus. Sekarang hanya satu logout yang jalan.
+      let logoutPending = false;
+
+      const handleUnauthorized = async () => {
+        if (logoutPending) return; // sudah ada yang handle, skip
+        logoutPending = true;
+
+        console.log('[ClientLayout] Unauthorized event received, logging out...');
+        try {
+          await sessionLogout();
+        } catch {
+          // ignore
+        }
+        router.replace('/login');
+      };
+
       window.addEventListener('stc:unauthorized', handleUnauthorized);
-      return () => window.removeEventListener('stc:unauthorized', handleUnauthorized);
+      return () => {
+        window.removeEventListener('stc:unauthorized', handleUnauthorized);
+      };
     }, [router]);
 
     // Hide initial HTML splash screen when React is ready

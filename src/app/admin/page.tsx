@@ -9,7 +9,7 @@ import {
   removeAdminUser, updateRegistrationConfig, getRegistrationConfig,
   exportWhitelistAsJson, exportWhitelistAsCsv,
   type WhitelistUser, type AdminUser, type RegistrationConfig,
-} from '@/lib/firebaseRepository';
+} from '@/lib/supabaseRepository';
 
 // ══════════════════════════════════════════════════════
 // DESIGN TOKENS — Light Theme (clean & minimal)
@@ -261,7 +261,7 @@ const UserCard: React.FC<{
               background: C.infoD, borderRadius: 6, padding: '2px 7px',
             }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={C.info} strokeWidth="2.5" strokeLinecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span style={{ fontSize: 10, color: C.info, fontWeight: 600 }}>{user.addedBy.split('@')[0]}</span>
+              <span style={{ fontSize: 10, color: C.info, fontWeight: 600 }}>{user.addedBy?.split('@')[0]}</span>
               {user.addedAt > 0 && <span style={{ fontSize: 10, color: C.muted }}>{fmtShortDate(user.addedAt)}</span>}
             </div>
           )}
@@ -489,7 +489,7 @@ const AdminMgmtDialog: React.FC<{
   admins: AdminUser[]; isSuperAdmin: boolean; currentEmail: string;
   onClose: () => void;
   onAdd: (email: string, name: string, role: string) => void;
-  onRemove: (id: string) => void;
+  onRemove: (id: string | undefined) => void;
   loadingId: string | null;
 }> = ({ admins, isSuperAdmin, currentEmail, onClose, onAdd, onRemove, loadingId }) => {
   const [showAdd, setShowAdd] = useState(false);
@@ -592,9 +592,9 @@ const StatsDetailDialog: React.FC<{
     switch (filter) {
       case 'active':      users = allUsers.filter(u => u.isActive);  break;
       case 'inactive':    users = allUsers.filter(u => !u.isActive); break;
-      case 'recent':      users = allUsers.filter(u => u.lastLogin > threshold).sort((a,b) => b.lastLogin - a.lastLogin); break;
-      case 'recentAdded': users = allUsers.filter(u => u.createdAt > threshold).sort((a,b) => b.createdAt - a.createdAt); break;
-      default:            users = [...allUsers].sort((a,b) => b.createdAt - a.createdAt);
+      case 'recent':      users = allUsers.filter(u => (u.lastLogin ?? 0) > threshold).sort((a,b) => (b.lastLogin ?? 0) - (a.lastLogin ?? 0)); break;
+      case 'recentAdded': users = allUsers.filter(u => (u.createdAt ?? 0) > threshold).sort((a,b) => (b.createdAt ?? 0) - (a.createdAt ?? 0)); break;
+      default:            users = [...allUsers].sort((a,b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
     }
     return users;
   }, [filter, allUsers, threshold]);
@@ -749,9 +749,18 @@ export default function AdminPage() {
       ]);
       setStats(statsData as any);
       setUsers(usersData);
-      setAllUsers(allData);
+      setAllUsers(allData.map((u) => ({
+        ...u,
+        id:        (u as any).uid ?? (u as any).id,
+        lastLogin: (u as any).lastLogin
+          ? new Date((u as any).lastLogin).getTime()
+          : undefined,
+        createdAt: (u as any).firstLogin
+          ? new Date((u as any).firstLogin).getTime()
+          : undefined,
+      } as WhitelistUser)));
       setAdmins(adminsData);
-      setRegConfig({ ...configData, updatedAt: (configData as any).updatedAt ?? 0 });
+      setRegConfig(configData);
       setHasMore(usersData.length >= PAGE_SIZE);
     } catch (e: any) {
       setError(`Gagal memuat data: ${e.message}`);
@@ -775,9 +784,9 @@ export default function AdminPage() {
     if (!searchDebounced.trim()) return users;
     const q = searchDebounced.toLowerCase();
     return allUsers.filter(u =>
-      u.name.toLowerCase().includes(q) ||
+      (u.name ?? '').toLowerCase().includes(q) ||
       u.email.toLowerCase().includes(q) ||
-      u.userId.toLowerCase().includes(q) ||
+      (u.userId ?? '').toLowerCase().includes(q) ||
       (u.deviceId || '').toLowerCase().includes(q)
     );
   }, [users, allUsers, searchDebounced]);
@@ -806,7 +815,7 @@ export default function AdminPage() {
 
   const handleDelete = () => act(async () => {
     if (!deleteUser) return;
-    await deleteWhitelistUser(deleteUser.id);
+    await deleteWhitelistUser(deleteUser.email);
     setDeleteUser(null);
   }, 'User berhasil dihapus');
 
@@ -825,7 +834,8 @@ export default function AdminPage() {
     await addAdminUser(email, name, role, currentEmail);
   }, 'Admin berhasil ditambahkan');
 
-  const handleRemoveAdmin = (id: string) => {
+  const handleRemoveAdmin = (id: string | undefined) => {
+    if (!id) return;
     setAdminLoadId(id);
     act(async () => {
       await removeAdminUser(id);

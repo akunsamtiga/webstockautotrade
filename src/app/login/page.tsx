@@ -6,13 +6,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '@/lib/api';
 import { storage, isSessionValid } from '@/lib/storage';
-import { LanguageProvider, useLanguage, AVAILABLE_LANGUAGES, Language, isWindows } from '@/lib/i18n';
+import { isWhitelisted, updateLastLogin } from '@/lib/supabaseRepository';
+import { LanguageProvider, useLanguage, AVAILABLE_LANGUAGES, Language, isWindows } from '@/lib';
 
 type SplashPhase = 'hidden' | 'welcome' | 'verified' | 'out';
 
 // ── CSS string extracted so it can be used with dangerouslySetInnerHTML ──────
-// This prevents the Next.js hydration mismatch caused by HTML-encoding of
-// characters like ' → &#x27; and " → &quot; in <style>{`...`}</style>.
 const LOGIN_STYLES = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -158,6 +157,13 @@ const LOGIN_STYLES = `
   .err-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--error); flex-shrink: 0; margin-top: 4px; }
   .err-txt  { font-size: 12.5px; color: var(--error); line-height: 1.4; }
 
+  /* Whitelist-specific error: slightly larger + icon emphasis */
+  .err-whitelist {
+    background: rgba(255,59,48,0.05);
+    border-color: rgba(255,59,48,0.22);
+  }
+  .err-whitelist .err-txt { font-size: 13px; font-weight: 500; }
+
   .btn {
     width: 100%; height: 46px;
     background: var(--accent); border: none; border-radius: var(--r-md);
@@ -183,6 +189,16 @@ const LOGIN_STYLES = `
     animation: rot 0.7s linear infinite; flex-shrink: 0;
   }
   @keyframes rot { to { transform: rotate(360deg); } }
+
+  /* Step indicator shown while checking whitelist */
+  .step-hint {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--text-3);
+    margin-top: 8px;
+    min-height: 16px;
+    transition: opacity 0.2s;
+  }
 
   .badge {
     display: inline-flex; align-items: center; gap: 5px;
@@ -373,6 +389,9 @@ const LOGIN_STYLES = `
   .sp-dot.act { width: 22px; background: #007aff; }
 `;
 
+// ── Loading step labels (shown below the sign-in button while loading) ─────
+type LoginStep = 'idle' | 'auth' | 'whitelist' | 'saving';
+
 function LoginPageContent() {
   const router = useRouter();
   const { t, language, setLanguage } = useLanguage();
@@ -380,7 +399,9 @@ function LoginPageContent() {
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const [loading,  setLoading]  = useState(false);
+  const [loginStep, setLoginStep] = useState<LoginStep>('idle');
   const [error,    setError]    = useState('');
+  const [isWhitelistError, setIsWhitelistError] = useState(false);
   const [mounted,  setMounted]  = useState(false);
   const [focused,  setFocused]  = useState<'email' | 'password' | null>(null);
   const [showPass, setShowPass] = useState(false);
@@ -469,10 +490,27 @@ function LoginPageContent() {
     e.preventDefault();
     const emailVal = emailRef.current?.value || email;
     const passVal  = passRef.current?.value  || password;
+
     setLoading(true);
     setError('');
+    setIsWhitelistError(false);
+    setLoginStep('auth');
+
     try {
+      // ── Step 1: Verify credentials with backend ─────────────────────────
       const res = await api.login(emailVal, passVal);
+
+      // ── Step 2: Check whitelist in Supabase ─────────────────────────────
+      //    Only runs after successful auth, so no DB query on wrong passwords.
+      setLoginStep('whitelist');
+      const allowed = await isWhitelisted(res.email || emailVal);
+      if (!allowed) {
+        setIsWhitelistError(true);
+        throw new Error(t('login.notWhitelisted'));
+      }
+
+      // ── Step 3: Persist remember-me choice ─────────────────────────────
+      setLoginStep('saving');
       if (remember) {
         await storage.set('stc_remember_email',    emailVal);
         await storage.set('stc_remember_password', passVal);
@@ -480,10 +518,27 @@ function LoginPageContent() {
         await storage.remove('stc_remember_email');
         await storage.remove('stc_remember_password');
       }
+
+      // ── Step 4: Record last login (non-blocking — don't await) ──────────
+      updateLastLogin(res.email || emailVal).catch(() => {});
+
+      // ── Step 5: Save session and show splash screen ─────────────────────
       await runSplash(res);
+
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('login.invalidCredentials'));
       setLoading(false);
+      setLoginStep('idle');
+    }
+  };
+
+  // Step hint label shown below button while loading
+  const stepHintLabel = (): string => {
+    switch (loginStep) {
+      case 'auth':      return 'Memverifikasi akun…';
+      case 'whitelist': return 'Memeriksa akses whitelist…';
+      case 'saving':    return 'Menyimpan sesi…';
+      default:          return '';
     }
   };
 
@@ -519,9 +574,6 @@ function LoginPageContent() {
 
   return (
     <>
-      {/* ✅ FIX: dangerouslySetInnerHTML prevents SSR/client hydration mismatch.
-          Using <style>{`...`}</style> causes Next.js to HTML-encode characters
-          like ' → &#x27; on the server, which doesn't match the client render. */}
       <style dangerouslySetInnerHTML={{ __html: LOGIN_STYLES }} />
 
       {/* Splash */}
@@ -693,8 +745,16 @@ function LoginPageContent() {
                 </label>
 
                 {error && (
-                  <div className="err">
-                    <div className="err-dot" />
+                  <div className={`err${isWhitelistError ? ' err-whitelist' : ''}`}>
+                    {/* Whitelist error gets a shield/lock icon, others get a dot */}
+                    {isWhitelistError ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
+                        <rect x="3" y="11" width="18" height="11" rx="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                    ) : (
+                      <div className="err-dot" />
+                    )}
                     <p className="err-txt">{error}</p>
                   </div>
                 )}
@@ -703,6 +763,11 @@ function LoginPageContent() {
                   {loading && <div className="spin" />}
                   {loading ? t('login.signingIn') : t('login.signIn')}
                 </button>
+
+                {/* Step hint — visible only while loading */}
+                <p className="step-hint" style={{ opacity: loading ? 1 : 0 }}>
+                  {stepHintLabel()}
+                </p>
               </form>
 
               <div style={{ textAlign: 'center' }}>

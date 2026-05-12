@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { useLanguage, COUNTRY_ENTRIES, AVAILABLE_LANGUAGES, Language, isWindows } from '@/lib/i18n/LanguageContext';
+import { useLanguage, COUNTRY_ENTRIES, AVAILABLE_LANGUAGES, Language, isWindows } from '@/lib/';
 
 interface LanguageSelectorProps {
   variant?:   'row' | 'sheet' | 'dropdown';

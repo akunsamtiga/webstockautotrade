@@ -78,6 +78,7 @@ export interface Translations {
     loginSuccess: string;
     redirecting: string;
     invalidCredentials: string;
+    notWhitelisted: string;
     enterEmail: string;
     enterPassword: string;
     invalidEmail: string;
@@ -448,6 +449,7 @@ const translations: Record<Language, Translations> = {
       loginSuccess: 'Login Successful',
       redirecting: 'Redirecting to dashboard...',
       invalidCredentials: 'Invalid email or password',
+      notWhitelisted: 'Your account is not registered in the whitelist. Please contact admin for access.',
       enterEmail: 'Please enter your email',
       enterPassword: 'Please enter your password',
       invalidEmail: 'Please enter a valid email',
@@ -809,6 +811,7 @@ const translations: Record<Language, Translations> = {
       loginSuccess: 'Berhasil Masuk',
       redirecting: 'Mengarahkan ke dashboard...',
       invalidCredentials: 'Email atau password salah',
+      notWhitelisted: 'Akun Anda tidak terdaftar dalam whitelist. Hubungi admin untuk mendapatkan akses.',
       enterEmail: 'Silakan masukkan email Anda',
       enterPassword: 'Silakan masukkan password Anda',
       invalidEmail: 'Silakan masukkan email yang valid',
@@ -1170,6 +1173,7 @@ const translations: Record<Language, Translations> = {
       loginSuccess: 'Успешный вход',
       redirecting: 'Переход на панель управления...',
       invalidCredentials: 'Неверный email или пароль',
+      notWhitelisted: 'Ваш аккаунт не зарегистрирован в белом списке. Обратитесь к администратору.',
       enterEmail: 'Пожалуйста, введите ваш email',
       enterPassword: 'Пожалуйста, введите ваш пароль',
       invalidEmail: 'Пожалуйста, введите действительный email',
@@ -1531,6 +1535,7 @@ const translations: Record<Language, Translations> = {
       loginSuccess: 'Inicio de sesión exitoso',
       redirecting: 'Redirigiendo al panel...',
       invalidCredentials: 'Correo o contraseña incorrectos',
+      notWhitelisted: 'Su cuenta no está registrada en la lista blanca. Contacte al administrador.',
       enterEmail: 'Por favor ingresa tu correo',
       enterPassword: 'Por favor ingresa tu contraseña',
       invalidEmail: 'Por favor ingresa un correo válido',
@@ -1892,6 +1897,7 @@ const translations: Record<Language, Translations> = {
       loginSuccess: 'Log Masuk Berjaya',
       redirecting: 'Mengalihkan ke papan pemuka...',
       invalidCredentials: 'E-mel atau kata laluan tidak sah',
+      notWhitelisted: 'Akaun anda tidak didaftarkan dalam senarai putih. Hubungi pentadbir untuk akses.',
       enterEmail: 'Sila masukkan e-mel anda',
       enterPassword: 'Sila masukkan kata laluan anda',
       invalidEmail: 'Sila masukkan e-mel yang sah',
@@ -2253,6 +2259,7 @@ const translations: Record<Language, Translations> = {
       loginSuccess: 'लॉगिन सफल',
       redirecting: 'डैशबोर्ड पर जा रहे हैं...',
       invalidCredentials: 'ईमेल या पासवर्ड गलत है',
+      notWhitelisted: 'आपका अकाउंट व्हाइटलिस्ट में पंजीकृत नहीं है। एक्सेस के लिए एडमिन से संपर्क करें.',
       enterEmail: 'कृपया अपना ईमेल दर्ज करें',
       enterPassword: 'कृपया अपना पासवर्ड दर्ज करें',
       invalidEmail: 'कृपया एक वैध ईमेल दर्ज करें',
@@ -2614,6 +2621,7 @@ const translations: Record<Language, Translations> = {
       loginSuccess: 'เข้าสู่ระบบสำเร็จ',
       redirecting: 'กำลังเปลี่ยนเส้นทางไปแดชบอร์ด...',
       invalidCredentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+      notWhitelisted: 'บัญชีของคุณไม่ได้ลงทะเบียนในไวท์ลิสต์ กรุณาติดต่อแอดมินเพื่อขอสิทธิ์เข้าถึง.',
       enterEmail: 'กรุณากรอกอีเมลของคุณ',
       enterPassword: 'กรุณากรอกรหัสผ่านของคุณ',
       invalidEmail: 'กรุณากรอกอีเมลที่ถูกต้อง',
@@ -2975,6 +2983,7 @@ const translations: Record<Language, Translations> = {
       loginSuccess: 'Giriş Başarılı',
       redirecting: 'Panele yönlendiriliyor...',
       invalidCredentials: 'Geçersiz e-posta veya şifre',
+      notWhitelisted: 'Hesabınız beyaz listede kayıtlı değil. Erişim için yöneticiye başvurun.',
       enterEmail: 'Lütfen e-postanızı girin',
       enterPassword: 'Lütfen şifrenizi girin',
       invalidEmail: 'Lütfen geçerli bir e-posta girin',

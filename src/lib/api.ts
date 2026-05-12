@@ -9,10 +9,19 @@ async function getToken(): Promise<string | null> {
 }
 
 // emit custom event untuk logout — tidak pakai window.location.href
+// ✅ FIX: Debounce emitUnauthorized agar tidak fire berkali-kali saat
+//         banyak request concurrent semuanya balik 401 sekaligus.
+//         Tanpa debounce ini, setiap 401 dari loadAll() Promise.allSettled
+//         akan emit event + sessionLogout → cascade clear localStorage →
+//         semua request lain ikut gagal karena token sudah hilang.
+let _unauthorizedTimer: ReturnType<typeof setTimeout> | null = null;
 function emitUnauthorized() {
-  if (typeof window !== 'undefined') {
+  if (typeof window === 'undefined') return;
+  if (_unauthorizedTimer) return; // sudah dijadwalkan, skip
+  _unauthorizedTimer = setTimeout(() => {
+    _unauthorizedTimer = null;
     window.dispatchEvent(new CustomEvent('stc:unauthorized'));
-  }
+  }, 50); // sedikit delay agar semua request selesai dulu
 }
 
 async function req<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -28,10 +37,11 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
   });
 
   if (res.status === 401) {
-    try {
-      // ✅ FIXED: Gunakan sessionLogout untuk clear semua session data
-      await sessionLogout();
-    } catch { /* ignore */ }
+    // ✅ FIX: JANGAN sessionLogout() di sini.
+    //    Kalau loadAll() fire 12 request sekaligus dan satu balik 401,
+    //    sessionLogout() akan hapus token dari localStorage → semua 11
+    //    request lain juga gagal 401 → cascade total. Biarkan ClientLayout
+    //    yang handle logout via event 'stc:unauthorized'.
     emitUnauthorized();
     throw new Error('Sesi habis, silakan login kembali.');
   }

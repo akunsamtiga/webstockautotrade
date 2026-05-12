@@ -17,7 +17,7 @@ import { ChartCard } from '@/components/ChartCard';
 import AssetIcon from '@/components/common/AssetIcon';
 import { storage, isSessionValid } from '@/lib/storage';
 import { useTradingSettings } from '@/lib/useTradingSettings';
-import { useLanguage } from '@/lib/i18n';
+import { useLanguage } from '@/lib';
 import { useDarkMode } from '@/lib/DarkModeContext';
 import {
   Activity, AlertCircle, BarChart2, Calendar,
@@ -386,10 +386,11 @@ const AssetCardCompact: React.FC<{asset?:StockityAsset|null;mode:TradingMode;isL
   return (
     <Card style={{padding:'10px 12px',cursor:onOpenPicker&&!disabled?'pointer':'default',position:'relative'}} onClick={onOpenPicker&&!disabled?onOpenPicker:undefined}>
       <div style={{display:'flex',alignItems:'center',gap:8}}>
-        <div style={{width:32,height:32,borderRadius:9,overflow:'hidden',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:`${modeCol}12`,border:`1px solid ${modeCol}28`,position:'relative'}}>
+        <div style={{width:32,height:32,borderRadius:9,overflow:'hidden',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:`${modeCol}12`,border:`1px solid ${modeCol}28`}}>
           {asset?.iconUrl&&!imgErr?(
-            <Image src={asset.iconUrl} alt={asset.ric} fill unoptimized
+            <Image src={asset.iconUrl} alt={asset.ric} crossOrigin="anonymous"
               onError={()=>setImgErr(true)}
+              width={32} height={32}
               style={{objectFit:'contain',padding:3}}
             />
           ):(
@@ -641,10 +642,11 @@ const AssetCard: React.FC<{asset?:StockityAsset|null;mode:TradingMode;isLoading?
   return (
     <Card style={{padding:0,height:'100%',cursor:onOpenPicker&&!disabled?'pointer':'default'}} onClick={onOpenPicker&&!disabled?onOpenPicker:undefined}>
       <div style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',height:68}}>
-        <div style={{width:40,height:40,borderRadius:11,overflow:'hidden',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:`${modeCol}12`,border:`1.5px solid ${modeCol}28`,position:'relative'}}>
+        <div style={{width:40,height:40,borderRadius:11,overflow:'hidden',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:`${modeCol}12`,border:`1.5px solid ${modeCol}28`}}>
           {asset?.iconUrl&&!imgErr?(
-            <Image src={asset.iconUrl} alt={asset.ric} fill unoptimized
+            <Image src={asset.iconUrl} alt={asset.ric} crossOrigin="anonymous"
               onError={()=>setImgErr(true)}
+              width={40} height={40}
               style={{objectFit:'contain',padding:4}}
             />
           ):(
@@ -714,11 +716,12 @@ const AssetBalanceCombinedCard: React.FC<{
           <div style={{
             width: 32, height: 32, borderRadius: 9, overflow: 'hidden', flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: `${modeCol}12`, border: `1px solid ${modeCol}28`, position: 'relative',
+            background: `${modeCol}12`, border: `1px solid ${modeCol}28`,
           }}>
             {asset?.iconUrl && !imgErr ? (
-              <Image src={asset.iconUrl} alt={asset.ric} fill unoptimized
+              <Image src={asset.iconUrl} alt={asset.ric} crossOrigin="anonymous"
                 onError={() => setImgErr(true)}
+                width={32} height={32}
                 style={{ objectFit: 'contain', padding: 3 }}
               />
             ) : asset ? (
@@ -855,9 +858,9 @@ const PickerModal: React.FC<{open:boolean;onClose:()=>void;title:string;options:
                 borderTop:'none',borderRight:'none',cursor:'pointer',
               }}>
                 {opt.icon!==undefined&&(
-                  <div style={{width:32,height:32,borderRadius:8,flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:isSel?`${C.cyan}15`:iconBg,border:`1px solid ${isSel?`${C.cyan}40`:iconBorder}`,position:'relative'}}>
+                  <div style={{width:32,height:32,borderRadius:8,flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:isSel?`${C.cyan}15`:iconBg,border:`1px solid ${isSel?`${C.cyan}40`:iconBorder}`}}>
                     {opt.icon?(
-                      <Image src={opt.icon} alt="" fill unoptimized style={{objectFit:'contain',padding:4}} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}}/>
+                      <Image src={opt.icon} alt="" width={32} height={32} style={{objectFit:'contain',padding:4}} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}}/>
                     ):(
                       <span style={{fontSize:10,fontWeight:700,color:isSel?C.cyan:iconColor}}>{opt.value.slice(0,3)}</span>
                     )}
@@ -3556,21 +3559,21 @@ export default function DashboardPage() {
   const rsiOversold          = _s.rsiOversold;
   const momentumPatterns     = _s.momentumPatterns;
 
-  const setTradingMode          = useCallback((v: TradingMode)               => _upd('tradingMode', v),          [_upd]);
-  const setSelectedRic          = useCallback((v: string)                     => _upd('selectedRic', v),          [_upd]);
-  const setIsDemo               = useCallback((v: boolean)                    => _upd('isDemo', v),               [_upd]);
-  const setDuration             = useCallback((v: number)                     => _upd('duration', v),             [_upd]);
-  const setAmount               = useCallback((v: number)                     => _upd('amount', v),               [_upd]);
-  const setMartingale           = useCallback((v: MartingaleConfig)           => _upd('martingale', v),           [_upd]);
-  const setFtTf                 = useCallback((v: FastTradeTimeframe)         => _upd('ftTf', v),                 [_upd]);
-  const setStopLoss             = useCallback((v: number)                     => _upd('stopLoss', v),             [_upd]);
-  const setStopProfit           = useCallback((v: number)                     => _upd('stopProfit', v),           [_upd]);
-  const setIndicatorType        = useCallback((v: IndicatorType)              => _upd('indicatorType', v),        [_upd]);
-  const setIndicatorPeriod      = useCallback((v: number)                     => _upd('indicatorPeriod', v),      [_upd]);
-  const setIndicatorSensitivity = useCallback((v: number)                     => _upd('indicatorSensitivity', v), [_upd]);
-  const setRsiOverbought        = useCallback((v: number)                     => _upd('rsiOverbought', v),        [_upd]);
-  const setRsiOversold          = useCallback((v: number)                     => _upd('rsiOversold', v),          [_upd]);
-  const setMomentumPatterns     = useCallback((v: typeof _s.momentumPatterns) => _upd('momentumPatterns', v),    [_upd]);
+  const setTradingMode          = (v: TradingMode)                               => _upd('tradingMode', v);
+  const setSelectedRic          = (v: string)                                    => _upd('selectedRic', v);
+  const setIsDemo               = (v: boolean)                                   => _upd('isDemo', v);
+  const setDuration             = (v: number)                                    => _upd('duration', v);
+  const setAmount               = (v: number)                                    => _upd('amount', v);
+  const setMartingale           = (v: MartingaleConfig)                          => _upd('martingale', v);
+  const setFtTf                 = (v: FastTradeTimeframe)                        => _upd('ftTf', v);
+  const setStopLoss             = (v: number)                                    => _upd('stopLoss', v);
+  const setStopProfit           = (v: number)                                    => _upd('stopProfit', v);
+  const setIndicatorType        = (v: IndicatorType)                              => _upd('indicatorType', v);
+  const setIndicatorPeriod      = (v: number)                                    => _upd('indicatorPeriod', v);
+  const setIndicatorSensitivity = (v: number)                                    => _upd('indicatorSensitivity', v);
+  const setRsiOverbought        = (v: number)                                    => _upd('rsiOverbought', v);
+  const setRsiOversold          = (v: number)                                    => _upd('rsiOversold', v);
+  const setMomentumPatterns     = (v: typeof _s.momentumPatterns)               => _upd('momentumPatterns', v);
   // ─────────────────────────────────────────────────────────────────────────────
 
   const [error,setError] = useState<string|null>(null);
@@ -4360,10 +4363,9 @@ export default function DashboardPage() {
                   display:'flex',alignItems:'center',justifyContent:'center',
                   background:`${modeAccent(tradingMode)}12`,
                   border:`1px solid ${modeAccent(tradingMode)}22`,
-                  position:'relative',
                 }}>
                   {selectedAsset?.iconUrl
-                    ? <Image src={selectedAsset.iconUrl} alt={selectedRic} fill unoptimized style={{objectFit:'contain',padding:6}}/>
+                    ? <Image src={selectedAsset.iconUrl} alt={selectedRic} crossOrigin="anonymous" width={38} height={38} style={{objectFit:'contain',padding:6}}/>
                     : <span style={{fontSize:12,fontWeight:700,color:modeAccent(tradingMode)}}>{selectedRic?selectedRic.slice(0,3).toUpperCase():'+'}</span>
                   }
                 </div>
@@ -4598,9 +4600,9 @@ export default function DashboardPage() {
 
               {/* Asset */}
               <div style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',borderRadius:14,background:isDarkMode?C.card2:C.card,border:`1px solid ${isDarkMode?'rgba(125,211,252,0.40)':'#9CA3AF'}`,cursor:!isActiveMode?'pointer':'default'}} onClick={!isActiveMode?()=>setAssetPickerOpen(true):undefined}>
-                <div style={{width:34,height:34,borderRadius:9,flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:`${modeAccent(tradingMode)}12`,border:`1px solid ${modeAccent(tradingMode)}22`,position:'relative'}}>
+                <div style={{width:34,height:34,borderRadius:9,flexShrink:0,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:`${modeAccent(tradingMode)}12`,border:`1px solid ${modeAccent(tradingMode)}22`}}>
                   {selectedAsset?.iconUrl
-                    ?<Image src={selectedAsset.iconUrl} alt={selectedRic} fill unoptimized style={{objectFit:'contain',padding:5}}/>
+                    ?<Image src={selectedAsset.iconUrl} alt={selectedRic} crossOrigin="anonymous" width={34} height={34} style={{objectFit:'contain',padding:5}}/>
                     :<span style={{fontSize:11,fontWeight:700,color:modeAccent(tradingMode)}}>{selectedRic?selectedRic.slice(0,3).toUpperCase():'+'}</span>
                   }
                 </div>
@@ -4787,12 +4789,13 @@ export default function DashboardPage() {
     background: colors.bg,
     zIndex: 0,
   }}/>
-  <Image 
-    src={isDarkMode ? "/headerdark.png" : "/headerlight.png"}
-    alt="STC AutoTrade"
-    width={0}
-    height={0}
-    sizes="100vw"
+  <video
+    key={isDarkMode ? 'dark' : 'light'}
+    src={isDarkMode ? "/darkstc.mp4" : "/lightstc.mp4"}
+    autoPlay
+    muted
+    loop
+    playsInline
     style={{
       width:'100%',
       height:'auto',
@@ -4800,7 +4803,7 @@ export default function DashboardPage() {
       position: 'relative',
       zIndex: 1,
     }}
-    onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+    onError={(e) => { (e.target as HTMLVideoElement).parentElement!.style.display = 'none'; }}
   />
   {/* Shimmer overlay */}
 <div style={{
@@ -4811,12 +4814,6 @@ export default function DashboardPage() {
   backgroundSize: '300% 100%',
   animation: 'header-shimmer 12s ease-in-out infinite',
   pointerEvents: 'none',
-  WebkitMaskImage: `url(${isDarkMode ? '/headerdark.png' : '/headerlight.png'})`,
-  WebkitMaskSize: '100% 100%',
-  WebkitMaskRepeat: 'no-repeat',
-  maskImage: `url(${isDarkMode ? '/headerdark.png' : '/headerlight.png'})`,
-  maskSize: '100% 100%',
-  maskRepeat: 'no-repeat',
 }}/>
 
 </div>

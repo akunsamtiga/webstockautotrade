@@ -3,8 +3,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, type ProfileBalance } from '@/lib/api';
 import { storage, isSessionValid, sessionLogout, getAuthToken } from '@/lib/storage';
-import { checkIsAdmin, checkIsSuperAdmin } from '@/lib/firebaseRepository';
-import { LanguageProvider, useLanguage, formatCurrency, formatDate, Language } from '@/lib/i18n';
+import { checkIsAdmin, checkIsSuperAdmin } from '@/lib/supabaseRepository';
+import { LanguageProvider, useLanguage, formatCurrency, formatDate, Language } from '@/lib';
 import { LanguageSheet } from '@/components/LanguageSelector';
 import { useDarkMode } from '@/lib/DarkModeContext';
 

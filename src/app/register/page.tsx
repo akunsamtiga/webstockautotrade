@@ -18,7 +18,7 @@ import {
   updateLastLogin,
   addWhitelistUser,
   getRegistrationConfig,
-} from '@/lib/firebaseRepository';
+} from '@/lib/supabaseRepository';
 import { stcWebView } from '@/plugins/StcWebViewPlugin';
 
 const DEFAULT_REGISTRATION_URL = 'https://stockity.id/registered?a=25db72fbbc00';
