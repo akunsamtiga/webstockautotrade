@@ -39,7 +39,9 @@ public class StcWebViewPlugin extends Plugin {
     private PluginCall savedCall           = null;
     private boolean    successAlreadyFired = false;
     private boolean    hasClickedDaftar    = false;
-    private String     initialUrl          = "";   // URL pertama yang dibuka
+    private boolean    pageFullyLoaded     = false;   // ✅ true hanya jika progress halaman ini sudah 100%
+    private boolean    autoClickInjected   = false;     // ✅ guard agar inject tidak berkali-kali
+    private String     initialUrl          = "";
     private final Handler mainHandler      = new Handler(Looper.getMainLooper());
     private WebView   currentWebView       = null;
 
@@ -77,6 +79,8 @@ public class StcWebViewPlugin extends Plugin {
         savedCall           = call;
         successAlreadyFired = false;
         hasClickedDaftar    = false;
+        pageFullyLoaded     = false;
+        autoClickInjected   = false;
         initialUrl          = url;
         call.setKeepAlive(true);
         getActivity().runOnUiThread(() -> showWebViewDialog(url));
@@ -87,8 +91,6 @@ public class StcWebViewPlugin extends Plugin {
     public void close(PluginCall call) {
         getActivity().runOnUiThread(() -> {
             if (webViewDialog != null) { webViewDialog.dismiss(); webViewDialog = null; }
-            // ✅ FIX: resolve() di dalam runOnUiThread — dialog pasti sudah dismiss
-            // sebelum JS promise selesai, sehingga modal React langsung terlihat.
             call.resolve();
         });
     }
@@ -247,6 +249,8 @@ public class StcWebViewPlugin extends Plugin {
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
                 if (req != null && req.getUrl() != null) {
                     String newUrl = req.getUrl().toString();
+                    // ✅ RESET: halaman baru akan dimuat, progress belum valid untuk halaman ini
+                    pageFullyLoaded = false;
                     android.util.Log.d("StcWebView", "URL change: " + newUrl);
                     checkForSuccess(newUrl, dialog, overlay);
                 }
@@ -256,6 +260,8 @@ public class StcWebViewPlugin extends Plugin {
             @Override
             public void onPageStarted(WebView view, String pageUrl, Bitmap favicon) {
                 super.onPageStarted(view, pageUrl, favicon);
+                // ✅ RESET: halaman baru mulai load
+                pageFullyLoaded = false;
                 if (pageUrl != null) {
                     android.util.Log.d("StcWebView", "Page started: " + pageUrl);
                     checkForSuccess(pageUrl, dialog, overlay);
@@ -268,9 +274,7 @@ public class StcWebViewPlugin extends Plugin {
                 if (pageUrl != null) {
                     android.util.Log.d("StcWebView", "Page finished: " + pageUrl);
                     checkForSuccess(pageUrl, dialog, overlay);
-                    // ✅ TAMBAHAN: cek cookie token setiap halaman selesai load —
-                    // jika token sudah ada, langsung tutup tanpa perlu URL berubah.
-                    checkForToken(pageUrl, dialog, overlay);
+                    // ❌ HAPUS: checkForToken() tidak boleh dipanggil di sini
                 }
             }
         });
@@ -285,8 +289,28 @@ public class StcWebViewPlugin extends Plugin {
                     mainHandler.removeCallbacks(anim);
                     mainHandler.post(anim);
                 }
-                if (newProgress >= 100 && !hasClickedDaftar && !successAlreadyFired)
-                    injectAutoClickScript(webView);
+                if (newProgress >= 100) {
+                    // ✅ SET: halaman ini benar-benar selesai load
+                    if (!pageFullyLoaded) {
+                        pageFullyLoaded = true;
+
+                        // ✅ Cek sukses & token SETELAH halaman benar-benar selesai
+                        String currentUrl = view.getUrl();
+                        if (currentUrl != null && !successAlreadyFired) {
+                            // Untuk user sudah login (langsung ke /trading): cek token
+                            if (!isRegistrationUrl(currentUrl)) {
+                                checkForToken(currentUrl, dialog, overlay, true);
+                            }
+                            // Cek juga via URL pattern
+                            checkForSuccess(currentUrl, dialog, overlay);
+                        }
+                    }
+
+                    if (!autoClickInjected && !hasClickedDaftar && !successAlreadyFired) {
+                        autoClickInjected = true;
+                        injectAutoClickScript(webView);
+                    }
+                }
             }
 
             @Override
@@ -306,6 +330,17 @@ public class StcWebViewPlugin extends Plugin {
                     data.put("daftarClicked", true);
                     notifyListeners("daftarButtonClicked", data);
                     android.util.Log.d("StcWebView", "✅ Daftar clicked!");
+
+                    // ✅ Cek token SETELAH auto-click berhasil & overlay hilang
+                    // Bypass pageFullyLoaded guard karena ini setelah interaksi user
+                    mainHandler.postDelayed(() -> {
+                        if (!successAlreadyFired && currentWebView != null) {
+                            String currentUrl = currentWebView.getUrl();
+                            if (currentUrl != null) {
+                                checkForToken(currentUrl, dialog, overlay, false);
+                            }
+                        }
+                    }, 1500);
                 }
                 if (m.startsWith("REGDATA_") || m.contains("DAFTAR") || m.contains("Current URL"))
                     android.util.Log.d("StcWebView", "Console: " + m);
@@ -347,14 +382,12 @@ public class StcWebViewPlugin extends Plugin {
             webViewDialog  = null;
             currentWebView = null;
             if (!successAlreadyFired) {
-                // Hanya cancel pending dan kirim browserFinished jika bukan karena sukses
                 mainHandler.removeCallbacksAndMessages(null);
                 JSObject data = new JSObject();
                 data.put("finished",  true);
                 data.put("cancelled", true);
                 notifyListeners("browserFinished", data);
             }
-            // Jika successAlreadyFired, biarkan postDelayed resolve tetap berjalan
         });
 
         dialog.show();
@@ -362,22 +395,31 @@ public class StcWebViewPlugin extends Plugin {
         webView.loadUrl(url);
     }
 
-    // ─── isRegistrationUrl — cek apakah URL masih halaman registrasi ──────────
+    // ─── isRegistrationUrl ────────────────────────────────────────────────────
     private boolean isRegistrationUrl(String url) {
         String low = url.toLowerCase();
         for (String reg : REGISTRATION_DOMAINS) {
             if (low.contains(reg)) return true;
         }
-        // Cek apakah sama persis dengan initialUrl (termasuk query param)
         String initialBase = initialUrl.split("\\?")[0].toLowerCase();
         String currentBase = url.split("\\?")[0].toLowerCase();
         return currentBase.equals(initialBase);
     }
 
-    // ─── checkForSuccess — deteksi sukses dari perubahan URL ─────────────────
+    // ─── checkForSuccess ─────────────────────────────────────────────────────
     private void checkForSuccess(String url, Dialog dialog, View overlay) {
         if (successAlreadyFired) return;
         if (url == null || url.isEmpty() || url.equals("about:blank")) return;
+
+        // ✅ GUARD BARU: Jangan fire dari URL change sebelum:
+        //   - Halaman benar-benar selesai load (pageFullyLoaded), ATAU
+        //   - Auto-click tombol daftar sudah berhasil (hasClickedDaftar)
+        // Ini mencegah popup muncul saat redirect awal (shortlink → /trading)
+        // sebelum loading & auto-click selesai.
+        if (!hasClickedDaftar && !pageFullyLoaded) {
+            android.util.Log.d("StcWebView", "⏳ checkForSuccess skipped — loading & auto-click belum selesai.");
+            return;
+        }
 
         String low = url.toLowerCase();
 
@@ -403,28 +445,38 @@ public class StcWebViewPlugin extends Plugin {
         fireSuccess(url, dialog, overlay, "url_change");
     }
 
-    // ─── checkForToken — deteksi sukses dari keberadaan token di cookie ──────
-    // Dipanggil di onPageFinished — jika token sudah ada di cookie meski URL
-    // belum berubah, webview langsung ditutup dan popup sukses ditampilkan.
+    // ─── checkForToken ────────────────────────────────────────────────────────
     private void checkForToken(String url, Dialog dialog, View overlay) {
+        checkForToken(url, dialog, overlay, true);
+    }
+
+    private void checkForToken(String url, Dialog dialog, View overlay, boolean requirePageFullyLoaded) {
         if (successAlreadyFired) return;
         if (url == null || url.equals("about:blank")) return;
+
+        // Guard: untuk path normal (dari onProgressChanged), tunggu loading 100%
+        if (requirePageFullyLoaded && !pageFullyLoaded) {
+            android.util.Log.d("StcWebView", "⏳ Token check skipped — loading belum 100%.");
+            return;
+        }
+
+        // Guard: jangan cek token kalau masih di halaman registrasi awal
+        if (isRegistrationUrl(url)) {
+            android.util.Log.d("StcWebView", "⏳ Token check skipped — masih di halaman registrasi.");
+            return;
+        }
 
         CookieManager cm  = CookieManager.getInstance();
         String cookies    = collectCookies(cm, url);
         String token      = extractCookieValue(cookies, AUTH_COOKIE_NAMES);
 
         if (token != null && !token.isEmpty()) {
-            android.util.Log.d("StcWebView", "✅ Token ditemukan di cookie! Menutup webview...");
+            android.util.Log.d("StcWebView", "✅ Token ditemukan. Menutup webview...");
             fireSuccess(url, dialog, overlay, "token_found");
         }
     }
 
-    // ─── fireSuccess — tutup dialog DULU, resolve JS sesudahnya ──────────────
-    // Ini satu-satunya titik yang boleh resolve savedCall dengan success=true.
-    // Urutan: dismiss dialog → tunggu window fokus kembali → resolve JS.
-    // Dengan urutan ini, saat React render modal sukses, native Dialog
-    // sudah pasti hilang dari layar.
+    // ─── fireSuccess ────────────────────────────────────────────────────────────
     private void fireSuccess(String url, Dialog dialog, View overlay, String reason) {
         if (successAlreadyFired) return;
         successAlreadyFired = true;
@@ -445,14 +497,9 @@ public class StcWebViewPlugin extends Plugin {
         final String fCookies = cookies;
         final String fUrl     = url;
 
-        // ✅ KUNCI: Dismiss dialog SEGERA di UI thread (callbacks WebViewClient
-        // sudah berjalan di UI thread, jadi tidak perlu post()).
-        // Setelah dialog hilang, Activity window fokus kembali ke Capacitor WebView.
         overlay.setVisibility(View.GONE);
         if (dialog.isShowing()) dialog.dismiss();
 
-        // Resolve JS setelah jeda singkat — memberi waktu Activity window
-        // untuk benar-benar aktif kembali sebelum React merender modal.
         mainHandler.postDelayed(() -> {
             JSObject res = new JSObject();
             res.put("url",       fUrl);
@@ -464,7 +511,7 @@ public class StcWebViewPlugin extends Plugin {
         }, 150);
     }
 
-    // ─── collectCookies — kumpulkan semua cookie dari domain Stockity ─────────
+    // ─── collectCookies ───────────────────────────────────────────────────────
     private String collectCookies(CookieManager cm, String currentUrl) {
         String cookies = "";
         String[] domains = {
@@ -494,47 +541,3 @@ public class StcWebViewPlugin extends Plugin {
                         "for(var i=0;i<b.length;i++){" +
                         "  var el=b[i];" +
                         "  var t=(el.innerText||el.textContent||el.value||'').trim().toLowerCase();" +
-                        "  if(t.indexOf('daftar')>=0){" +
-                        "    try{el.scrollIntoView({behavior:'instant',block:'center'});el.focus();el.click();" +
-                        "    console.log('DAFTAR_BUTTON_CLICKED');return true;}" +
-                        "    catch(e){console.log('err:'+e.message);}" +
-                        "  }" +
-                        "}" +
-                        "return false;})();";
-
-        webView.evaluateJavascript(script, r ->
-                android.util.Log.d("StcWebView", "Auto-click: " + r));
-
-        for (int i = 1; i <= 10; i++) {
-            final int n = i;
-            mainHandler.postDelayed(() -> {
-                if (!hasClickedDaftar && !successAlreadyFired)
-                    webView.evaluateJavascript(script, r ->
-                            android.util.Log.d("StcWebView", "Retry #" + n + ": " + r));
-            }, (long) i * 800);
-        }
-    }
-
-    // ─── extractCookieValue ───────────────────────────────────────────────────
-    private String extractCookieValue(String cookies, List<String> names) {
-        if (cookies == null || cookies.isEmpty()) return null;
-        for (String name : names)
-            for (String pair : cookies.split(";")) {
-                String t = pair.trim();
-                if (t.toLowerCase().startsWith(name.toLowerCase() + "=")) {
-                    String v = t.substring(name.length() + 1).trim();
-                    if (!v.isEmpty()) return v;
-                }
-
-            }
-        return null;
-    }
-
-    @Override
-    protected void handleOnDestroy() {
-        if (webViewDialog != null) { webViewDialog.dismiss(); webViewDialog = null; }
-        currentWebView = null;
-        mainHandler.removeCallbacksAndMessages(null);
-        super.handleOnDestroy();
-    }
-}
