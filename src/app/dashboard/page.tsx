@@ -30,51 +30,40 @@ import {
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════
-// DESIGN TOKENS - Emerald Theme (Dark/Light)
+// DESIGN TOKENS - Apple iOS System Theme
 // ═══════════════════════════════════════════
 function getColors(isDark: boolean) {
-  // ── Dark: matched to Kotlin DarkColors ──────────────────────────────────
-  // background=#161616  surface=#1F1F1F  cardBackground=#323232
-  // textPrimary=#EBEBEB textSecondary=#BAC1CB textMuted=rgba(126,126,126,.73)
-  // successColor=#10B981  errorColor=#EF4444  warningColor=#FBBF24
-  // borderColor=#494949   chartLine=Cyan(#00FFFF)
-  //
-  // ── Light: matched to Kotlin LightColors ────────────────────────────────
-  // background=#F8F9FA  surface=#FFFFFF  surface3=#EBEBEB
-  // textPrimary=#1F2937  textSecondary=#6B7280  textMuted=#9CA3AF
-  // successColor=#059669  errorColor=#DC2626  warningColor=#D97706
-  // borderColor=#D6DADF
   return {
-    // Surfaces
-    bg:    isDark ? '#111111' : '#EAECEF',   // light: lebih terang agar zona waktu bg tidak terlalu gelap
-    card:  isDark ? '#1C1C1C' : '#FFFFFF',
-    card2: isDark ? '#242424' : '#F0F2F5',   // light: lebih terang dari bg tapi beda dari card
-    // Borders
-    bdr:   isDark ? 'rgba(125,211,252,0.40)' : '#9CA3AF',
-    bdrAct:'rgba(16,185,129,0.80)',
-    // Primary accent
-    cyan:  isDark ? '#22D3A0' : '#047857',   // light: lebih gelap agar kontras di bg putih
-    cyand: isDark ? 'rgba(34,211,160,0.20)' : 'rgba(4,120,87,0.10)',
-    // Error / loss
-    coral: isDark ? '#F87171' : '#B91C1C',   // light: lebih gelap
-    cord:  isDark ? 'rgba(248,113,113,0.18)' : 'rgba(185,28,28,0.10)',
-    // Warning / martingale
-    amber: isDark ? '#FCD34D' : '#B45309',   // light: lebih gelap agar terbaca
-    ambd:  isDark ? 'rgba(252,211,77,0.18)'  : 'rgba(180,83,9,0.10)',
-    // Misc accent colors
-    violet: isDark ? '#D37EFF' : '#7C3AED',
-    vltd:  isDark ? 'rgba(211,126,255,0.16)' : 'rgba(124,58,237,0.10)',
-    sky:   isDark ? '#4ADE80' : '#15803D',
-    skyd:  isDark ? 'rgba(74,222,128,0.16)'  : 'rgba(21,128,61,0.10)',
-    orange:'#FF6B35',
-    orgd:  isDark ? 'rgba(255,107,53,0.16)'  : 'rgba(255,107,53,0.10)',
-    pink:  isDark ? '#FF375F' : '#BE185D',
-    pinkd: isDark ? 'rgba(255,55,95,0.16)'   : 'rgba(190,24,93,0.10)',
-    // Text
-    text:  isDark ? '#F0F4FF' : '#0D1117',
-    sub:   isDark ? '#9BAAC4' : '#2D3748',   // light: lebih gelap
-    muted: isDark ? 'rgba(155,170,196,0.70)' : '#4A5568',   // light: lebih gelap agar terbaca
-    faint: isDark ? 'rgba(34,211,160,0.08)'  : 'rgba(4,120,87,0.06)',
+    // Surfaces — Apple system backgrounds
+    bg:    isDark ? '#000000' : '#F2F2F7',
+    card:  isDark ? '#1C1C1E' : '#FFFFFF',
+    card2: isDark ? '#2C2C2E' : '#F9F9FB',
+    // Borders — hairline Apple style
+    bdr:   isDark ? 'rgba(255,255,255,0.10)' : 'rgba(60,60,67,0.13)',
+    bdrAct: isDark ? 'rgba(10,132,255,0.40)' : 'rgba(0,122,255,0.35)',
+    // Primary accent — iOS Blue
+    cyan:  isDark ? '#0A84FF' : '#007AFF',
+    cyand: isDark ? 'rgba(10,132,255,0.13)' : 'rgba(0,122,255,0.09)',
+    // Error / loss — Apple Red
+    coral: isDark ? '#FF453A' : '#FF3B30',
+    cord:  isDark ? 'rgba(255,69,58,0.13)' : 'rgba(255,59,48,0.09)',
+    // Warning / martingale — Apple Orange
+    amber: isDark ? '#FF9F0A' : '#FF9500',
+    ambd:  isDark ? 'rgba(255,159,10,0.13)' : 'rgba(255,149,0,0.09)',
+    // Misc accent colors — Apple system palette
+    violet: isDark ? '#BF5AF2' : '#AF52DE',
+    vltd:   isDark ? 'rgba(191,90,242,0.13)' : 'rgba(175,82,222,0.09)',
+    sky:    isDark ? '#32ADE6' : '#32ADE6',
+    skyd:   isDark ? 'rgba(50,173,230,0.13)' : 'rgba(50,173,230,0.09)',
+    orange: isDark ? '#FF6B00' : '#FF6B00',
+    orgd:   isDark ? 'rgba(255,107,0,0.13)'  : 'rgba(255,107,0,0.09)',
+    pink:   isDark ? '#FF375F' : '#FF375F',
+    pinkd:  isDark ? 'rgba(255,55,95,0.13)'  : 'rgba(255,55,95,0.09)',
+    // Text — Apple label colors
+    text:  isDark ? '#FFFFFF' : '#000000',
+    sub:   isDark ? 'rgba(235,235,245,0.60)' : 'rgba(60,60,67,0.60)',
+    muted: isDark ? 'rgba(235,235,245,0.30)' : 'rgba(60,60,67,0.30)',
+    faint: isDark ? 'rgba(10,132,255,0.06)'  : 'rgba(0,122,255,0.04)',
   };
 }
 
@@ -108,21 +97,18 @@ function modeAccent(mode: TradingMode): string {
 // PRIMITIVES
 // ═══════════════════════════════════════════
 const Sk: React.FC<{w?:string|number;h?:number;style?:React.CSSProperties}> = ({w='100%',h=20,style}) => (
-  <div style={{width:w,height:h,background:C.faint,borderRadius:4,...style}}/>
+  <div style={{width:w,height:h,background:C.card2,borderRadius:6,...style}}/>
 );
 
 const Card: React.FC<{children:React.ReactNode;style?:React.CSSProperties;className?:string;flash?:'win'|'lose'|null;onClick?:()=>void}> =
 ({children,style,className='',flash,onClick}) => (
   <div className={`ds-card overflow-hidden ${className}`} onClick={onClick} style={{
-    // Flash animation hanya berjalan pada .ds-card (box-shadow pulse)
-    // Border rotation tetap berjalan pada ::before — tidak terpengaruh
     animation: flash==='win'
       ? 'win-flash 2s ease forwards'
       : flash==='lose'
       ? 'lose-flash 2s ease forwards'
       : undefined,
-    borderRadius: 18, // More rounded like Kotlin
-    // boxShadow TIDAK di-override inline — biarkan globals.css yang mengontrol
+    borderRadius: 16,
     ...style,
   }}>{children}</div>
 );
@@ -141,15 +127,21 @@ const FL: React.FC<{children:React.ReactNode}> = ({children}) => (
 const Toggle: React.FC<{checked:boolean;onChange:(v:boolean)=>void;disabled?:boolean;accent?:string}> = ({checked,onChange,disabled,accent=C.cyan}) => (
   <label style={{display:'inline-flex',alignItems:'center',cursor:disabled?'not-allowed':'pointer',opacity:disabled?0.4:1}}>
     <input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)} disabled={disabled} style={{position:'absolute',opacity:0,width:0,height:0}}/>
-    <div style={{width:44,height:22,borderRadius:22,position:'relative',transition:'all 0.2s',background:checked?`${accent}28`:C.bdr,border:`1px solid ${checked?`${accent}55`:C.bdr}`}}>
-      <div style={{position:'absolute',top:2,width:16,height:16,borderRadius:'50%',transition:'left 0.2s',left:checked?23:2,background:checked?accent:C.muted}}/>
+    <div style={{width:51,height:31,borderRadius:31,position:'relative',transition:'background 0.25s ease',background:checked?accent:'rgba(120,120,128,0.20)'}}>
+      <div style={{
+        position:'absolute',top:2,width:27,height:27,borderRadius:'50%',
+        transition:'left 0.25s cubic-bezier(0.25,0.46,0.45,0.94)',
+        left:checked?22:2,
+        background:'#FFFFFF',
+        boxShadow:'0 2px 6px rgba(0,0,0,0.22), 0 1px 2px rgba(0,0,0,0.10)',
+      }}/>
     </div>
   </label>
 );
 
 const StatusChip: React.FC<{col:string;label:string;pulse?:boolean}> = ({col,label,pulse}) => (
-  <span style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:10,fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',padding:'4px 10px',borderRadius:99,color:col,background:`${col}10`,border:`1px solid ${col}28`}}>
-    <span style={{width:5,height:5,borderRadius:'50%',background:col,animation:pulse?'ping 1.6s ease-in-out infinite':undefined,boxShadow:`0 0 4px ${col}`}}/>
+  <span style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:10,fontWeight:600,letterSpacing:'0.04em',padding:'4px 10px',borderRadius:99,color:col,background:`${col}12`}}>
+    <span style={{width:5,height:5,borderRadius:'50%',background:col,animation:pulse?'ping 1.6s ease-in-out infinite':undefined}}/>
     {label}
   </span>
 );
@@ -188,13 +180,13 @@ const CtrlBtn: React.FC<{onClick:()=>void;disabled?:boolean;loading?:boolean;acc
 ({onClick,disabled,loading,accent,label,icon,solid}) => (
   <button onClick={onClick} disabled={disabled||loading} style={{
     flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:8,
-    padding:'11px 8px',borderRadius:12,fontSize:12,fontWeight:700,
-    letterSpacing:'0.06em',textTransform:'uppercase',cursor:(disabled||loading)?'not-allowed':'pointer',
-    background:solid?accent:`${accent}14`,border:`1px solid ${accent}${solid?'':'35'}`,
-    color:solid?'#000':accent,opacity:disabled?0.3:1,
-    boxShadow:(!disabled&&!loading)?`0 0 14px ${accent}20`:'none',transition:'all 0.15s',
+    padding:'13px 10px',borderRadius:14,fontSize:14,fontWeight:600,
+    letterSpacing:'-0.01em',cursor:(disabled||loading)?'not-allowed':'pointer',
+    background:solid?accent:`${accent}12`,border:`1px solid ${solid?accent:accent+'25'}`,
+    color:solid?'#FFFFFF':accent,opacity:disabled?0.3:1,
+    transition:'all 0.18s ease',WebkitTapHighlightColor:'transparent',
   }}>
-    {loading?<RefreshCw style={{width:14,height:14,animation:'spin 0.7s linear infinite'}}/>:icon}
+    {loading?<RefreshCw style={{width:15,height:15,animation:'spin 0.7s linear infinite'}}/>:icon}
     {loading?T('common.processing'):label}
   </button>
 );
@@ -214,8 +206,8 @@ const RealtimeClock: React.FC<{t:(k:string)=>string;lang:string;isBotRunning?:bo
     <div style={{
       borderRadius:16,overflow:'hidden',height:'100%',
       background:C.card,
-      border:`1px solid ${C.bdr}`,
-      boxShadow:C.bg==='#161616'?`0 4px 18px rgba(0,0,0,0.28)`:`0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)`,
+      border:`0.5px solid ${C.bdr}`,
+      boxShadow:'0 2px 8px rgba(0,0,0,0.06)',
       padding:'14px 14px 10px',
       display:'flex',flexDirection:'column',gap:6,
     }}>
@@ -223,26 +215,23 @@ const RealtimeClock: React.FC<{t:(k:string)=>string;lang:string;isBotRunning?:bo
       <div style={{
         height:46,borderRadius:12,
         background:C.card2,
-        border:`1px solid ${C.bdr}`,
         display:'flex',alignItems:'center',justifyContent:'center',
       }}>
         <p suppressHydrationWarning style={{
-          fontSize:28,fontWeight:700,lineHeight:1,letterSpacing:'0.08em',
+          fontSize:28,fontWeight:700,lineHeight:1,letterSpacing:'0.05em',
           fontFamily:"'DSEG7 Classic','Share Tech Mono',ui-monospace,monospace",
           color:C.text,
-          textShadow:`0 0 20px rgba(16,185,129,0.40),0 0 6px rgba(16,185,129,0.18)`,
           margin:0,
         }}>{time?fmt(time):'--:--:--'}</p>
       </div>
       {/* Date row */}
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-        <span suppressHydrationWarning style={{fontSize:8,color:C.sub}}>{time?fmtD(time):''}</span>
+        <span suppressHydrationWarning style={{fontSize:11,color:C.sub,fontWeight:400}}>{time?fmtD(time):''}</span>
         <div style={{display:'flex',alignItems:'center',gap:5}}>
-          <span style={{fontSize:8,fontWeight:600,color:C.text}}>{tz()}</span>
+          <span style={{fontSize:10,fontWeight:500,color:C.sub}}>{tz()}</span>
           <span style={{
-            width:8,height:8,borderRadius:'50%',flexShrink:0,
+            width:7,height:7,borderRadius:'50%',flexShrink:0,
             background:dotColor,
-            boxShadow:`0 0 ${isBotRunning?6:3}px ${dotColor}`,
             animation:isBotRunning?'ping 1.6s ease-in-out infinite':undefined,
           }}/>
         </div>
@@ -260,50 +249,44 @@ const RealtimeClockCompact: React.FC<{t:(k:string)=>string;lang:string;isBotRunn
   const fmtDate = (d:Date) => d.toLocaleDateString(locale,{day:'2-digit',month:'short',year:'numeric'});
   const tz      = () => {if(!time)return'';const o=-time.getTimezoneOffset()/60;return`UTC${o>=0?'+':''}${o}`;};
   const dotColor = isBotRunning ? C.cyan : C.coral;
-  const tzLabel = lang==='ru'?'ВРЕМЯ':lang==='en'?T('dashboard.localTime').toUpperCase():T('dashboard.localTime').toUpperCase();
   return (
     <div style={{
       width:'100%',borderRadius:14,overflow:'hidden',
-      background:C.bg,
-      border:`1px solid ${C.bdr}`,
-      boxShadow:C.bg==='#161616'
-        ?`0 2px 0 ${C.cyan}08 inset, 0 8px 24px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.25)`
-        :`0 2px 0 ${C.cyan}08 inset, 0 2px 8px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04)`,
+      background:C.card2,
+      border:`0.5px solid ${C.bdr}`,
       padding:'10px 12px 8px',
       display:'flex',flexDirection:'column',gap:5,
     }}>
       {/* Digital time box */}
       <div style={{
         borderRadius:10,
-        background:C.card2,
-        border:`1px solid ${C.bdr}`,
+        background:C.card,
+        border:`0.5px solid ${C.bdr}`,
         display:'flex',alignItems:'center',justifyContent:'center',
         padding:'7px 0',
       }}>
         <p suppressHydrationWarning style={{
-          fontSize:18,fontWeight:700,lineHeight:1,letterSpacing:'0.08em',
+          fontSize:18,fontWeight:700,lineHeight:1,letterSpacing:'0.05em',
           fontFamily:"'DSEG7 Classic','Share Tech Mono',ui-monospace,monospace",
           color:C.text,margin:0,
-          textShadow:`0 0 18px rgba(16,185,129,0.38),0 0 5px rgba(16,185,129,0.15)`,
         }}>{time?fmt(time):'--:--:--'}</p>
       </div>
       {/* Date + UTC + dot */}
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div style={{display:'flex',alignItems:'center',gap:4}}>
-          <span suppressHydrationWarning style={{fontSize:8,color:C.sub,fontWeight:500}}>{time?fmtDay(time):''}</span>
+          <span suppressHydrationWarning style={{fontSize:10,color:C.sub,fontWeight:400}}>{time?fmtDay(time):''}</span>
           <span style={{width:2,height:2,borderRadius:'50%',background:C.muted}}/>
-          <span suppressHydrationWarning style={{fontSize:8,color:C.sub}}>{time?fmtDate(time):''}</span>
+          <span suppressHydrationWarning style={{fontSize:10,color:C.sub}}>{time?fmtDate(time):''}</span>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:4}}>
           <span style={{
-            fontSize:7,fontWeight:700,color:C.cyan,letterSpacing:'0.04em',
-            background:'rgba(16,185,129,0.12)',border:'1px solid rgba(16,185,129,0.26)',
-            borderRadius:4,padding:'1px 4px',
+            fontSize:9,fontWeight:500,color:C.cyan,
+            background:C.cyand,
+            borderRadius:4,padding:'1px 5px',
           }}>{tz()}</span>
           <span style={{
-            width:7,height:7,borderRadius:'50%',
+            width:6,height:6,borderRadius:'50%',
             background:dotColor,
-            boxShadow:`0 0 ${isBotRunning?6:3}px ${dotColor}`,
             animation:isBotRunning?'ping 1.6s ease-in-out infinite':undefined,
           }}/>
         </div>
@@ -4244,27 +4227,27 @@ export default function DashboardPage() {
         @keyframes fade-in     { from{opacity:0} to{opacity:1} }
         @keyframes profit-slide-up   { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
         @keyframes profit-slide-down { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes win-flash   { 0%{box-shadow:0 0 0 0 rgba(41,151,255,0)} 15%{box-shadow:0 0 0 4px rgba(41,151,255,0.35)} 100%{box-shadow:0 0 0 0 rgba(41,151,255,0)} }
-        @keyframes lose-flash  { 0%{box-shadow:0 0 0 0 rgba(255,69,58,0)} 15%{box-shadow:0 0 0 4px rgba(255,69,58,0.35)} 100%{box-shadow:0 0 0 0 rgba(255,69,58,0)} }
+        @keyframes win-flash   { 0%{box-shadow:0 0 0 0 rgba(0,122,255,0)} 15%{box-shadow:0 0 0 4px rgba(0,122,255,0.28)} 100%{box-shadow:0 0 0 0 rgba(0,122,255,0)} }
+        @keyframes lose-flash  { 0%{box-shadow:0 0 0 0 rgba(255,59,48,0)} 15%{box-shadow:0 0 0 4px rgba(255,59,48,0.28)} 100%{box-shadow:0 0 0 0 rgba(255,59,48,0)} }
 @keyframes header-shimmer {
   0%   { background-position: 200% center; }
   40%  { background-position: -200% center; }
   100% { background-position: -200% center; }
 }
           .ds-card {
-          background: ${isDarkMode ? C.card : '#ffffff'};
-          border: 0.3px solid ${isDarkMode ? 'rgba(125,211,252,0.40)' : '#9CA3AF'};
-          border-radius: 14px;
-          box-shadow: ${isDarkMode ? '0 4px 20px rgba(0,0,0,0.50), 0 1px 4px rgba(0,0,0,0.30)' : 'none'};
+          background: ${isDarkMode ? '#1C1C1E' : '#ffffff'};
+          border: 0.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(60,60,67,0.13)'};
+          border-radius: 16px;
+          box-shadow: ${isDarkMode ? '0 2px 12px rgba(0,0,0,0.40)' : '0 2px 8px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.03)'};
           transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
         }
 
         @media (max-width: 767px) {
           .ds-card, .ds-card:hover {
-            border: 0.3px solid ${isDarkMode ? 'rgba(125,211,252,0.50)' : '#9CA3AF'} !important;
+            border: 0.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(60,60,67,0.12)'} !important;
             box-shadow: ${isDarkMode
-              ? '0 1px 0 rgba(255,255,255,0.08) inset, 0 8px 32px rgba(0,0,0,0.18), 0 0 40px rgba(255,255,255,0.03), 0 2px 8px rgba(0,0,0,0.12)'
-              : '0 1px 3px rgba(0,0,0,0.06)'
+              ? '0 2px 12px rgba(0,0,0,0.40)'
+              : '0 1px 4px rgba(0,0,0,0.05)'
             } !important;
             transform: none !important;
           }
@@ -4272,23 +4255,24 @@ export default function DashboardPage() {
 
         .ds-input {
           width: 100%;
-          padding: 9px 12px;
-          border-radius: 8px;
-          font-size: 13px;
-          background: ${isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(16,185,129,0.04)'};
-          border: 1px solid ${isDarkMode ? 'rgba(125,211,252,0.35)' : '#9CA3AF'};
-          color: ${isDarkMode ? '#ffffff' : '#1C1C1E'};
+          padding: 11px 14px;
+          border-radius: 10px;
+          font-size: 16px;
+          background: ${isDarkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'};
+          border: 0.5px solid ${isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(60,60,67,0.18)'};
+          color: ${isDarkMode ? '#ffffff' : '#000000'};
           outline: none;
-          font-family: inherit;
-          transition: border-color 0.15s, background 0.3s, color 0.3s;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+          transition: border-color 0.18s, background 0.18s;
           resize: vertical;
           box-sizing: border-box;
+          -webkit-font-smoothing: antialiased;
         }
-        .ds-input:focus { border-color: ${isDarkMode ? 'rgba(34,211,160,0.60)' : 'rgba(5,150,105,0.55)'}; }
-        .ds-input::placeholder { color: ${isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(60,60,67,0.45)'}; }
+        .ds-input:focus { border-color: ${isDarkMode ? 'rgba(10,132,255,0.60)' : 'rgba(0,122,255,0.55)'}; box-shadow: 0 0 0 3px ${isDarkMode ? 'rgba(10,132,255,0.14)' : 'rgba(0,122,255,0.10)'}; }
+        .ds-input::placeholder { color: ${isDarkMode ? 'rgba(235,235,245,0.30)' : 'rgba(60,60,67,0.30)'}; }
 
         .schedule-item { transition: background 0.15s; }
-        .schedule-item:hover { background: ${isDarkMode ? 'rgba(34,211,160,0.07)' : 'rgba(5,150,105,0.07)'} !important; }
+        .schedule-item:hover { background: ${isDarkMode ? 'rgba(10,132,255,0.07)' : 'rgba(0,122,255,0.05)'} !important; }
       `}</style>
 
       <OrderInputModal
@@ -4478,7 +4462,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ── MAIN 2-COLUMN LAYOUT ───────────────────────────────────── */}
-            <div style={{display:'grid',gridTemplateColumns:'1fr 360px',gap:16,alignItems:'start'}}>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 300px',gap:16,alignItems:'start'}}>
 
               {/* LEFT: Chart hero + session strip */}
               <div style={{display:'flex',flexDirection:'column',gap:12}}>
@@ -4492,7 +4476,7 @@ export default function DashboardPage() {
                   {/* Clock header */}
                   <div style={{
                     display:'flex',alignItems:'center',justifyContent:'space-between',
-                    padding:'10px 14px 8px',
+                    padding:'7px 12px 6px',
                     borderBottom:`1px solid ${isDarkMode?C.bdr:'#9CA3AF'}`,
                   }}>
                     <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -4502,7 +4486,7 @@ export default function DashboardPage() {
                     </div>
                     <RealtimeClockDesktop/>
                   </div>
-                  <ChartCard assetSymbol={selectedRic} height={340}/>
+                  <ChartCard assetSymbol={selectedRic} height={220}/>
                 </div>
 
                 {/* Session stat strip */}
@@ -4789,13 +4773,13 @@ export default function DashboardPage() {
     background: colors.bg,
     zIndex: 0,
   }}/>
-  <video
+  <Image
     key={isDarkMode ? 'dark' : 'light'}
-    src={isDarkMode ? "/darkstc.mp4" : "/lightstc.mp4"}
-    autoPlay
-    muted
-    loop
-    playsInline
+    src={isDarkMode ? "/headerdark.png" : "/headerlight.png"}
+    alt="Dashboard Header"
+    width={1200}
+    height={400}
+    priority
     style={{
       width:'100%',
       height:'auto',
@@ -4803,7 +4787,6 @@ export default function DashboardPage() {
       position: 'relative',
       zIndex: 1,
     }}
-    onError={(e) => { (e.target as HTMLVideoElement).parentElement!.style.display = 'none'; }}
   />
   {/* Shimmer overlay */}
 <div style={{

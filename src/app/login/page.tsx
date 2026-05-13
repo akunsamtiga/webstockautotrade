@@ -26,6 +26,7 @@ const LOGIN_STYLES = `
     --accent:       #007aff;
     --error:        #ff3b30;
     --error-bg:     rgba(255,59,48,0.07);
+    --success:      #34c759;
     --r-md:         13px;
     --r-xl:         24px;
     --font:         -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
@@ -387,6 +388,67 @@ const LOGIN_STYLES = `
   .sp-dots { display: flex; gap: 6px; margin-top: 40px; }
   .sp-dot { height: 6px; border-radius: 99px; background: rgba(0,0,0,0.10); transition: width 0.45s cubic-bezier(0.34,1.2,0.64,1), background 0.3s ease; width: 6px; }
   .sp-dot.act { width: 22px; background: #007aff; }
+
+  /* Toast Notification */
+  .toast-container {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 300;
+    display: flex;
+    justify-content: center;
+    padding: 16px 20px 0;
+    pointer-events: none;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 16px;
+    background: rgba(52, 199, 89, 0.95);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.15px;
+    box-shadow: 0 8px 32px rgba(52,199,89,0.25), 0 0 0 0.5px rgba(255,255,255,0.2);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    pointer-events: auto;
+    max-width: 90vw;
+    animation: toast-in 0.45s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  .toast.hiding {
+    animation: toast-out 0.35s cubic-bezier(0.4,0,1,1) forwards;
+  }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes toast-out {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 0; transform: translateY(-12px) scale(0.96); }
+  }
+  .toast-icon {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .toast-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    margin-left: 4px;
+    transition: color 0.15s;
+  }
+  .toast-close:hover { color: #fff; }
 `;
 
 // ── Loading step labels (shown below the sign-in button while loading) ─────
@@ -409,6 +471,13 @@ function LoginPageContent() {
   const [showLangSelector, setShowLangSelector] = useState(false);
   const [useImg, setUseImg] = useState(false);
 
+  // ✅ Toast state for register success
+  const [toast, setToast] = useState<{ visible: boolean; message: string; hiding: boolean }>({
+    visible: false,
+    message: '',
+    hiding: false,
+  });
+
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef  = useRef<HTMLInputElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
@@ -422,6 +491,26 @@ function LoginPageContent() {
       if (savedPass)  { setPassword(savedPass); }
       const sessionValid = await isSessionValid();
       if (sessionValid) router.push('/dashboard');
+
+      // ✅ Check for register success toast
+      if (typeof window !== 'undefined') {
+        const registerSuccess = sessionStorage.getItem('stc_register_success');
+        const registerEmail = sessionStorage.getItem('stc_register_email');
+        if (registerSuccess === '1') {
+          const msg = registerEmail
+            ? `Registrasi berhasil! Akun ${registerEmail} telah ditambahkan ke whitelist.`
+            : 'Registrasi berhasil! Silakan login dengan akun Stockity Anda.';
+          setToast({ visible: true, message: msg, hiding: false });
+          // Clear sessionStorage
+          sessionStorage.removeItem('stc_register_success');
+          sessionStorage.removeItem('stc_register_email');
+          // Auto hide after 5 seconds
+          setTimeout(() => {
+            setToast(prev => ({ ...prev, hiding: true }));
+            setTimeout(() => setToast({ visible: false, message: '', hiding: false }), 400);
+          }, 5000);
+        }
+      }
     };
     init();
   }, [router]);
@@ -497,11 +586,8 @@ function LoginPageContent() {
     setLoginStep('auth');
 
     try {
-      // ── Step 1: Verify credentials with backend ─────────────────────────
       const res = await api.login(emailVal, passVal);
 
-      // ── Step 2: Check whitelist in Supabase ─────────────────────────────
-      //    Only runs after successful auth, so no DB query on wrong passwords.
       setLoginStep('whitelist');
       const allowed = await isWhitelisted(res.email || emailVal);
       if (!allowed) {
@@ -509,7 +595,6 @@ function LoginPageContent() {
         throw new Error(t('login.notWhitelisted'));
       }
 
-      // ── Step 3: Persist remember-me choice ─────────────────────────────
       setLoginStep('saving');
       if (remember) {
         await storage.set('stc_remember_email',    emailVal);
@@ -519,10 +604,7 @@ function LoginPageContent() {
         await storage.remove('stc_remember_password');
       }
 
-      // ── Step 4: Record last login (non-blocking — don't await) ──────────
       updateLastLogin(res.email || emailVal).catch(() => {});
-
-      // ── Step 5: Save session and show splash screen ─────────────────────
       await runSplash(res);
 
     } catch (err: unknown) {
@@ -532,7 +614,6 @@ function LoginPageContent() {
     }
   };
 
-  // Step hint label shown below button while loading
   const stepHintLabel = (): string => {
     switch (loginStep) {
       case 'auth':      return 'Memverifikasi akun…';
@@ -570,6 +651,11 @@ function LoginPageContent() {
       );
     }
     return <span style={{ fontSize: size }}>{lang.flag}</span>;
+  };
+
+  const dismissToast = () => {
+    setToast(prev => ({ ...prev, hiding: true }));
+    setTimeout(() => setToast({ visible: false, message: '', hiding: false }), 400);
   };
 
   return (
@@ -616,6 +702,25 @@ function LoginPageContent() {
           <div className="sp-dots">
             <div className={`sp-dot ${splash === 'welcome' ? 'act' : ''}`} />
             <div className={`sp-dot ${splash === 'verified' || splash === 'out' ? 'act' : ''}`} />
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Toast Notification */}
+      {toast.visible && (
+        <div className="toast-container">
+          <div className={`toast ${toast.hiding ? 'hiding' : ''}`}>
+            <div className="toast-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+            </div>
+            <span style={{ lineHeight: 1.4 }}>{toast.message}</span>
+            <button className="toast-close" onClick={dismissToast} aria-label="Tutup notifikasi">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
           </div>
         </div>
       )}
@@ -674,7 +779,7 @@ function LoginPageContent() {
               {/* Logo Mobile */}
               <div className="logo-mobile">
                 <Image src="/logo.png" alt="STC AutoTrade" width={120} height={120} style={{ height: '120px', width: 'auto' }} />
-                <span className="logo-mobile-name">STC AutoTrade</span>
+                <span className="logo-mobile-name">StockAutoTrade</span>
               </div>
               <p className="brand-sub">{t('login.subtitle')}</p>
             </div>
@@ -726,8 +831,7 @@ function LoginPageContent() {
                           </svg>
                         ) : (
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                           </svg>
                         )}
                       </button>
@@ -746,7 +850,6 @@ function LoginPageContent() {
 
                 {error && (
                   <div className={`err${isWhitelistError ? ' err-whitelist' : ''}`}>
-                    {/* Whitelist error gets a shield/lock icon, others get a dot */}
                     {isWhitelistError ? (
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
                         <rect x="3" y="11" width="18" height="11" rx="2"/>
@@ -764,7 +867,6 @@ function LoginPageContent() {
                   {loading ? t('login.signingIn') : t('login.signIn')}
                 </button>
 
-                {/* Step hint — visible only while loading */}
                 <p className="step-hint" style={{ opacity: loading ? 1 : 0 }}>
                   {stepHintLabel()}
                 </p>
@@ -786,7 +888,7 @@ function LoginPageContent() {
             </div>
 
             <div className="foot">
-              © 2026 STC AutoTrade ·{' '}
+              © 2026 StockAutoTrade ·{' '}
               <a className="foot-lnk" href="https://stockity.id/information/privacy" target="_blank" rel="noopener noreferrer">{t('login.terms')}</a>
               {' '}·{' '}
               <a className="foot-lnk" href="https://stockity.id/information/privacy" target="_blank" rel="noopener noreferrer">{t('login.privacy')}</a>

@@ -175,9 +175,11 @@
                    iOS muncul/hilang saat scroll. CSS di globals.css yang
                    mengatur overflow-y:scroll, will-change, contain. */
                 height: '100%',
-                /* Padding bawah = tinggi BottomNav (56px) + safe area */
-                paddingBottom: !isPublic
-                  ? 'calc(56px + env(safe-area-inset-bottom, 0px))'
+                /* Padding bawah dihandle oleh masing-masing halaman (misal paddingBottom:88).
+                   ClientLayout TIDAK menambah padding lagi agar tidak double.
+                   Halaman publik (login/register) tetap dapat safe-area kecil. */
+                paddingBottom: isPublic
+                  ? 'env(safe-area-inset-bottom, 0px)'
                   : undefined,
                 /* ── FIX GRID FLASH ─────────────────────────────────────────
                    Konten tidak terlihat selama loading (HTML splash menutupi).

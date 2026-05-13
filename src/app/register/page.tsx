@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   storage,
   saveUserSession,
@@ -20,6 +21,11 @@ import {
   getRegistrationConfig,
 } from '@/lib/supabaseRepository';
 import { stcWebView } from '@/plugins/StcWebViewPlugin';
+
+function isNativeApp(): boolean {
+  return typeof window !== 'undefined' &&
+    (window as any).Capacitor?.isNativePlatform?.() === true;
+}
 
 const DEFAULT_REGISTRATION_URL = 'https://stockity.id/registered?a=25db72fbbc00';
 const DEFAULT_WHATSAPP_URL     = 'https://wa.me/6285959860015';
@@ -115,24 +121,33 @@ function SavingDialog({ message = 'Mohon tunggu sebentar...' }: { message?: stri
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 300,
-      background: 'rgba(0,0,0,0.5)',
+      background: 'rgba(0,0,0,0.45)',
+      backdropFilter: 'blur(12px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(12px) saturate(180%)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "-apple-system,'SF Pro Display',BlinkMacSystemFont,sans-serif",
+      fontFamily: "-apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif",
     }}>
       <div style={{
-        background: '#fff', borderRadius: 20, padding: 32,
-        width: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24,
-        boxShadow: '0 16px 48px rgba(0,0,0,0.20)',
+        background: 'rgba(255,255,255,0.92)',
+        borderRadius: 24,
+        padding: '32px 28px',
+        width: 280,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 20,
+        boxShadow: '0 24px 64px rgba(0,0,0,0.18), 0 0 0 0.5px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(255,255,255,0.5)',
       }}>
         <style>{`@keyframes sv-spin { to { transform:rotate(360deg); } }`}</style>
         <div style={{
-          width: 48, height: 48, borderRadius: '50%',
-          border: '4px solid rgba(66,133,244,0.15)', borderTopColor: '#4285F4',
-          animation: 'sv-spin 0.7s linear infinite',
+          width: 40, height: 40, borderRadius: '50%',
+          border: '3px solid rgba(0,122,255,0.15)', borderTopColor: '#007AFF',
+          animation: 'sv-spin 0.8s linear infinite',
         }} />
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 20, fontWeight: 600, color: '#202124', marginBottom: 8 }}>Menghubungkan</div>
-          <div style={{ fontSize: 14, color: '#5F6368' }}>{message}</div>
+          <div style={{ fontSize: 17, fontWeight: 600, color: '#1c1c1e', marginBottom: 4, letterSpacing: '-0.01em' }}>Menghubungkan</div>
+          <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 400 }}>{message}</div>
         </div>
       </div>
     </div>
@@ -149,101 +164,113 @@ function ModernSuccessDialog({
   onContinueClick: () => void;
 }) {
   const [visible, setVisible] = useState(false);
-  useEffect(() => { setTimeout(() => setVisible(true), 100); }, []);
+  useEffect(() => { setTimeout(() => setVisible(true), 80); }, []);
 
   return (
     <>
       <style>{`
-        @keyframes msd-scale { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
-        @keyframes icon-pulse-scale { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-        @keyframes icon-pulse-rot   { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+        @keyframes msd-bg { from{opacity:0} to{opacity:1} }
+        @keyframes msd-scale { from{opacity:0;transform:scale(0.92) translateY(12px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes icon-pop { 0%{transform:scale(0.8);opacity:0} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
       `}</style>
       <div style={{
         position: 'fixed', inset: 0, zIndex: 200,
-        background: `rgba(0,0,0,${visible ? 0.6 : 0})`,
+        background: visible ? 'rgba(0,0,0,0.40)' : 'rgba(0,0,0,0)',
+        backdropFilter: visible ? 'blur(16px) saturate(180%)' : 'blur(0px)',
+        WebkitBackdropFilter: visible ? 'blur(16px) saturate(180%)' : 'blur(0px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '0 20px', transition: 'background 0.4s ease',
-        fontFamily: "-apple-system,'SF Pro Display',BlinkMacSystemFont,sans-serif",
+        padding: '0 24px',
+        transition: 'background 0.35s ease, backdrop-filter 0.35s ease',
+        fontFamily: "-apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif",
         WebkitFontSmoothing: 'antialiased',
       }}>
         <div style={{
-          background: '#fff', borderRadius: 32, padding: 32,
+          background: 'rgba(255,255,255,0.95)',
+          borderRadius: 28,
+          padding: '36px 28px 28px',
           width: '100%', maxWidth: 360,
-          animation: visible ? 'msd-scale 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards' : 'none',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.24)',
+          animation: visible ? 'msd-scale 0.45s cubic-bezier(0.22,1,0.36,1) forwards' : 'none',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.18), 0 0 0 0.5px rgba(0,0,0,0.06)',
+          border: '1px solid rgba(255,255,255,0.6)',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
         }}>
-          <div style={{ width: 120, height: 120, position: 'relative', marginBottom: 24 }}>
-            <div style={{
-              position: 'absolute', inset: 0, borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(52,168,83,0.20) 0%, rgba(52,168,83,0.05) 50%, transparent 70%)',
-              animation: 'icon-pulse-scale 1s ease-in-out infinite, icon-pulse-rot 2s ease-in-out infinite',
-            }} />
-            <div style={{
-              position: 'absolute', top: 25, left: 25, right: 25, bottom: 25,
-              borderRadius: '50%', background: '#34A853',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 16px rgba(52,168,83,0.40)',
-            }}>
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
-                stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
-            </div>
+          <div style={{
+            width: 72, height: 72, borderRadius: 22,
+            background: 'linear-gradient(135deg, #34C759 0%, #30D158 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginBottom: 20,
+            boxShadow: '0 6px 20px rgba(52,199,89,0.30)',
+            animation: 'icon-pop 0.5s cubic-bezier(0.22,1,0.36,1) 0.15s both',
+          }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
           </div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#202124', letterSpacing: -0.5, marginBottom: 12 }}>Selamat! 🎉</div>
-          <div style={{ fontSize: 20, fontWeight: 500, color: '#34A853', marginBottom: 16 }}>Registrasi Berhasil</div>
-          <div style={{ fontSize: 15, color: '#5F6368', textAlign: 'center', lineHeight: '22px', marginBottom: 8 }}>
-            Akun Stockity Anda telah berhasil didaftarkan.
+
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.5px', marginBottom: 6, textAlign: 'center' }}>
+            Registrasi Berhasil
           </div>
+          <div style={{ fontSize: 15, color: '#34C759', fontWeight: 600, marginBottom: 14 }}>
+            Selamat datang di STC AutoTrade
+          </div>
+
+          <div style={{ fontSize: 14, color: '#6e6e73', textAlign: 'center', lineHeight: 1.5, marginBottom: 16, padding: '0 4px' }}>
+            Akun Stockity Anda telah berhasil didaftarkan ke sistem whitelist.
+          </div>
+
           {email ? (
             <div style={{
-              marginBottom: 24, padding: '8px 16px', borderRadius: 12,
-              background: 'rgba(66,133,244,0.07)', border: '1px solid rgba(66,133,244,0.18)',
+              marginBottom: 24, padding: '10px 16px', borderRadius: 14,
+              background: 'rgba(0,122,255,0.06)', border: '1px solid rgba(0,122,255,0.14)',
               width: '100%', textAlign: 'center',
             }}>
-              <p style={{ fontSize: 11, color: '#5F6368', marginBottom: 2 }}>Login dengan email</p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#202124', wordBreak: 'break-all' }}>{email}</p>
+              <p style={{ fontSize: 11, color: '#6e6e73', marginBottom: 3, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Email terdaftar</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#1c1c1e', wordBreak: 'break-all', letterSpacing: '-0.2px' }}>{email}</p>
             </div>
           ) : (
             <div style={{ marginBottom: 24 }} />
           )}
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {/* ✅ FIX: "Login STC Autotrade" → ke halaman login (/login) */}
+
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <button onClick={onLoginClick} style={{
-              width: '100%', height: 56, borderRadius: 16,
-              background: '#4285F4', color: '#fff', border: 'none',
+              width: '100%', height: 50, borderRadius: 14,
+              background: '#007AFF', color: '#fff', border: 'none',
               fontSize: 16, fontWeight: 600, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-              boxShadow: '0 4px 12px rgba(66,133,244,0.35)', fontFamily: 'inherit',
-            }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              boxShadow: '0 2px 12px rgba(0,122,255,0.28)',
+              fontFamily: 'inherit', letterSpacing: '-0.2px',
+              transition: 'transform 0.12s ease, opacity 0.15s ease',
+            }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')} onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
                 <polyline points="10 17 15 12 10 7" />
                 <line x1="15" y1="12" x2="3" y2="12" />
               </svg>
               Login ke STC AutoTrade
             </button>
-            {/* ✅ FIX: "Lanjut Trading" → buka Stockity di WebView untuk mulai trading */}
+
             <button onClick={onContinueClick} style={{
-              width: '100%', height: 56, borderRadius: 16,
-              background: 'transparent', color: '#4285F4',
-              border: '1.5px solid rgba(66,133,244,0.30)',
-              fontSize: 16, fontWeight: 500, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-              fontFamily: 'inherit',
-            }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              width: '100%', height: 46, borderRadius: 14,
+              background: 'transparent', color: '#007AFF',
+              border: '1.5px solid rgba(0,122,255,0.22)',
+              fontSize: 15, fontWeight: 500, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              fontFamily: 'inherit', letterSpacing: '-0.2px',
+              transition: 'transform 0.12s ease, background 0.15s ease',
+            }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')} onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
               </svg>
               Lanjut Trading di Stockity
             </button>
           </div>
-          <div style={{ marginTop: 16, fontSize: 12, color: '#9AA0A6', display: 'flex', alignItems: 'center', gap: 6 }}>
+
+          <div style={{ marginTop: 16, fontSize: 12, color: '#aeaeb2', display: 'flex', alignItems: 'center', gap: 6, textAlign: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
-            Masukkan password Stockity saat login
+            Gunakan password Stockity saat login
           </div>
         </div>
       </div>
@@ -264,34 +291,47 @@ function ErrorDialog({
 }) {
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.60)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px',
-      fontFamily: "-apple-system,'SF Pro Display',BlinkMacSystemFont,sans-serif",
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: 'rgba(0,0,0,0.45)',
+      backdropFilter: 'blur(12px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px',
+      fontFamily: "-apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif",
     }}>
       <div style={{
-        background: '#fff', borderRadius: 20, padding: 28,
-        width: '100%', maxWidth: 360, boxShadow: '0 16px 48px rgba(0,0,0,0.20)',
+        background: 'rgba(255,255,255,0.95)', borderRadius: 24, padding: '28px 24px',
+        width: '100%', maxWidth: 360,
+        boxShadow: '0 16px 48px rgba(0,0,0,0.18), 0 0 0 0.5px rgba(0,0,0,0.06)',
+        border: '1px solid rgba(255,255,255,0.5)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA4335" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          <span style={{ fontSize: 16, fontWeight: 700, color: '#202124' }}>{isBlocked ? 'Akun Diblokir' : 'Proses Gagal'}</span>
+          <div style={{
+            width: 32, height: 32, borderRadius: 10,
+            background: 'rgba(255,59,48,0.10)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <span style={{ fontSize: 17, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.3px' }}>{isBlocked ? 'Akun Diblokir' : 'Proses Gagal'}</span>
         </div>
-        <p style={{ fontSize: 14, color: '#5F6368', lineHeight: '20px', marginBottom: 24, whiteSpace: 'pre-line' }}>{message}</p>
+        <p style={{ fontSize: 14, color: '#6e6e73', lineHeight: 1.5, marginBottom: 24, whiteSpace: 'pre-line' }}>{message}</p>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onBack} style={{
             flex: 1, height: 44, borderRadius: 12,
-            background: 'transparent', color: '#5F6368',
-            border: '1px solid rgba(0,0,0,0.15)', fontSize: 14,
+            background: 'rgba(120,120,128,0.10)', color: '#1c1c1e',
+            border: 'none', fontSize: 15,
             fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
-          }}>Kembali</button>
+            transition: 'transform 0.1s',
+          }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}>Kembali</button>
           <button onClick={onContactAdmin} style={{
             flex: 1, height: 44, borderRadius: 12,
-            background: '#34A853', color: '#fff', border: 'none',
-            fontSize: 14, fontWeight: 500, cursor: 'pointer',
+            background: '#34C759', color: '#fff', border: 'none',
+            fontSize: 15, fontWeight: 600, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'inherit',
-          }}>
+            transition: 'transform 0.1s',
+          }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
             </svg>
@@ -303,16 +343,323 @@ function ErrorDialog({
   );
 }
 
+function WebRegisterModal({
+  registrationUrl,
+  onSuccess,
+  onClose,
+}: {
+  registrationUrl: string;
+  onSuccess: (email: string) => void;
+  onClose: () => void;
+}) {
+  const [visible,   setVisible]   = useState(false);
+  const [email,     setEmail]     = useState('');
+  const [password,  setPassword]  = useState('');
+  const [showPass,  setShowPass]  = useState(false);
+  const [loading,   setLoading]   = useState(false);
+  const [step,      setStep]      = useState('');
+  const [error,     setError]     = useState('');
+
+  useEffect(() => { setTimeout(() => setVisible(true), 60); }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setError('');
+    setLoading(true);
+
+    try {
+      setStep('Memverifikasi akun Stockity…');
+      const { api } = await import('@/lib/api');
+      const res = await api.login(email, password);
+
+      const resolvedEmail  = res.email  || email;
+      const resolvedUserId = res.userId || '';
+      const resolvedDevice = res.deviceId || await getOrCreateDeviceId();
+
+      setStep('Memeriksa akses whitelist…');
+
+      const byEmail = await getWhitelistUserByEmail(resolvedEmail);
+      if (byEmail) {
+        if (!byEmail.isActive)
+          throw new Error('Akun kamu belum aktif. Silahkan hubungi admin untuk aktivasi STC Autotrade.');
+        await updateLastLogin(byEmail.userId ?? resolvedUserId);
+        onSuccess(resolvedEmail);
+        return;
+      }
+
+      const byUserId = await getWhitelistUserByUserId(resolvedUserId);
+      if (byUserId) {
+        if (!byUserId.isActive)
+          throw new Error('Akun Anda saat ini belum terhubung ke sistem STC AutoTrade. Hubungi admin untuk proses aktivasi.');
+        await updateLastLogin(byUserId.userId ?? resolvedUserId);
+        onSuccess(resolvedEmail);
+        return;
+      }
+
+      setStep('Mendaftarkan ke sistem STC…');
+      await addWhitelistUser({
+        email:             resolvedEmail,
+        name:              resolvedEmail,
+        userId:            resolvedUserId,
+        deviceId:          resolvedDevice,
+        isActive:          true,
+        createdAt:         Date.now(),
+        lastLogin:         Date.now(),
+        addedBy:           'web_registration',
+        addedAt:           Date.now(),
+        fcmToken:          '',
+        fcmTokenUpdatedAt: 0,
+      });
+
+      setStep('Berhasil! Mengarahkan…');
+      onSuccess(resolvedEmail);
+
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan. Silakan coba lagi.');
+      setStep('');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const font = "-apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
+
+  return (
+    <>
+      <style>{`
+        @keyframes wrm-in  { from{opacity:0;transform:translateY(32px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes wrm-spin{ to{transform:rotate(360deg)} }
+        .wrm-input:focus { outline: none; border-color: #007aff !important; box-shadow: 0 0 0 4px rgba(0,122,255,0.10) !important; }
+        .wrm-btn-close:hover { background: rgba(0,0,0,0.06) !important; }
+      `}</style>
+
+      <div
+        onClick={loading ? undefined : onClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          background: visible ? 'rgba(0,0,0,0.40)' : 'rgba(0,0,0,0)',
+          backdropFilter: visible ? 'blur(16px) saturate(180%)' : 'blur(0px)',
+          WebkitBackdropFilter: visible ? 'blur(16px) saturate(180%)' : 'blur(0px)',
+          transition: 'background 0.3s ease, backdrop-filter 0.3s ease',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          fontFamily: font, WebkitFontSmoothing: 'antialiased',
+        }}
+      >
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            background: 'rgba(255,255,255,0.96)',
+            borderRadius: '28px 28px 0 0',
+            padding: '0 0 max(env(safe-area-inset-bottom),24px)',
+            width: '100%', maxWidth: 480,
+            animation: visible ? 'wrm-in 0.42s cubic-bezier(0.22,1,0.36,1) forwards' : 'none',
+            boxShadow: '0 -8px 48px rgba(0,0,0,0.15), 0 0 0 0.5px rgba(0,0,0,0.06)',
+            border: '1px solid rgba(255,255,255,0.5)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)' }} />
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px 0' }}>
+            <div>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1c1c1e', margin: 0, letterSpacing: '-0.5px' }}>
+                Verifikasi Akun Stockity
+              </h2>
+              <p style={{ fontSize: 13, color: '#6e6e73', margin: '4px 0 0' }}>
+                Masukkan kredensial Stockity Anda
+              </p>
+            </div>
+            <button
+              className="wrm-btn-close"
+              onClick={loading ? undefined : onClose}
+              disabled={loading}
+              style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'rgba(0,0,0,0.05)', border: 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: loading ? 'not-allowed' : 'pointer', transition: 'background 0.15s',
+                opacity: loading ? 0.4 : 1,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <div style={{
+            margin: '16px 20px 0',
+            padding: '10px 14px',
+            borderRadius: 12,
+            background: 'rgba(0,122,255,0.06)',
+            border: '1px solid rgba(0,122,255,0.12)',
+            display: 'flex', gap: 10, alignItems: 'flex-start',
+          }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p style={{ fontSize: 12.5, color: '#007aff', lineHeight: 1.5, margin: 0 }}>
+              Gunakan email & password akun <strong>stockity.id</strong> Anda.{' '}
+              Belum punya akun?{' '}
+              <a
+                href={registrationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#007aff', fontWeight: 600, textDecoration: 'underline' }}
+              >
+                Daftar di sini
+              </a>
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} noValidate style={{ padding: '16px 20px 0' }}>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#aeaeb2', marginBottom: 6 }}>
+                Email Stockity
+              </label>
+              <input
+                className="wrm-input"
+                type="email"
+                placeholder="contoh@email.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                disabled={loading}
+                autoComplete="email"
+                autoCapitalize="none"
+                style={{
+                  width: '100%', height: 48, borderRadius: 12,
+                  border: '1.5px solid rgba(0,0,0,0.10)',
+                  padding: '0 14px', fontSize: 16, color: '#1c1c1e',
+                  fontFamily: font, background: 'rgba(118,118,128,0.05)',
+                  transition: 'border-color 0.18s, box-shadow 0.18s',
+                  boxSizing: 'border-box', appearance: 'none',
+                  opacity: loading ? 0.6 : 1,
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#aeaeb2', marginBottom: 6 }}>
+                Password Stockity
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  className="wrm-input"
+                  type={showPass ? 'text' : 'password'}
+                  placeholder="Password akun Stockity"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  disabled={loading}
+                  autoComplete="current-password"
+                  style={{
+                    width: '100%', height: 48, borderRadius: 12,
+                    border: '1.5px solid rgba(0,0,0,0.10)',
+                    padding: '0 44px 0 14px', fontSize: 16, color: '#1c1c1e',
+                    fontFamily: font, background: 'rgba(118,118,128,0.05)',
+                    letterSpacing: showPass ? 'normal' : '3px',
+                    transition: 'border-color 0.18s, box-shadow 0.18s',
+                    boxSizing: 'border-box', appearance: 'none',
+                    opacity: loading ? 0.6 : 1,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(p => !p)}
+                  tabIndex={-1}
+                  style={{
+                    position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#aeaeb2', padding: 4, display: 'flex', alignItems: 'center',
+                  }}
+                >
+                  {showPass ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div style={{
+                display: 'flex', alignItems: 'flex-start', gap: 8,
+                background: 'rgba(255,59,48,0.06)', border: '1px solid rgba(255,59,48,0.14)',
+                borderRadius: 10, padding: '10px 12px', marginBottom: 14,
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <p style={{ fontSize: 13, color: '#ff3b30', margin: 0, lineHeight: 1.4 }}>{error}</p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || !email || !password}
+              style={{
+                width: '100%', height: 50, borderRadius: 14,
+                background: loading || !email || !password ? 'rgba(0,122,255,0.35)' : '#007aff',
+                color: '#fff', border: 'none',
+                fontSize: 16, fontWeight: 600, cursor: loading || !email || !password ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                fontFamily: font, boxShadow: loading ? 'none' : '0 2px 12px rgba(0,122,255,0.25)',
+                transition: 'background 0.15s, box-shadow 0.15s, transform 0.12s',
+                letterSpacing: '-0.2px',
+              }}
+            >
+              {loading ? (
+                <>
+                  <div style={{
+                    width: 16, height: 16, borderRadius: '50%',
+                    border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff',
+                    animation: 'wrm-spin 0.7s linear infinite',
+                  }} />
+                  <span style={{ fontSize: 14, opacity: 0.9 }}>{step || 'Memproses…'}</span>
+                </>
+              ) : (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  Verifikasi & Daftarkan
+                </>
+              )}
+            </button>
+          </form>
+
+          <p style={{ textAlign: 'center', marginTop: 14, fontSize: 12.5, color: '#aeaeb2', padding: '0 20px' }}>
+            Dengan mendaftar, akun Stockity Anda akan ditambahkan ke sistem STC AutoTrade.
+          </p>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ─── Register Landing UI ──────────────────────────────────────────────────────
 
 function RegisterLanding({
   onOpenWebView,
   onAlreadyRegistered,
   onGoLogin,
+  isWeb,
+  onShowWebModal,
+  registrationUrl,
 }: {
   onOpenWebView: () => void;
   onAlreadyRegistered: () => void;
   onGoLogin: () => void;
+  isWeb?: boolean;
+  onShowWebModal?: () => void;
+  registrationUrl?: string;
 }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { setTimeout(() => setVisible(true), 80); }, []);
@@ -320,118 +667,223 @@ function RegisterLanding({
   return (
     <>
       <style>{`
-        @keyframes rl-rise { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes rl-orb  { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(4%,3%) scale(1.04)} }
-        .rl-btn-primary:active { transform:scale(0.97) !important; }
-        .rl-btn-outline:active { transform:scale(0.97) !important; }
+        @keyframes rl-rise { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes rl-orb  { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(3%,2%) scale(1.03)} }
+        @keyframes step-in { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+        .rl-btn-primary { transition: transform 0.12s ease, opacity 0.15s ease; }
+        .rl-btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+        .rl-btn-outline { transition: transform 0.12s ease, opacity 0.15s ease; }
+        .rl-btn-outline:active { transform: scale(0.97); opacity: 0.9; }
+        .step-row { animation: step-in 0.4s cubic-bezier(0.22,1,0.36,1) forwards; opacity: 0; }
+        .step-row:nth-child(1) { animation-delay: 0.15s; }
+        .step-row:nth-child(2) { animation-delay: 0.25s; }
+        .step-row:nth-child(3) { animation-delay: 0.35s; }
       `}</style>
       <div style={{
         position: 'fixed', inset: 0,
         background: '#f2f2f7',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        padding: '24px 20px',
-        fontFamily: "-apple-system,'SF Pro Display',BlinkMacSystemFont,'Helvetica Neue',sans-serif",
+        padding: '24px 20px max(env(safe-area-inset-bottom), 24px)',
+        fontFamily: "-apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
         WebkitFontSmoothing: 'antialiased',
         overflow: 'hidden',
       }}>
+        {/* Ambient orbs */}
         <div style={{
-          position: 'fixed', width: 360, height: 360, borderRadius: '50%',
-          background: 'radial-gradient(circle,rgba(0,122,255,0.10) 0%,transparent 70%)',
-          top: '-15%', right: '-10%', filter: 'blur(60px)',
-          animation: 'rl-orb 18s ease-in-out infinite alternate', pointerEvents: 'none',
+          position: 'fixed', width: 500, height: 500, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(0,122,255,0.09) 0%, transparent 70%)',
+          top: '-22%', right: '-15%', filter: 'blur(90px)',
+          animation: 'rl-orb 22s ease-in-out infinite alternate', pointerEvents: 'none',
         }} />
         <div style={{
-          position: 'fixed', width: 280, height: 280, borderRadius: '50%',
-          background: 'radial-gradient(circle,rgba(52,168,83,0.08) 0%,transparent 70%)',
-          bottom: '-10%', left: '-8%', filter: 'blur(50px)',
-          animation: 'rl-orb 22s ease-in-out infinite alternate-reverse', pointerEvents: 'none',
+          position: 'fixed', width: 400, height: 400, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(48,209,88,0.06) 0%, transparent 70%)',
+          bottom: '-18%', left: '-12%', filter: 'blur(80px)',
+          animation: 'rl-orb 26s ease-in-out infinite alternate-reverse', pointerEvents: 'none',
         }} />
 
         <div style={{
           position: 'relative', zIndex: 2,
           width: '100%', maxWidth: 360,
           opacity: visible ? 1 : 0,
-          animation: visible ? 'rl-rise 0.55s cubic-bezier(0.22,1,0.36,1) forwards' : 'none',
+          animation: visible ? 'rl-rise 0.7s cubic-bezier(0.22,1,0.36,1) forwards' : 'none',
         }}>
-          <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          {/* Brand Header */}
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+            {/* Logo */}
             <div style={{
-              width: 80, height: 80, borderRadius: 22, margin: '0 auto 16px',
-              background: 'linear-gradient(135deg,#007aff 0%,#34A853 100%)',
+              width: 90, height: 90, borderRadius: 26, margin: '0 auto 20px',
+              background: '#ffffff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 8px 28px rgba(0,122,255,0.28)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.04)',
+              position: 'relative',
+              overflow: 'hidden',
             }}>
-              <svg width="38" height="38" viewBox="0 0 24 24" fill="none"
-                stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-                <polyline points="16 7 22 7 22 13"/>
-              </svg>
+              <Image 
+                src="/logo.png" 
+                alt="STC AutoTrade" 
+                width={52} 
+                height={52} 
+                style={{ objectFit: 'contain', display: 'block' }} 
+                priority
+              />
             </div>
-            <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: -0.7, color: '#1c1c1e', margin: '0 0 6px' }}>
+            <h1 style={{ 
+              fontSize: 28, 
+              fontWeight: 700, 
+              letterSpacing: '-0.8px', 
+              color: '#1c1c1e', 
+              margin: '0 0 8px',
+              lineHeight: 1.2,
+            }}>
               STC AutoTrade
             </h1>
-            <p style={{ fontSize: 14, color: '#6e6e73', lineHeight: 1.5, margin: 0 }}>
+            <p style={{ 
+              fontSize: 15, 
+              color: '#8e8e93', 
+              lineHeight: 1.5, 
+              margin: 0, 
+              fontWeight: 400, 
+              padding: '0 16px',
+              letterSpacing: '-0.1px',
+            }}>
               Daftarkan akun Stockity Anda untuk mulai menggunakan bot trading otomatis
             </p>
           </div>
 
+          {/* Steps Card */}
           <div style={{
-            background: 'rgba(255,255,255,0.85)',
-            border: '1px solid rgba(60,60,67,0.10)',
-            borderRadius: 24,
-            padding: '22px 20px',
-            backdropFilter: 'saturate(180%) blur(30px)',
-            WebkitBackdropFilter: 'saturate(180%) blur(30px)',
-            boxShadow: '0 8px 36px rgba(0,0,0,0.09)',
-            display: 'flex', flexDirection: 'column', gap: 12,
+            background: '#ffffff',
+            borderRadius: 20,
+            padding: '24px 20px 20px',
+            boxShadow: '0 2px 16px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.03)',
+            marginBottom: 16,
           }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 6 }}>
+            {/* Section label */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 8, 
+              marginBottom: 18,
+            }}>
+              <span style={{ 
+                fontSize: 11, 
+                fontWeight: 600, 
+                color: '#aeaeb2', 
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+              }}>
+                Langkah Pendaftaran
+              </span>
+              <div style={{ flex: 1, height: 0.5, background: 'rgba(0,0,0,0.06)' }} />
+            </div>
+
+            {/* Steps */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {[
-                { num: '1', text: 'Buka halaman pendaftaran Stockity', color: '#007aff' },
-                { num: '2', text: 'Isi data dan selesaikan registrasi', color: '#34A853' },
-                { num: '3', text: 'Kembali ke sini dan klik "Sudah Daftar"', color: '#FF9F0A' },
-              ].map(s => (
-                <div key={s.num} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                { 
+                  num: '1', 
+                  title: 'Buka halaman pendaftaran', 
+                  desc: 'Kunjungi stockity.id untuk membuat akun',
+                  color: '#007aff',
+                },
+                { 
+                  num: '2', 
+                  title: 'Lengkapi data registrasi', 
+                  desc: 'Isi email, password, dan verifikasi akun',
+                  color: '#34C759',
+                },
+                { 
+                  num: '3', 
+                  title: 'Verifikasi ke STC', 
+                  desc: 'Kembali dan klik "Sudah Daftar" untuk whitelist',
+                  color: '#FF9500',
+                },
+              ].map((s, i) => (
+                <div key={s.num} className="step-row" style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                   <div style={{
-                    width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+                    width: 32, height: 32, borderRadius: 10, flexShrink: 0,
                     background: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, fontWeight: 700, color: '#fff',
-                    boxShadow: `0 2px 8px ${s.color}40`,
+                    fontSize: 13, fontWeight: 700, color: '#fff',
+                    boxShadow: `0 2px 8px ${s.color}30`,
+                    marginTop: 1,
                   }}>{s.num}</div>
-                  <span style={{ fontSize: 13, color: '#3c3c43', lineHeight: 1.4 }}>{s.text}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#1c1c1e', lineHeight: 1.3, marginBottom: 2, letterSpacing: '-0.2px' }}>
+                      {s.title}
+                    </div>
+                    <div style={{ fontSize: 13, color: '#8e8e93', lineHeight: 1.4, fontWeight: 400 }}>
+                      {s.desc}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
+          </div>
 
-            <button
-              className="rl-btn-primary"
-              onClick={onOpenWebView}
-              style={{
-                width: '100%', height: 50, borderRadius: 14,
-                background: '#007aff', color: '#fff', border: 'none',
-                fontSize: 16, fontWeight: 600, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                boxShadow: '0 3px 14px rgba(0,122,255,0.32)',
-                fontFamily: 'inherit', transition: 'transform 0.1s, opacity 0.15s',
-              }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-              </svg>
-              Mulai Registrasi
-            </button>
+          {/* Action Card */}
+          <div style={{
+            background: '#ffffff',
+            borderRadius: 20,
+            padding: '16px 16px 16px',
+            boxShadow: '0 2px 16px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.03)',
+            display: 'flex', flexDirection: 'column', gap: 10,
+          }}>
+            {isWeb ? (
+              <a
+                href={registrationUrl ?? DEFAULT_REGISTRATION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rl-btn-primary"
+                style={{
+                  width: '100%', height: 50, borderRadius: 14,
+                  background: '#007aff', color: '#fff',
+                  border: 'none',
+                  fontSize: 16, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: '0 2px 12px rgba(0,122,255,0.22)',
+                  fontFamily: 'inherit', textDecoration: 'none',
+                  letterSpacing: '-0.2px',
+                  boxSizing: 'border-box',
+                }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Buka Halaman Pendaftaran
+              </a>
+            ) : (
+              <button
+                className="rl-btn-primary"
+                onClick={onOpenWebView}
+                style={{
+                  width: '100%', height: 50, borderRadius: 14,
+                  background: '#007aff', color: '#fff', border: 'none',
+                  fontSize: 16, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: '0 2px 12px rgba(0,122,255,0.22)',
+                  fontFamily: 'inherit', letterSpacing: '-0.2px',
+                }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Mulai Registrasi
+              </button>
+            )}
 
             <button
               className="rl-btn-outline"
-              onClick={onAlreadyRegistered}
+              onClick={isWeb ? onShowWebModal : onAlreadyRegistered}
               style={{
-                width: '100%', height: 46, borderRadius: 14,
-                background: 'rgba(52,168,83,0.08)',
-                color: '#34A853',
-                border: '1.5px solid rgba(52,168,83,0.28)',
+                width: '100%', height: 44, borderRadius: 14,
+                background: 'transparent',
+                color: '#34C759',
+                border: '1.5px solid rgba(52,199,89,0.25)',
                 fontSize: 15, fontWeight: 600, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                fontFamily: 'inherit', transition: 'transform 0.1s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                fontFamily: 'inherit', letterSpacing: '-0.2px',
               }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6L9 17l-5-5"/>
@@ -440,12 +892,20 @@ function RegisterLanding({
             </button>
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: 16, fontSize: 13.5, color: '#6e6e73' }}>
+          {/* Footer */}
+          <p style={{ 
+            textAlign: 'center', 
+            marginTop: 20, 
+            fontSize: 14, 
+            color: '#8e8e93', 
+            fontWeight: 400,
+            letterSpacing: '-0.1px',
+          }}>
             Sudah punya akun?{' '}
             <button onClick={onGoLogin} style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: '#007aff', fontWeight: 600, fontSize: 'inherit',
-              fontFamily: 'inherit', padding: 0,
+              fontFamily: 'inherit', padding: 0, letterSpacing: '-0.2px',
             }}>Masuk</button>
           </p>
         </div>
@@ -463,23 +923,19 @@ export default function RegisterPage() {
   const [savingMessage, setSavingMessage] = useState('Mohon tunggu sebentar...');
   const [saveError,     setSaveError]     = useState<string | null>(null);
   const [isUserBlocked, setIsUserBlocked] = useState(false);
-  // ✅ FIX: simpan email untuk pre-fill di halaman login
   const [capturedEmail, setCapturedEmail] = useState('');
+  const [showWebModal,  setShowWebModal]  = useState(false);
+  const [isWeb,         setIsWeb]         = useState(false);
 
   const registrationUrl = useRef(DEFAULT_REGISTRATION_URL);
   const whatsappUrl     = useRef(DEFAULT_WHATSAPP_URL);
   const capturedToken   = useRef('');
   const capturedDevice  = useRef('');
 
-  // ── openRegistration ──────────────────────────────────────────────────────
   const openRegistration = useCallback(async () => {
     setPhase('webview');
     try {
       const result = await stcWebView.open({ url: registrationUrl.current });
-
-      // ✅ FIX: Tutup WebView native. Dengan fix Java, close() baru resolve
-      // SETELAH dismiss selesai — jadi saat setPhase('success') jalan,
-      // native Dialog sudah pasti tidak ada di layar.
       await stcWebView.close().catch(() => {});
 
       if (result.success) {
@@ -487,7 +943,6 @@ export default function RegisterPage() {
         capturedDevice.current = result.deviceId   || await getOrCreateDeviceId();
         setPhase('success');
       } else {
-        // User menekan tombol back / menutup WebView tanpa registrasi selesai
         setPhase('landing');
       }
     } catch (err) {
@@ -497,7 +952,6 @@ export default function RegisterPage() {
     }
   }, []);
 
-  // ── init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     setMounted(true);
     const init = async () => {
@@ -512,19 +966,23 @@ export default function RegisterPage() {
         // pakai default
       }
 
+      if (!isNativeApp()) {
+        setIsWeb(true);
+        setPhase('landing');
+        return;
+      }
+
       openRegistration();
     };
     init();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Custom event listener ─────────────────────────────────────────────────
   useEffect(() => {
     const handler = (e: Event) => {
       const { authToken, deviceId } = (e as CustomEvent).detail ?? {};
       if (authToken) capturedToken.current  = authToken;
       if (deviceId)  capturedDevice.current = deviceId;
-      // ✅ FIX: Tutup WebView juga saat menerima event custom
       stcWebView.close().catch(() => {});
       setPhase('success');
     };
@@ -536,17 +994,11 @@ export default function RegisterPage() {
     };
   }, []);
 
-  // ── handleLoginClick ──────────────────────────────────────────────────────
-  // ✅ FIX 2: Backend NestJS memakai JWT-nya sendiri (dari /auth/login),
-  // BUKAN Stockity token langsung. Maka setelah whitelist save, kita
-  // simpan email untuk pre-fill dan arahkan ke halaman login biasa.
-  // User tinggal masukkan password Stockity mereka → backend login normal.
   const handleLoginClick = async () => {
     const token    = capturedToken.current;
     const deviceId = capturedDevice.current || await getOrCreateDeviceId();
 
     if (!token) {
-      // Tidak ada token dari cookie → langsung ke login manual
       router.push('/login');
       return;
     }
@@ -555,7 +1007,7 @@ export default function RegisterPage() {
     setSavingMessage('Memverifikasi akun Stockity...');
 
     try {
-      setSavingMessage('Memeriksa akses whitelist...');
+      setSavingMessage('Memeriksa akses whitelist…');
       const result = await saveUserToWhitelistAndLogin(token, deviceId);
 
       if (!result.success) {
@@ -565,16 +1017,20 @@ export default function RegisterPage() {
         return;
       }
 
-      // ✅ FIX: Simpan email ke stc_remember_email agar pre-filled di halaman login.
-      // Jangan simpan Stockity token sebagai stc_token karena backend butuh JWT-nya sendiri.
       if (result.email) {
         await storage.set('stc_remember_email', result.email);
         setCapturedEmail(result.email);
       }
 
-      // Arahkan ke halaman login — user masukkan password untuk mendapatkan backend JWT
-      setSavingMessage('Mengarahkan ke halaman login...');
-      await new Promise(r => setTimeout(r, 600)); // beri waktu agar saving dialog terlihat
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('stc_register_success', '1');
+        if (result.email) {
+          sessionStorage.setItem('stc_register_email', result.email);
+        }
+      }
+
+      setSavingMessage('Mengarahkan ke halaman login…');
+      await new Promise(r => setTimeout(r, 500));
       router.replace('/login');
 
     } catch (e: unknown) {
@@ -583,20 +1039,14 @@ export default function RegisterPage() {
     }
   };
 
-  // ── handleContinueClick ───────────────────────────────────────────────────
-  // "Lanjut Trading di Stockity" → buka WebView ke platform trading Stockity
   const handleContinueClick = () => {
-    // Buka Stockity trading platform langsung
     const stockityTradeUrl = 'https://stockity.id/trade';
     stcWebView.open({ url: stockityTradeUrl }).catch(() => {
       window.open(stockityTradeUrl, '_blank', 'noopener,noreferrer');
     });
-    // Tetap di halaman success; user bisa klik "Login" saat kembali
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
   if (!mounted) return null;
-
   if (phase === 'init' || phase === 'webview') return null;
 
   return (
@@ -606,6 +1056,25 @@ export default function RegisterPage() {
           onOpenWebView={openRegistration}
           onAlreadyRegistered={() => router.push('/login')}
           onGoLogin={() => router.push('/login')}
+          isWeb={isWeb}
+          onShowWebModal={() => setShowWebModal(true)}
+          registrationUrl={registrationUrl.current}
+        />
+      )}
+
+      {showWebModal && (
+        <WebRegisterModal
+          registrationUrl={registrationUrl.current}
+          onClose={() => setShowWebModal(false)}
+          onSuccess={(email) => {
+            setShowWebModal(false);
+            setCapturedEmail(email);
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('stc_register_success', '1');
+              sessionStorage.setItem('stc_register_email', email);
+            }
+            router.replace('/login');
+          }}
         />
       )}
 

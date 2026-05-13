@@ -487,7 +487,7 @@ function ProfilePageContent() {
                 iconBg="#ff3b30" label={t('profile.logout')} danger onClick={() => setShowLogout(true)} last
               />
             </Card>
-            <p style={{ textAlign: 'center', fontSize: 11.5, color: '#c7c7cc', marginTop: 14 }}>STC AutoTrade v2.0.0</p>
+            <p style={{ textAlign: 'center', fontSize: 11.5, color: '#c7c7cc', marginTop: 14 }}>StockAutoTrade v2.0.0</p>
           </div>
         </div>
 
@@ -664,7 +664,7 @@ function ProfilePageContent() {
                 iconBg="#ff3b30" label={t('profile.logout')} danger onClick={() => setShowLogout(true)} last
               />
             </Card>
-            <p style={{ textAlign: 'center', fontSize: 12, color: '#c7c7cc', marginTop: 14 }}>STC AutoTrade v2.0.0</p>
+            <p style={{ textAlign: 'center', fontSize: 12, color: '#c7c7cc', marginTop: 14 }}>StockAutoTrade v2.0.0</p>
           </div>
 
         </div>

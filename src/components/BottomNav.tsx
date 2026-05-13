@@ -28,18 +28,18 @@ export function BottomNav() {
 
   const theme = useDarkNav
     ? {
-        navBg:      'rgb(18,18,20)',
-        navBorder:  '1px solid rgba(255,255,255,0.08)',
-        itemColor:  'rgba(255,255,255,0.45)',
-        activeColor:'#10B981',
-        labelColor: (active: boolean) => active ? '#10B981' : 'rgba(255,255,255,0.40)',
+        navBg:      'rgb(28,28,30)',
+        navBorder:  '0.5px solid rgba(255,255,255,0.10)',
+        itemColor:  'rgba(235,235,245,0.40)',
+        activeColor:'#0A84FF',
+        labelColor: (active: boolean) => active ? '#0A84FF' : 'rgba(235,235,245,0.40)',
       }
     : {
-        navBg:      'rgb(255,255,255)',
-        navBorder:  '1px solid rgba(60,60,67,0.12)',
-        itemColor:  'rgba(60,60,67,0.55)',
-        activeColor:'#007aff',
-        labelColor: (active: boolean) => active ? '#007aff' : 'rgba(60,60,67,0.55)',
+        navBg:      'rgb(249,249,251)',
+        navBorder:  '0.5px solid rgba(60,60,67,0.14)',
+        itemColor:  'rgba(60,60,67,0.45)',
+        activeColor:'#007AFF',
+        labelColor: (active: boolean) => active ? '#007AFF' : 'rgba(60,60,67,0.45)',
       };
 
   return (
@@ -89,8 +89,8 @@ export function BottomNav() {
           borderTop: theme.navBorder,
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           boxShadow: useDarkNav
-            ? '0 -1px 0 rgba(255,255,255,0.06)'
-            : '0 -1px 0 rgba(60,60,67,0.10)',
+            ? '0 -0.5px 0 rgba(255,255,255,0.08)'
+            : '0 -0.5px 0 rgba(60,60,67,0.12)',
           transition: 'background 0.3s ease',
         }}
       >
