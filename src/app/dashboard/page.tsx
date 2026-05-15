@@ -1267,7 +1267,7 @@ const OrderInputModal: React.FC<{open:boolean;onClose:()=>void;orders:ScheduleOr
                           background:'transparent',border:'none',cursor:'pointer',padding:'2px 0',
                         }}
                       >
-                        <span style={{fontSize:9,fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted}}>History</span>
+                        <span style={{fontSize:11,fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted}}>History</span>
                         <div style={{flex:1,height:1,background:`linear-gradient(to right,${C.bdr},transparent)`}}/>
                         <span style={{fontSize:9,color:C.muted,background:C.card2,border:`1px solid ${C.bdr}`,borderRadius:99,padding:'1px 6px'}}>{historyOrders.filter(o => resolvePhase(o, getLog) !== 'skipped').length}</span>
                         <span style={{
@@ -1651,7 +1651,7 @@ const FastradePanel: React.FC<{status:FastradeStatus|null;logs:FastradeLog[];isL
   };
   const phase = status?.phase||(isOn?'Running':T('common.standby'));
   const trend = status?.activeTrend??status?.currentTrend;
-  const pnlCol = pnl>=0?accent:C.coral;
+  const pnlCol = pnl>=0?'#30D158':C.coral;
 
   const Row: React.FC<{label:string;right:React.ReactNode;border?:boolean}> = ({label,right,border=true}) => (
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 12px',borderBottom:border?`1px solid ${C.bdr}`:'none',minWidth:0}}>
@@ -1698,24 +1698,24 @@ const FastradePanel: React.FC<{status:FastradeStatus|null;logs:FastradeLog[];isL
               <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10,padding:'18px 16px 14px',flexShrink:0}}>
                 {/* P&L hero */}
                 <div style={{textAlign:'center'}}>
-                  <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
-                  <div style={{fontSize:42,fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',textShadow:`0 0 24px ${pnlCol}55`}}>
+                  <div style={{fontSize:13,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
+                  <div style={{fontSize:'clamp(26px,8.5vw,40px)',fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',whiteSpace:'nowrap',textShadow:`0 0 24px ${pnlCol}55`}}>
                     {pnl>=0?'+':'-'}Rp {Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
                   </div>
                 </div>
                 {/* W / L chips */}
                 <div style={{display:'flex',gap:8,marginTop:4}}>
                   <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`}}>
-                    <span style={{fontSize:24,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
+                    <span style={{fontSize:32,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
                     <span style={{fontSize:10,fontWeight:600,color:C.cyan,letterSpacing:'0.08em',marginTop:2}}>WIN</span>
                   </div>
                   <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.coral}12`,border:`1px solid ${C.coral}30`}}>
-                    <span style={{fontSize:24,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
+                    <span style={{fontSize:32,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
                     <span style={{fontSize:10,fontWeight:600,color:C.coral,letterSpacing:'0.08em',marginTop:2}}>LOSS</span>
                   </div>
                   {wr!==null&&(
                     <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${accent}12`,border:`1px solid ${accent}30`}}>
-                      <span style={{fontSize:24,fontWeight:800,color:accent,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
+                      <span style={{fontSize:32,fontWeight:800,color:accent,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
                       <span style={{fontSize:10,fontWeight:600,color:accent,letterSpacing:'0.08em',marginTop:2}}>WR</span>
                     </div>
                   )}
@@ -1734,18 +1734,18 @@ const FastradePanel: React.FC<{status:FastradeStatus|null;logs:FastradeLog[];isL
               </div>
               {logs.length>0&&(
                 <div style={{borderTop:`1px solid ${C.bdr}`,flexShrink:0}}>
-                  <div style={{padding:'6px 12px 4px'}}>
-                    <span style={{fontSize:9,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.fastTrade.history')}</span>
+                  <div style={{padding:'8px 14px 5px'}}>
+                    <span style={{fontSize:12,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.fastTrade.history')}</span>
                   </div>
                   {logs.slice(-4).reverse().map((log,i,arr)=>{
-                    const rc=log.result==='WIN'?accent:log.result==='LOSS'||log.result==='LOSE'?C.coral:C.amber;
+                    const rc=log.result==='WIN'?'#30D158':log.result==='LOSS'||log.result==='LOSE'?C.coral:C.amber;
                     const col=log.trend==='call'?C.cyan:C.coral;
                     return (
-                      <div key={log.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderBottom:i<arr.length-1?`1px solid ${C.bdr}`:'none',minWidth:0,overflow:'hidden'}}>
-                        <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:5,color:col,background:log.trend==='call'?`${C.cyan}12`:`${C.coral}12`,flexShrink:0}}>{log.trend==='call'?'CALL':'PUT'}</span>
-                        <span style={{fontSize:10,color:C.muted,flex:1,fontFamily:'monospace',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{log.amount!=null?Math.round(log.amount/100).toLocaleString('id-ID',{maximumFractionDigits:0}):''}</span>
-                        {log.result&&<span style={{fontSize:10,fontWeight:700,color:rc,flexShrink:0}}>{log.result}</span>}
-                        {log.profit!=null&&<span style={{fontSize:10,color:rc,fontFamily:'monospace',flexShrink:0}}>{log.profit>=0?'+':'-'}{Math.round(Math.abs(log.profit)/100).toLocaleString('id-ID',{maximumFractionDigits:0})}</span>}
+                      <div key={log.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderBottom:i<arr.length-1?`1px solid ${C.bdr}`:'none',minWidth:0,overflow:'hidden'}}>
+                        <span style={{fontSize:13,fontWeight:700,padding:'3px 9px',borderRadius:6,color:col,background:log.trend==='call'?`${C.cyan}12`:`${C.coral}12`,flexShrink:0}}>{log.trend==='call'?'CALL':'PUT'}</span>
+                        <span style={{fontSize:13,color:C.muted,flex:1,fontFamily:'monospace',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{log.amount!=null?Math.round(log.amount/100).toLocaleString('id-ID',{maximumFractionDigits:0}):''}</span>
+                        {log.result&&<span style={{fontSize:13,fontWeight:700,color:rc,flexShrink:0}}>{log.result}</span>}
+                        {log.profit!=null&&<span style={{fontSize:13,color:rc,fontFamily:'monospace',flexShrink:0}}>{log.profit>=0?'+':'-'}{Math.round(Math.abs(log.profit)/100).toLocaleString('id-ID',{maximumFractionDigits:0})}</span>}
                       </div>
                     );
                   })}
@@ -1762,7 +1762,7 @@ const FastradePanel: React.FC<{status:FastradeStatus|null;logs:FastradeLog[];isL
               {logs.length>0&&(
                 <>
                   <div style={{padding:'6px 12px 4px',borderBottom:`1px solid ${C.bdr}`}}>
-                    <span style={{fontSize:9,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.fastTrade.history')}</span>
+                    <span style={{fontSize:11,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.fastTrade.history')}</span>
                   </div>
                   {logs.slice(-4).reverse().map((log,i,arr)=>{
                     const rc=log.result==='WIN'?accent:log.result==='LOSS'||log.result==='LOSE'?C.coral:C.amber;
@@ -1802,7 +1802,7 @@ const AISignalPanel: React.FC<{
   const losses = status?.totalLosses ?? status?.stats?.losses ?? 0;
   const total  = status?.totalTrades ?? status?.stats?.totalTrades ?? 0;
   const wr     = total > 0 ? Math.round((wins / total) * 100) : null;
-  const pnlCol = pnl >= 0 ? C.sky : C.coral;
+  const pnlCol = pnl >= 0 ? '#30D158' : C.coral;
   const alwaysSignal = status?.alwaysSignalStatus;
   const monCount = status?.monitoringStatus?.active_monitoring_count ?? 0;
   const wsOk = status?.wsConnected ?? false;
@@ -1955,24 +1955,24 @@ const AISignalPanel: React.FC<{
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '18px 16px 14px', flexShrink: 0 }}>
                 {/* P&L hero */}
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, marginBottom: 4 }}>Session P&L</div>
-                  <div style={{ fontSize: 42, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1, color: pnlCol, fontFamily: 'monospace', textShadow: `0 0 24px ${pnlCol}55` }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, marginBottom: 4 }}>Session P&L</div>
+                  <div style={{ fontSize: 'clamp(26px,8.5vw,40px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1, color: pnlCol, fontFamily: 'monospace', whiteSpace: 'nowrap', textShadow: `0 0 24px ${pnlCol}55` }}>
                     {pnl >= 0 ? '+' : '-'}Rp {Math.round(Math.abs(pnl) / 100).toLocaleString('id-ID')}
                   </div>
                 </div>
                 {/* W / L / WR chips */}
                 <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 18px', borderRadius: 12, background: `${C.cyan}12`, border: `1px solid ${C.cyan}30` }}>
-                    <span style={{ fontSize: 24, fontWeight: 800, color: C.cyan, lineHeight: 1, fontFamily: 'monospace' }}>{wins}</span>
+                    <span style={{ fontSize: 32, fontWeight: 800, color: C.cyan, lineHeight: 1, fontFamily: 'monospace' }}>{wins}</span>
                     <span style={{ fontSize: 10, fontWeight: 600, color: C.cyan, letterSpacing: '0.08em', marginTop: 2 }}>WIN</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 18px', borderRadius: 12, background: `${C.coral}12`, border: `1px solid ${C.coral}30` }}>
-                    <span style={{ fontSize: 24, fontWeight: 800, color: C.coral, lineHeight: 1, fontFamily: 'monospace' }}>{losses}</span>
+                    <span style={{ fontSize: 32, fontWeight: 800, color: C.coral, lineHeight: 1, fontFamily: 'monospace' }}>{losses}</span>
                     <span style={{ fontSize: 10, fontWeight: 600, color: C.coral, letterSpacing: '0.08em', marginTop: 2 }}>LOSS</span>
                   </div>
                   {wr !== null && (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 18px', borderRadius: 12, background: `${C.sky}12`, border: `1px solid ${C.sky}30` }}>
-                      <span style={{ fontSize: 24, fontWeight: 800, color: C.sky, lineHeight: 1, fontFamily: 'monospace' }}>{wr}%</span>
+                      <span style={{ fontSize: 32, fontWeight: 800, color: C.sky, lineHeight: 1, fontFamily: 'monospace' }}>{wr}%</span>
                       <span style={{ fontSize: 10, fontWeight: 600, color: C.sky, letterSpacing: '0.08em', marginTop: 2 }}>WR</span>
                     </div>
                   )}
@@ -1999,22 +1999,22 @@ const AISignalPanel: React.FC<{
               {/* Pending orders list */}
               {pendingOrders.length > 0 && (
                 <div style={{ borderTop: `1px solid ${C.bdr}`, flexShrink: 0 }}>
-                  <div style={{ padding: '5px 12px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${C.sky}60` }}>{T('dashboard.aiSignal.queue')}</span>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: C.sky, background: `${C.sky}12`, padding: '1px 6px', borderRadius: 99, border: `1px solid ${C.sky}25` }}>{pendingOrders.length}</span>
+                  <div style={{ padding: '8px 14px 5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${C.sky}60` }}>{T('dashboard.aiSignal.queue')}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: C.sky, background: `${C.sky}12`, padding: '2px 8px', borderRadius: 99, border: `1px solid ${C.sky}25` }}>{pendingOrders.length}</span>
                   </div>
                   {pendingOrders.slice(0, 5).map((o, i, arr) => {
                     const col = o.trend === 'call' ? C.cyan : C.coral;
                     const secLeft = Math.max(0, Math.ceil((o.executionTime - now) / 1000));
                     const urgent = secLeft < 30 && secLeft > 0;
                     return (
-                      <div key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : 'none', background: urgent ? `${col}05` : 'transparent' }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 5, color: col, background: o.trend === 'call' ? `${C.cyan}12` : `${C.coral}12`, flexShrink: 0 }}>{o.trend === 'call' ? '↑ CALL' : '↓ PUT'}</span>
+                      <div key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : 'none', background: urgent ? `${col}05` : 'transparent' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, padding: '3px 9px', borderRadius: 6, color: col, background: o.trend === 'call' ? `${C.cyan}12` : `${C.coral}12`, flexShrink: 0 }}>{o.trend === 'call' ? '↑ CALL' : '↓ PUT'}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <span style={{ fontSize: 10, color: C.sub, fontFamily: 'monospace', fontWeight: 600 }}>{formatExecTime(o.executionTime)}</span>
-                          <span style={{ fontSize: 9, color: C.muted, display: 'block' }}>{o.assetRic} · {Math.round(o.amount / 100).toLocaleString('id-ID')}</span>
+                          <span style={{ fontSize: 13, color: C.sub, fontFamily: 'monospace', fontWeight: 600 }}>{formatExecTime(o.executionTime)}</span>
+                          <span style={{ fontSize: 12, color: C.muted, display: 'block' }}>{o.assetRic} · {Math.round(o.amount / 100).toLocaleString('id-ID')}</span>
                         </div>
-                        <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'monospace', flexShrink: 0, color: urgent ? col : C.muted, animation: urgent ? 'pulse 0.8s ease-in-out infinite' : 'none' }}>{formatCountdown(o.executionTime)}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'monospace', flexShrink: 0, color: urgent ? col : C.muted, animation: urgent ? 'pulse 0.8s ease-in-out infinite' : 'none' }}>{formatCountdown(o.executionTime)}</span>
                       </div>
                     );
                   })}
@@ -2107,7 +2107,7 @@ const IndicatorPanel: React.FC<{status:IndicatorStatus|null;isLoading:boolean;fi
   const total  = status?.totalTrades??0;
   const wr     = total>0?Math.round((wins/total)*100):null;
   const indType = status?.indicatorType??'SMA';
-  const pnlCol  = pnl>=0?C.orange:C.coral;
+  const pnlCol  = pnl>=0?'#30D158':C.coral;
   const lastTrend = status?.lastTrend;
 
   const Row: React.FC<{label:string;right:React.ReactNode;border?:boolean}> = ({label,right,border=true}) => (
@@ -2152,23 +2152,23 @@ const IndicatorPanel: React.FC<{status:IndicatorStatus|null;isLoading:boolean;fi
             /* ── MODAL: large centered hero stats ── */
             <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10,padding:'18px 16px 14px',flexShrink:0}}>
               <div style={{textAlign:'center'}}>
-                <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
-                <div style={{fontSize:42,fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',textShadow:`0 0 24px ${pnlCol}55`}}>
+                <div style={{fontSize:13,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
+                <div style={{fontSize:'clamp(26px,8.5vw,40px)',fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',whiteSpace:'nowrap',textShadow:`0 0 24px ${pnlCol}55`}}>
                   {pnl>=0?'+':'-'}Rp {Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
                 </div>
               </div>
               <div style={{display:'flex',gap:8,marginTop:4}}>
                 <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`}}>
-                  <span style={{fontSize:24,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
+                  <span style={{fontSize:32,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
                   <span style={{fontSize:10,fontWeight:600,color:C.cyan,letterSpacing:'0.08em',marginTop:2}}>WIN</span>
                 </div>
                 <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.coral}12`,border:`1px solid ${C.coral}30`}}>
-                  <span style={{fontSize:24,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
+                  <span style={{fontSize:32,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
                   <span style={{fontSize:10,fontWeight:600,color:C.coral,letterSpacing:'0.08em',marginTop:2}}>LOSS</span>
                 </div>
                 {wr!==null&&(
                   <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.orange}12`,border:`1px solid ${C.orange}30`}}>
-                    <span style={{fontSize:24,fontWeight:800,color:C.orange,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
+                    <span style={{fontSize:32,fontWeight:800,color:C.orange,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
                     <span style={{fontSize:10,fontWeight:600,color:C.orange,letterSpacing:'0.08em',marginTop:2}}>WR</span>
                   </div>
                 )}
@@ -2219,7 +2219,7 @@ const MomentumPanel: React.FC<{status:MomentumStatus|null;isLoading:boolean;fill
   const losses = status?.totalLosses??0;
   const total  = status?.totalTrades??0;
   const wr     = total>0?Math.round((wins/total)*100):null;
-  const pnlCol = pnl>=0?C.pink:C.coral;
+  const pnlCol = pnl>=0?'#30D158':C.coral;
 
   const PATTERN_LABELS: Record<string,string> = {
     CANDLE_SABIT:'Candle Sabit',
@@ -2270,23 +2270,23 @@ const MomentumPanel: React.FC<{status:MomentumStatus|null;isLoading:boolean;fill
             /* ── MODAL: large centered hero stats ── */
             <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10,padding:'18px 16px 14px',flexShrink:0}}>
               <div style={{textAlign:'center'}}>
-                <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
-                <div style={{fontSize:42,fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',textShadow:`0 0 24px ${pnlCol}55`}}>
+                <div style={{fontSize:13,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
+                <div style={{fontSize:'clamp(26px,8.5vw,40px)',fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',whiteSpace:'nowrap',textShadow:`0 0 24px ${pnlCol}55`}}>
                   {pnl>=0?'+':'-'}Rp {Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
                 </div>
               </div>
               <div style={{display:'flex',gap:8,marginTop:4}}>
                 <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`}}>
-                  <span style={{fontSize:24,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
+                  <span style={{fontSize:32,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
                   <span style={{fontSize:10,fontWeight:600,color:C.cyan,letterSpacing:'0.08em',marginTop:2}}>WIN</span>
                 </div>
                 <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.coral}12`,border:`1px solid ${C.coral}30`}}>
-                  <span style={{fontSize:24,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
+                  <span style={{fontSize:32,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
                   <span style={{fontSize:10,fontWeight:600,color:C.coral,letterSpacing:'0.08em',marginTop:2}}>LOSS</span>
                 </div>
                 {wr!==null&&(
                   <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.pink}12`,border:`1px solid ${C.pink}30`}}>
-                    <span style={{fontSize:24,fontWeight:800,color:C.pink,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
+                    <span style={{fontSize:32,fontWeight:800,color:C.pink,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
                     <span style={{fontSize:10,fontWeight:600,color:C.pink,letterSpacing:'0.08em',marginTop:2}}>WR</span>
                   </div>
                 )}
@@ -4978,8 +4978,9 @@ export default function DashboardPage() {
                     <div>
                       <span style={{fontSize:8,color:C.muted,textTransform:'uppercase',letterSpacing:'0.1em',display:'block',marginBottom:2}}>{T('dashboard.sessionPnl')}</span>
                       <span style={{
-                        fontSize:13,fontWeight:800,fontFamily:'monospace',letterSpacing:'-0.02em',
-                        color:sessionPnL>=0?modeAccent(tradingMode):C.coral,
+                        fontSize:'clamp(13px,4.2vw,17px)',fontWeight:800,fontFamily:'monospace',letterSpacing:'-0.02em',
+                        color:sessionPnL>=0?'#30D158':C.coral,
+                        lineHeight:1.1,display:'block',overflow:'hidden',whiteSpace:'nowrap',
                       }}>
                         {sessionPnL>=0?'+':'-'}{Math.round(Math.abs(sessionPnL/100)).toLocaleString('id-ID',{maximumFractionDigits:0})}
                       </span>

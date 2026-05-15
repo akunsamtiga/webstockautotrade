@@ -181,12 +181,12 @@
                    sesuai tinggi status bar via env(safe-area-inset-top).
                    Nilai fallback 0px agar tidak berpengaruh di Android < 15. */
                 paddingTop: 'env(safe-area-inset-top, 0px)',
-                /* Padding bawah dihandle oleh masing-masing halaman (misal paddingBottom:88).
-                   ClientLayout TIDAK menambah padding lagi agar tidak double.
-                   Halaman publik (login/register) tetap dapat safe-area kecil. */
+                /* Padding bawah otomatis memperhitungkan tinggi BottomNav (56px) + safe-area.
+                   Halaman publik (login/register) hanya butuh safe-area tanpa nav.
+                   Halaman yang sebelumnya set paddingBottom sendiri (mis. 88px) bisa dihapus. */
                 paddingBottom: isPublic
                   ? 'env(safe-area-inset-bottom, 0px)'
-                  : undefined,
+                  : 'calc(56px + env(safe-area-inset-bottom, 0px))',
                 /* ── FIX GRID FLASH ─────────────────────────────────────────
                    Konten tidak terlihat selama loading (HTML splash menutupi).
                    Setelah ready, fade-in smooth bersama splash fade-out.
