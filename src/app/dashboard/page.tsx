@@ -1693,63 +1693,62 @@ const FastradePanel: React.FC<{status:FastradeStatus|null;logs:FastradeLog[];isL
       ):(
         <div style={{overflowY:'auto',maxHeight:inModal?undefined:240,flex:inModal?1:undefined,minHeight:0,display:'flex',flexDirection:'column'}}>
           {inModal ? (
-            /* ── MODAL: large centered stats ── */
+            /* ── MODAL: clean minimal ── */
             <>
-              <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10,padding:'18px 16px 14px',flexShrink:0}}>
-                {/* P&L hero */}
-                <div style={{textAlign:'center'}}>
-                  <div style={{fontSize:13,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
-                  <div style={{fontSize:'clamp(26px,8.5vw,40px)',fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',whiteSpace:'nowrap',textShadow:`0 0 24px ${pnlCol}55`}}>
-                    {pnl>=0?'+':'-'}Rp {Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
-                  </div>
-                </div>
-                {/* W / L chips */}
-                <div style={{display:'flex',gap:8,marginTop:4}}>
-                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`}}>
-                    <span style={{fontSize:32,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
-                    <span style={{fontSize:10,fontWeight:600,color:C.cyan,letterSpacing:'0.08em',marginTop:2}}>WIN</span>
-                  </div>
-                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.coral}12`,border:`1px solid ${C.coral}30`}}>
-                    <span style={{fontSize:32,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
-                    <span style={{fontSize:10,fontWeight:600,color:C.coral,letterSpacing:'0.08em',marginTop:2}}>LOSS</span>
-                  </div>
-                  {wr!==null&&(
-                    <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${accent}12`,border:`1px solid ${accent}30`}}>
-                      <span style={{fontSize:32,fontWeight:800,color:accent,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
-                      <span style={{fontSize:10,fontWeight:600,color:accent,letterSpacing:'0.08em',marginTop:2}}>WR</span>
-                    </div>
-                  )}
-                </div>
-                {/* Phase + Trend row */}
-                <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',justifyContent:'center'}}>
-                  <span style={{fontSize:12,fontWeight:600,color:accent,background:`${accent}12`,border:`1px solid ${accent}28`,padding:'4px 12px',borderRadius:99}}>
-                    {phaseMap[phase]??phase}
+              {/* PNL Hero */}
+              <div style={{padding:'28px 24px 20px',borderBottom:`1px solid ${C.bdr}`}}>
+                <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted,marginBottom:6}}>Session P&L</div>
+                <div style={{display:'flex',alignItems:'baseline',gap:6}}>
+                  <span style={{fontSize:13,fontWeight:700,color:pnlCol,opacity:0.75,lineHeight:1}}>Rp</span>
+                  <span style={{
+                    fontSize:'clamp(30px,9vw,42px)',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,
+                    color:pnlCol,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',
+                  }}>
+                    {pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
                   </span>
-                  {trend&&(
-                    <span style={{fontSize:14,fontWeight:800,padding:'4px 14px',borderRadius:8,color:trend==='call'?C.cyan:C.coral,background:trend==='call'?`${C.cyan}14`:`${C.coral}14`,border:`1px solid ${trend==='call'?C.cyan:C.coral}30`}}>
-                      {trend==='call'?'↑ CALL':'↓ PUT'}
-                    </span>
-                  )}
                 </div>
               </div>
-              {logs.length>0&&(
-                <div style={{borderTop:`1px solid ${C.bdr}`,flexShrink:0}}>
-                  <div style={{padding:'8px 14px 5px'}}>
-                    <span style={{fontSize:12,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.fastTrade.history')}</span>
+              {/* Stats row */}
+              <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
+                {[
+                  {val:wins,label:'WIN',col:C.cyan},
+                  {val:losses,label:'LOSS',col:C.coral},
+                  ...(wr!==null?[{val:`${wr}%`,label:'WIN RATE',col:wr>=50?accent:C.coral}]:[]),
+                ].map((s,i)=>(
+                  <div key={i} style={{padding:'16px 12px',background:C.card,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                    <span style={{fontSize:24,fontWeight:800,color:s.col,lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{s.val}</span>
+                    <span style={{fontSize:9,fontWeight:600,letterSpacing:'0.1em',color:C.muted}}>{s.label}</span>
                   </div>
-                  {logs.slice(-4).reverse().map((log,i,arr)=>{
+                ))}
+              </div>
+              {/* Phase + Trend */}
+              <div style={{padding:'14px 24px',display:'flex',alignItems:'center',gap:8,borderBottom:logs.length>0?`1px solid ${C.bdr}`:'none'}}>
+                <span style={{fontSize:12,color:C.muted,flex:1}}>{phaseMap[phase]??phase}</span>
+                {trend&&(
+                  <span style={{fontSize:12,fontWeight:700,padding:'4px 12px',borderRadius:6,color:trend==='call'?C.cyan:C.coral,background:trend==='call'?`${C.cyan}12`:`${C.coral}12`}}>
+                    {trend==='call'?'↑ CALL':'↓ PUT'}
+                  </span>
+                )}
+              </div>
+              {/* History */}
+              {logs.length>0&&(
+                <>
+                  <div style={{padding:'12px 24px 6px'}}>
+                    <span style={{fontSize:10,fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.fastTrade.history')}</span>
+                  </div>
+                  {logs.slice(-5).reverse().map((log,i,arr)=>{
                     const rc=log.result==='WIN'?'#30D158':log.result==='LOSS'||log.result==='LOSE'?C.coral:C.amber;
                     const col=log.trend==='call'?C.cyan:C.coral;
                     return (
-                      <div key={log.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderBottom:i<arr.length-1?`1px solid ${C.bdr}`:'none',minWidth:0,overflow:'hidden'}}>
-                        <span style={{fontSize:13,fontWeight:700,padding:'3px 9px',borderRadius:6,color:col,background:log.trend==='call'?`${C.cyan}12`:`${C.coral}12`,flexShrink:0}}>{log.trend==='call'?'CALL':'PUT'}</span>
-                        <span style={{fontSize:13,color:C.muted,flex:1,fontFamily:'monospace',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{log.amount!=null?Math.round(log.amount/100).toLocaleString('id-ID',{maximumFractionDigits:0}):''}</span>
-                        {log.result&&<span style={{fontSize:13,fontWeight:700,color:rc,flexShrink:0}}>{log.result}</span>}
-                        {log.profit!=null&&<span style={{fontSize:13,color:rc,fontFamily:'monospace',flexShrink:0}}>{log.profit>=0?'+':'-'}{Math.round(Math.abs(log.profit)/100).toLocaleString('id-ID',{maximumFractionDigits:0})}</span>}
+                      <div key={log.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 24px',borderBottom:i<arr.length-1?`1px solid ${C.bdr}`:'none'}}>
+                        <span style={{fontSize:11,fontWeight:700,padding:'3px 8px',borderRadius:5,color:col,background:`${col}12`,flexShrink:0,minWidth:42,textAlign:'center'}}>{log.trend==='call'?'CALL':'PUT'}</span>
+                        <span style={{fontSize:12,color:C.sub,flex:1,fontVariantNumeric:'tabular-nums',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{log.amount!=null?Math.round(log.amount/100).toLocaleString('id-ID'):''}</span>
+                        {log.result&&<span style={{fontSize:11,fontWeight:700,color:rc,flexShrink:0}}>{log.result}</span>}
+                        {log.profit!=null&&<span style={{fontSize:12,fontWeight:700,color:rc,fontVariantNumeric:'tabular-nums',flexShrink:0}}>{log.profit>=0?'+':'-'}{Math.round(Math.abs(log.profit)/100).toLocaleString('id-ID')}</span>}
                       </div>
                     );
                   })}
-                </div>
+                </>
               )}
             </>
           ) : (
@@ -1950,75 +1949,71 @@ const AISignalPanel: React.FC<{
           </div>
 
           {inModal ? (
-            /* ── MODAL: large centered hero stats ── */
+            /* ── MODAL: clean minimal ── */
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '18px 16px 14px', flexShrink: 0 }}>
-                {/* P&L hero */}
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, marginBottom: 4 }}>Session P&L</div>
-                  <div style={{ fontSize: 'clamp(26px,8.5vw,40px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1, color: pnlCol, fontFamily: 'monospace', whiteSpace: 'nowrap', textShadow: `0 0 24px ${pnlCol}55` }}>
-                    {pnl >= 0 ? '+' : '-'}Rp {Math.round(Math.abs(pnl) / 100).toLocaleString('id-ID')}
-                  </div>
-                </div>
-                {/* W / L / WR chips */}
-                <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 18px', borderRadius: 12, background: `${C.cyan}12`, border: `1px solid ${C.cyan}30` }}>
-                    <span style={{ fontSize: 32, fontWeight: 800, color: C.cyan, lineHeight: 1, fontFamily: 'monospace' }}>{wins}</span>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: C.cyan, letterSpacing: '0.08em', marginTop: 2 }}>WIN</span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 18px', borderRadius: 12, background: `${C.coral}12`, border: `1px solid ${C.coral}30` }}>
-                    <span style={{ fontSize: 32, fontWeight: 800, color: C.coral, lineHeight: 1, fontFamily: 'monospace' }}>{losses}</span>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: C.coral, letterSpacing: '0.08em', marginTop: 2 }}>LOSS</span>
-                  </div>
-                  {wr !== null && (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 18px', borderRadius: 12, background: `${C.sky}12`, border: `1px solid ${C.sky}30` }}>
-                      <span style={{ fontSize: 32, fontWeight: 800, color: C.sky, lineHeight: 1, fontFamily: 'monospace' }}>{wr}%</span>
-                      <span style={{ fontSize: 10, fontWeight: 600, color: C.sky, letterSpacing: '0.08em', marginTop: 2 }}>WR</span>
-                    </div>
-                  )}
-                </div>
-                {/* Martingale badge */}
-                {alwaysSignal?.isActive && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 99, background: `${C.amber}12`, border: `1px solid ${C.amber}35` }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.amber, animation: 'pulse 1.4s ease-in-out infinite' }} />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: C.amber }}>Martingale K{alwaysSignal.currentStep}/{alwaysSignal.maxSteps}</span>
-                  </div>
-                )}
-                {/* Status text */}
-                <div style={{ textAlign: 'center', padding: '0 8px' }}>
-                  <span style={{ fontSize: 12, color: C.sky, lineHeight: 1.5 }}>
-                    {alwaysSignal?.isActive
-                      ? alwaysSignal.status || `Step ${alwaysSignal.currentStep}/${alwaysSignal.maxSteps}`
-                      : pendingOrders.length > 0
-                      ? `${pendingOrders.length} ${T('dashboard.aiSignal.pendingSignals')}`
-                      : 'Konfigurasi AI system...'}
+              {/* PNL Hero */}
+              <div style={{padding:'28px 24px 20px',borderBottom:`1px solid ${C.bdr}`}}>
+                <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted,marginBottom:6}}>Session P&L</div>
+                <div style={{display:'flex',alignItems:'baseline',gap:6}}>
+                  <span style={{fontSize:13,fontWeight:700,color:pnlCol,opacity:0.75,lineHeight:1}}>Rp</span>
+                  <span style={{
+                    fontSize:'clamp(30px,9vw,42px)',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,
+                    color:pnlCol,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',
+                  }}>
+                    {pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
                   </span>
                 </div>
-              </div>
-
-              {/* Pending orders list */}
-              {pendingOrders.length > 0 && (
-                <div style={{ borderTop: `1px solid ${C.bdr}`, flexShrink: 0 }}>
-                  <div style={{ padding: '8px 14px 5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${C.sky}60` }}>{T('dashboard.aiSignal.queue')}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: C.sky, background: `${C.sky}12`, padding: '2px 8px', borderRadius: 99, border: `1px solid ${C.sky}25` }}>{pendingOrders.length}</span>
+                {alwaysSignal?.isActive&&(
+                  <div style={{display:'inline-flex',alignItems:'center',gap:5,marginTop:10,padding:'4px 10px',borderRadius:99,background:`${C.amber}10`,border:`1px solid ${C.amber}30`}}>
+                    <span style={{width:5,height:5,borderRadius:'50%',background:C.amber,animation:'pulse 1.4s ease-in-out infinite'}}/>
+                    <span style={{fontSize:11,fontWeight:600,color:C.amber}}>Martingale K{alwaysSignal.currentStep}/{alwaysSignal.maxSteps}</span>
                   </div>
-                  {pendingOrders.slice(0, 5).map((o, i, arr) => {
-                    const col = o.trend === 'call' ? C.cyan : C.coral;
-                    const secLeft = Math.max(0, Math.ceil((o.executionTime - now) / 1000));
-                    const urgent = secLeft < 30 && secLeft > 0;
+                )}
+              </div>
+              {/* Stats row */}
+              <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
+                {[
+                  {val:wins,label:'WIN',col:C.cyan},
+                  {val:losses,label:'LOSS',col:C.coral},
+                  ...(wr!==null?[{val:`${wr}%`,label:'WIN RATE',col:wr>=50?C.sky:C.coral}]:[]),
+                ].map((s,i)=>(
+                  <div key={i} style={{padding:'16px 12px',background:C.card,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                    <span style={{fontSize:24,fontWeight:800,color:s.col,lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{s.val}</span>
+                    <span style={{fontSize:9,fontWeight:600,letterSpacing:'0.1em',color:C.muted}}>{s.label}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Status */}
+              <div style={{padding:'14px 24px',borderBottom:pendingOrders.length>0?`1px solid ${C.bdr}`:'none'}}>
+                <span style={{fontSize:12,color:C.muted,lineHeight:1.5}}>
+                  {alwaysSignal?.isActive
+                    ? alwaysSignal.status||`Step ${alwaysSignal.currentStep}/${alwaysSignal.maxSteps}`
+                    : pendingOrders.length>0
+                    ? `${pendingOrders.length} ${T('dashboard.aiSignal.pendingSignals')}`
+                    : 'Konfigurasi AI system...'}
+                </span>
+              </div>
+              {/* Pending orders */}
+              {pendingOrders.length>0&&(
+                <>
+                  <div style={{padding:'12px 24px 6px'}}>
+                    <span style={{fontSize:10,fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.aiSignal.queue')}</span>
+                  </div>
+                  {pendingOrders.slice(0,5).map((o,i,arr)=>{
+                    const col=o.trend==='call'?C.cyan:C.coral;
+                    const secLeft=Math.max(0,Math.ceil((o.executionTime-now)/1000));
                     return (
-                      <div key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : 'none', background: urgent ? `${col}05` : 'transparent' }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, padding: '3px 9px', borderRadius: 6, color: col, background: o.trend === 'call' ? `${C.cyan}12` : `${C.coral}12`, flexShrink: 0 }}>{o.trend === 'call' ? '↑ CALL' : '↓ PUT'}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <span style={{ fontSize: 13, color: C.sub, fontFamily: 'monospace', fontWeight: 600 }}>{formatExecTime(o.executionTime)}</span>
-                          <span style={{ fontSize: 12, color: C.muted, display: 'block' }}>{o.assetRic} · {Math.round(o.amount / 100).toLocaleString('id-ID')}</span>
+                      <div key={o.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 24px',borderBottom:i<arr.length-1?`1px solid ${C.bdr}`:'none'}}>
+                        <span style={{fontSize:11,fontWeight:700,padding:'3px 8px',borderRadius:5,color:col,background:`${col}12`,flexShrink:0,minWidth:42,textAlign:'center'}}>{o.trend==='call'?'↑':'↓'}</span>
+                        <div style={{flex:1,minWidth:0}}>
+                          <span style={{fontSize:12,color:C.sub,fontVariantNumeric:'tabular-nums',fontWeight:600}}>{formatExecTime(o.executionTime)}</span>
+                          <span style={{fontSize:11,color:C.muted,display:'block'}}>{o.assetRic}</span>
                         </div>
-                        <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'monospace', flexShrink: 0, color: urgent ? col : C.muted, animation: urgent ? 'pulse 0.8s ease-in-out infinite' : 'none' }}>{formatCountdown(o.executionTime)}</span>
+                        <span style={{fontSize:12,fontWeight:700,fontVariantNumeric:'tabular-nums',flexShrink:0,color:secLeft<30&&secLeft>0?col:C.muted}}>{formatCountdown(o.executionTime)}</span>
                       </div>
                     );
                   })}
-                </div>
+                </>
               )}
             </>
           ) : (
@@ -2149,44 +2144,48 @@ const IndicatorPanel: React.FC<{status:IndicatorStatus|null;isLoading:boolean;fi
       ):(
         <div style={{overflowY:'auto',maxHeight:inModal?undefined:240,flex:inModal?1:undefined,minHeight:0,display:'flex',flexDirection:'column'}}>
           {inModal ? (
-            /* ── MODAL: large centered hero stats ── */
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10,padding:'18px 16px 14px',flexShrink:0}}>
-              <div style={{textAlign:'center'}}>
-                <div style={{fontSize:13,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
-                <div style={{fontSize:'clamp(26px,8.5vw,40px)',fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',whiteSpace:'nowrap',textShadow:`0 0 24px ${pnlCol}55`}}>
-                  {pnl>=0?'+':'-'}Rp {Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
+            /* ── MODAL: clean minimal ── */
+            <div style={{display:'flex',flexDirection:'column',flex:1}}>
+              {/* PNL Hero */}
+              <div style={{padding:'28px 24px 20px',borderBottom:`1px solid ${C.bdr}`}}>
+                <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted,marginBottom:6}}>Session P&L</div>
+                <div style={{display:'flex',alignItems:'baseline',gap:6}}>
+                  <span style={{fontSize:13,fontWeight:700,color:pnlCol,opacity:0.75,lineHeight:1}}>Rp</span>
+                  <span style={{
+                    fontSize:'clamp(30px,9vw,42px)',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,
+                    color:pnlCol,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',
+                  }}>
+                    {pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
+                  </span>
                 </div>
               </div>
-              <div style={{display:'flex',gap:8,marginTop:4}}>
-                <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`}}>
-                  <span style={{fontSize:32,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
-                  <span style={{fontSize:10,fontWeight:600,color:C.cyan,letterSpacing:'0.08em',marginTop:2}}>WIN</span>
-                </div>
-                <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.coral}12`,border:`1px solid ${C.coral}30`}}>
-                  <span style={{fontSize:32,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
-                  <span style={{fontSize:10,fontWeight:600,color:C.coral,letterSpacing:'0.08em',marginTop:2}}>LOSS</span>
-                </div>
-                {wr!==null&&(
-                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.orange}12`,border:`1px solid ${C.orange}30`}}>
-                    <span style={{fontSize:32,fontWeight:800,color:C.orange,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
-                    <span style={{fontSize:10,fontWeight:600,color:C.orange,letterSpacing:'0.08em',marginTop:2}}>WR</span>
+              {/* Stats row */}
+              <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
+                {[
+                  {val:wins,label:'WIN',col:C.cyan},
+                  {val:losses,label:'LOSS',col:C.coral},
+                  ...(wr!==null?[{val:`${wr}%`,label:'WIN RATE',col:wr>=50?C.orange:C.coral}]:[]),
+                ].map((s,i)=>(
+                  <div key={i} style={{padding:'16px 12px',background:C.card,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                    <span style={{fontSize:24,fontWeight:800,color:s.col,lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{s.val}</span>
+                    <span style={{fontSize:9,fontWeight:600,letterSpacing:'0.1em',color:C.muted}}>{s.label}</span>
                   </div>
-                )}
+                ))}
               </div>
-              <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',justifyContent:'center'}}>
-                <span style={{fontSize:12,fontWeight:600,color:C.orange,background:`${C.orange}12`,border:`1px solid ${C.orange}28`,padding:'4px 12px',borderRadius:99}}>
-                  {status?.lastStatus||T('dashboard.indicator.monitoring')}
-                </span>
+              {/* Status + Signal */}
+              <div style={{padding:'14px 24px',display:'flex',alignItems:'center',gap:8,borderBottom:`1px solid ${C.bdr}`}}>
+                <span style={{fontSize:12,color:C.muted,flex:1}}>{status?.lastStatus||T('dashboard.indicator.monitoring')}</span>
                 {lastTrend&&(
-                  <span style={{fontSize:14,fontWeight:800,padding:'4px 14px',borderRadius:8,color:lastTrend==='call'?C.cyan:C.coral,background:lastTrend==='call'?`${C.cyan}14`:`${C.coral}14`,border:`1px solid ${lastTrend==='call'?C.cyan:C.coral}30`}}>
+                  <span style={{fontSize:12,fontWeight:700,padding:'4px 12px',borderRadius:6,color:lastTrend==='call'?C.cyan:C.coral,background:lastTrend==='call'?`${C.cyan}12`:`${C.coral}12`}}>
                     {lastTrend==='call'?'↑ CALL':'↓ PUT'}
                   </span>
                 )}
               </div>
+              {/* Indicator value */}
               {status?.currentIndicatorValue!=null&&(
-                <div style={{textAlign:'center'}}>
-                  <span style={{fontSize:10,color:C.muted,display:'block',marginBottom:2}}>{indType}</span>
-                  <span style={{fontSize:18,fontWeight:700,color:C.orange,fontFamily:'monospace'}}>{status.currentIndicatorValue.toFixed(4)}</span>
+                <div style={{padding:'14px 24px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                  <span style={{fontSize:11,color:C.muted}}>{indType}</span>
+                  <span style={{fontSize:16,fontWeight:700,color:C.orange,fontVariantNumeric:'tabular-nums'}}>{status.currentIndicatorValue.toFixed(4)}</span>
                 </div>
               )}
             </div>
@@ -2267,43 +2266,50 @@ const MomentumPanel: React.FC<{status:MomentumStatus|null;isLoading:boolean;fill
       ):(
         <div style={{overflowY:'auto',maxHeight:inModal?undefined:240,flex:inModal?1:undefined,minHeight:0,display:'flex',flexDirection:'column'}}>
           {inModal ? (
-            /* ── MODAL: large centered hero stats ── */
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10,padding:'18px 16px 14px',flexShrink:0}}>
-              <div style={{textAlign:'center'}}>
-                <div style={{fontSize:13,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
-                <div style={{fontSize:'clamp(26px,8.5vw,40px)',fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',whiteSpace:'nowrap',textShadow:`0 0 24px ${pnlCol}55`}}>
-                  {pnl>=0?'+':'-'}Rp {Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
+            /* ── MODAL: clean minimal ── */
+            <div style={{display:'flex',flexDirection:'column',flex:1}}>
+              {/* PNL Hero */}
+              <div style={{padding:'28px 24px 20px',borderBottom:`1px solid ${C.bdr}`}}>
+                <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted,marginBottom:6}}>Session P&L</div>
+                <div style={{display:'flex',alignItems:'baseline',gap:6}}>
+                  <span style={{fontSize:13,fontWeight:700,color:pnlCol,opacity:0.75,lineHeight:1}}>Rp</span>
+                  <span style={{
+                    fontSize:'clamp(30px,9vw,42px)',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,
+                    color:pnlCol,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',
+                  }}>
+                    {pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
+                  </span>
                 </div>
               </div>
-              <div style={{display:'flex',gap:8,marginTop:4}}>
-                <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`}}>
-                  <span style={{fontSize:32,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
-                  <span style={{fontSize:10,fontWeight:600,color:C.cyan,letterSpacing:'0.08em',marginTop:2}}>WIN</span>
-                </div>
-                <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.coral}12`,border:`1px solid ${C.coral}30`}}>
-                  <span style={{fontSize:32,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
-                  <span style={{fontSize:10,fontWeight:600,color:C.coral,letterSpacing:'0.08em',marginTop:2}}>LOSS</span>
-                </div>
-                {wr!==null&&(
-                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.pink}12`,border:`1px solid ${C.pink}30`}}>
-                    <span style={{fontSize:32,fontWeight:800,color:C.pink,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
-                    <span style={{fontSize:10,fontWeight:600,color:C.pink,letterSpacing:'0.08em',marginTop:2}}>WR</span>
+              {/* Stats row */}
+              <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
+                {[
+                  {val:wins,label:'WIN',col:C.cyan},
+                  {val:losses,label:'LOSS',col:C.coral},
+                  ...(wr!==null?[{val:`${wr}%`,label:'WIN RATE',col:wr>=50?C.pink:C.coral}]:[]),
+                ].map((s,i)=>(
+                  <div key={i} style={{padding:'16px 12px',background:C.card,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                    <span style={{fontSize:24,fontWeight:800,color:s.col,lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{s.val}</span>
+                    <span style={{fontSize:9,fontWeight:600,letterSpacing:'0.1em',color:C.muted}}>{s.label}</span>
                   </div>
-                )}
+                ))}
               </div>
-              <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',justifyContent:'center'}}>
-                <span style={{fontSize:12,fontWeight:600,color:C.pink,background:`${C.pink}12`,border:`1px solid ${C.pink}28`,padding:'4px 12px',borderRadius:99}}>
-                  {status?.lastStatus||T('dashboard.momentum.scanning')}
-                </span>
+              {/* Status */}
+              <div style={{padding:'14px 24px',borderBottom:`1px solid ${C.bdr}`}}>
+                <span style={{fontSize:12,color:C.muted}}>{status?.lastStatus||T('dashboard.momentum.scanning')}</span>
               </div>
+              {/* Pattern */}
               {status?.lastDetectedPattern&&(
-                <div style={{textAlign:'center'}}>
-                  <span style={{fontSize:10,color:C.muted,display:'block',marginBottom:2}}>{T('dashboard.momentum.pattern')}</span>
-                  <span style={{fontSize:16,fontWeight:800,color:C.pink}}>{PATTERN_LABELS[status.lastDetectedPattern]??status.lastDetectedPattern}</span>
+                <div style={{padding:'14px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:`1px solid ${C.bdr}`}}>
+                  <span style={{fontSize:11,color:C.muted}}>{T('dashboard.momentum.pattern')}</span>
+                  <span style={{fontSize:13,fontWeight:700,color:C.pink}}>{PATTERN_LABELS[status.lastDetectedPattern]??status.lastDetectedPattern}</span>
                 </div>
               )}
               {status?.lastSignalTime&&(
-                <span style={{fontSize:11,color:C.muted,fontFamily:'monospace'}}>{new Date(status.lastSignalTime).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
+                <div style={{padding:'12px 24px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                  <span style={{fontSize:11,color:C.muted}}>{T('dashboard.momentum.signalTime')}</span>
+                  <span style={{fontSize:12,color:C.sub,fontVariantNumeric:'tabular-nums'}}>{new Date(status.lastSignalTime).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
+                </div>
               )}
             </div>
           ) : (
@@ -2359,45 +2365,51 @@ const MobileSessionSheet: React.FC<{
   if (!open) return null;
 
   return (
-    <div style={{position:'fixed',inset:0,zIndex:80,display:'flex',alignItems:'center',justifyContent:'center',padding:'16px 16px calc(56px + env(safe-area-inset-bottom, 0px) + 8px) 16px',animation:'fade-in 0.15s ease'}}>
+    <div style={{position:'fixed',inset:0,zIndex:80,display:'flex',alignItems:'flex-end',justifyContent:'center',padding:'0',animation:'fade-in 0.15s ease'}}>
       {/* backdrop */}
       <div
         onClick={onClose}
-        style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.75)',backdropFilter:'blur(14px)',WebkitBackdropFilter:'blur(14px)'}}
+        style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.65)',backdropFilter:'blur(16px)',WebkitBackdropFilter:'blur(16px)'}}
       />
-      {/* modal — sama persis gaya OrderInputModal */}
+      {/* bottom sheet */}
       <div style={{
-        position:'relative',width:'100%',maxWidth:460,height:'88dvh',maxHeight:640,
+        position:'relative',width:'100%',maxWidth:480,
+        maxHeight:'82dvh',
         display:'flex',flexDirection:'column',
-        background:C.bg,
-        borderRadius:24,
-        border:`0.4px solid ${ac}66`,
-        boxShadow:`0 32px 80px rgba(0,0,0,${C.bg==='#111111'?'0.70':'0.18'}), 0 8px 24px rgba(0,0,0,${C.bg==='#111111'?'0.50':'0.10'})`,
+        background:C.card,
+        borderRadius:'20px 20px 0 0',
+        border:`1px solid ${C.bdr}`,
+        borderBottom:'none',
         overflow:'hidden',
-        animation:'slide-up 0.28s cubic-bezier(0.32,0.72,0,1)',
+        animation:'slide-up 0.30s cubic-bezier(0.32,0.72,0,1)',
       }}>
-        {/* header — gradient seperti OrderInputModal */}
+        {/* drag handle */}
+        <div style={{display:'flex',justifyContent:'center',padding:'10px 0 2px',flexShrink:0}}>
+          <div style={{width:36,height:4,borderRadius:99,background:C.muted,opacity:0.3}}/>
+        </div>
+        {/* header */}
         <div style={{
           flexShrink:0,
-          background:`linear-gradient(180deg,${C.card2} 0%,${C.card} 100%)`,
-          padding:'16px 24px',
+          padding:'8px 20px 14px',
           display:'flex',alignItems:'center',justifyContent:'space-between',
         }}>
-          <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <span style={{width:8,height:8,borderRadius:'50%',background:ac,boxShadow:`0 0 6px ${ac}`,animation:'pulse 1.6s ease-in-out infinite',flexShrink:0}}/>
-            <p style={{fontSize:20,fontWeight:600,color:C.text,letterSpacing:'-0.02em',margin:0}}>{modeLabel[mode]}</p>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{width:7,height:7,borderRadius:'50%',background:ac,boxShadow:`0 0 5px ${ac}88`,animation:'pulse 1.6s ease-in-out infinite',flexShrink:0}}/>
+            <p style={{fontSize:17,fontWeight:600,color:C.text,letterSpacing:'-0.02em',margin:0}}>{modeLabel[mode]}</p>
           </div>
           <button
             onClick={onClose}
             style={{
-              width:36,height:36,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+              width:30,height:30,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
               background:C.card2,border:`1px solid ${C.bdr}`,
               color:C.sub,cursor:'pointer',flexShrink:0,
             }}
           >
-            <X style={{width:16,height:16}}/>
+            <X style={{width:14,height:14}}/>
           </button>
         </div>
+        {/* thin accent line */}
+        <div style={{height:1,background:`linear-gradient(to right, ${ac}40, ${ac}10, transparent)`,flexShrink:0}}/>
         {/* content */}
         <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',background:C.bg,WebkitOverflowScrolling:'touch' as any,minHeight:0}}>
           {(mode==='fastrade'||mode==='ctc')&&(
@@ -2416,6 +2428,8 @@ const MobileSessionSheet: React.FC<{
             <SchedulePanel orders={orders} logs={logs} onOpenModal={()=>{onOpenModal();onClose();}} isRunning={isRunning} isLoading={false} fillHeight={false} inModal={true}/>
           )}
         </div>
+        {/* safe area spacer */}
+        <div style={{height:'env(safe-area-inset-bottom, 8px)',background:C.bg,flexShrink:0}}/>
       </div>
     </div>
   );
@@ -4976,11 +4990,15 @@ export default function DashboardPage() {
                   }}>
                     {/* P&L */}
                     <div>
-                      <span style={{fontSize:8,color:C.muted,textTransform:'uppercase',letterSpacing:'0.1em',display:'block',marginBottom:2}}>{T('dashboard.sessionPnl')}</span>
+                      <div style={{display:'flex',alignItems:'center',gap:3,marginBottom:3}}>
+                        <span style={{fontSize:7,color:C.muted,textTransform:'uppercase',letterSpacing:'0.12em',fontWeight:600}}>P&L</span>
+                        <span style={{fontSize:8,fontWeight:700,lineHeight:1,color:sessionPnL>=0?'#30D158':C.coral}}>{sessionPnL>=0?'▲':'▼'}</span>
+                      </div>
                       <span style={{
-                        fontSize:'clamp(13px,4.2vw,17px)',fontWeight:800,fontFamily:'monospace',letterSpacing:'-0.02em',
+                        fontSize:'clamp(13px,4.2vw,16px)',fontWeight:800,
+                        fontVariantNumeric:'tabular-nums',letterSpacing:'-0.03em',
                         color:sessionPnL>=0?'#30D158':C.coral,
-                        lineHeight:1.1,display:'block',overflow:'hidden',whiteSpace:'nowrap',
+                        lineHeight:1,display:'block',overflow:'hidden',whiteSpace:'nowrap',
                       }}>
                         {sessionPnL>=0?'+':'-'}{Math.round(Math.abs(sessionPnL/100)).toLocaleString('id-ID',{maximumFractionDigits:0})}
                       </span>
