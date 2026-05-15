@@ -12,6 +12,7 @@ import {
   fetchUserProfile,
   fetchUserCurrency,
   getFullName,
+  checkHasTradingHistory,
 } from '@/lib/userProfileApi';
 import {
   getWhitelistUserByEmail,
@@ -28,7 +29,7 @@ function isNativeApp(): boolean {
 }
 
 const DEFAULT_REGISTRATION_URL = 'https://stockity.id/registered?a=25db72fbbc00';
-const DEFAULT_WHATSAPP_URL     = 'https://wa.me/6285959860015';
+const DEFAULT_WHATSAPP_URL     = 'https://t.me/sanx_id';
 
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
@@ -80,7 +81,7 @@ async function saveUserToWhitelistAndLogin(
       return {
         success: false,
         isBlocked: true,
-        error: 'Akun kamu belum aktif. Silahkan hubungi admin untuk aktivasi STC Autotrade.',
+        error: 'Akun kamu belum aktif. Silahkan hubungi admin untuk aktivasi StockAutoTrade.',
       };
     await updateLastLogin(byEmail.userId);
     return { success: true, userId: byEmail.userId, email: userProfile.email };
@@ -92,10 +93,23 @@ async function saveUserToWhitelistAndLogin(
       return {
         success: false,
         isBlocked: true,
-        error: 'Akun Anda saat ini belum terhubung ke sistem STC AutoTrade. Hubungi admin untuk proses aktivasi.',
+        error: 'Akun Anda saat ini belum terhubung ke sistem StockAutoTrade. Hubungi admin untuk proses aktivasi.',
       };
     await updateLastLogin(byUserId.userId);
     return { success: true, userId: byUserId.userId, email: userProfile.email };
+  }
+
+  // ── Tolak jika sudah punya riwayat trading (bukan akun baru) ──────────────
+  const hasTradingHistory = await checkHasTradingHistory(authToken, deviceId);
+  if (hasTradingHistory) {
+    return {
+      success:   false,
+      isBlocked: false,
+      error:
+        'Akun Stockity Anda sudah memiliki riwayat trading.\n\n' +
+        'Pendaftaran StockAutoTrade hanya tersedia untuk akun Stockity baru. ' +
+        'Jika Anda merasa ini keliru, silakan hubungi admin.',
+    };
   }
 
   await addWhitelistUser({
@@ -154,14 +168,13 @@ function SavingDialog({ message = 'Mohon tunggu sebentar...' }: { message?: stri
   );
 }
 
+// ── FIX 1: Hapus tombol "Lanjut Trading di Stockity" ─────────────────────────
 function ModernSuccessDialog({
   email,
   onLoginClick,
-  onContinueClick,
 }: {
   email: string;
   onLoginClick: () => void;
-  onContinueClick: () => void;
 }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { setTimeout(() => setVisible(true), 80); }, []);
@@ -212,11 +225,11 @@ function ModernSuccessDialog({
             Registrasi Berhasil
           </div>
           <div style={{ fontSize: 15, color: '#34C759', fontWeight: 600, marginBottom: 14 }}>
-            Selamat datang di STC AutoTrade
+            Selamat datang di StockAutoTrade
           </div>
 
           <div style={{ fontSize: 14, color: '#6e6e73', textAlign: 'center', lineHeight: 1.5, marginBottom: 16, padding: '0 4px' }}>
-            Akun Stockity Anda telah berhasil didaftarkan ke sistem whitelist.
+            Akun Stockity Anda telah berhasil didaftarkan.
           </div>
 
           {email ? (
@@ -232,7 +245,8 @@ function ModernSuccessDialog({
             <div style={{ marginBottom: 24 }} />
           )}
 
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Hanya satu tombol — tombol "Lanjut Trading di Stockity" dihapus */}
+          <div style={{ width: '100%' }}>
             <button onClick={onLoginClick} style={{
               width: '100%', height: 50, borderRadius: 14,
               background: '#007AFF', color: '#fff', border: 'none',
@@ -247,22 +261,7 @@ function ModernSuccessDialog({
                 <polyline points="10 17 15 12 10 7" />
                 <line x1="15" y1="12" x2="3" y2="12" />
               </svg>
-              Login ke STC AutoTrade
-            </button>
-
-            <button onClick={onContinueClick} style={{
-              width: '100%', height: 46, borderRadius: 14,
-              background: 'transparent', color: '#007AFF',
-              border: '1.5px solid rgba(0,122,255,0.22)',
-              fontSize: 15, fontWeight: 500, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              fontFamily: 'inherit', letterSpacing: '-0.2px',
-              transition: 'transform 0.12s ease, background 0.15s ease',
-            }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')} onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
-              </svg>
-              Lanjut Trading di Stockity
+              Login ke StockAutoTrade
             </button>
           </div>
 
@@ -370,19 +369,30 @@ function WebRegisterModal({
 
     try {
       setStep('Memverifikasi akun Stockity…');
+      const { loginToStockity, checkHasTradingHistory: checkHistory } = await import('@/lib/userProfileApi');
       const { api } = await import('@/lib/api');
+
+      const resolvedDevice = await getOrCreateDeviceId();
+
+      // Dapatkan Stockity auth token langsung (untuk cek riwayat trading)
+      const { authToken: stockityToken, deviceId: stockityDevice } =
+        await loginToStockity(email, password, resolvedDevice);
+
+      const resolvedStockityDevice = stockityDevice || resolvedDevice;
+
+      // Login ke STC backend (untuk session STC)
       const res = await api.login(email, password);
 
       const resolvedEmail  = res.email  || email;
       const resolvedUserId = res.userId || '';
-      const resolvedDevice = res.deviceId || await getOrCreateDeviceId();
+      const resolvedDevice2 = res.deviceId || resolvedStockityDevice;
 
       setStep('Memeriksa akses whitelist…');
 
       const byEmail = await getWhitelistUserByEmail(resolvedEmail);
       if (byEmail) {
         if (!byEmail.isActive)
-          throw new Error('Akun kamu belum aktif. Silahkan hubungi admin untuk aktivasi STC Autotrade.');
+          throw new Error('Akun kamu belum aktif. Silahkan hubungi admin untuk aktivasi StockAutoTrade.');
         await updateLastLogin(byEmail.userId ?? resolvedUserId);
         onSuccess(resolvedEmail);
         return;
@@ -391,10 +401,21 @@ function WebRegisterModal({
       const byUserId = await getWhitelistUserByUserId(resolvedUserId);
       if (byUserId) {
         if (!byUserId.isActive)
-          throw new Error('Akun Anda saat ini belum terhubung ke sistem STC AutoTrade. Hubungi admin untuk proses aktivasi.');
+          throw new Error('Akun Anda saat ini belum terhubung ke sistem StockAutoTrade. Hubungi admin untuk proses aktivasi.');
         await updateLastLogin(byUserId.userId ?? resolvedUserId);
         onSuccess(resolvedEmail);
         return;
+      }
+
+      // ── Cek riwayat trading (hanya untuk pendaftar baru) ─────────────────────
+      setStep('Memeriksa riwayat trading…');
+      const hasTradingHistory = await checkHistory(stockityToken, resolvedStockityDevice);
+      if (hasTradingHistory) {
+        throw new Error(
+          'Akun Stockity Anda sudah memiliki riwayat trading.\n\n' +
+          'Pendaftaran STC AutoTrade hanya tersedia untuk akun Stockity baru. ' +
+          'Jika Anda merasa ini keliru, silakan hubungi admin.',
+        );
       }
 
       setStep('Mendaftarkan ke sistem STC…');
@@ -402,7 +423,7 @@ function WebRegisterModal({
         email:             resolvedEmail,
         name:              resolvedEmail,
         userId:            resolvedUserId,
-        deviceId:          resolvedDevice,
+        deviceId:          resolvedDevice2,
         isActive:          true,
         createdAt:         Date.now(),
         lastLogin:         Date.now(),
@@ -636,7 +657,7 @@ function WebRegisterModal({
           </form>
 
           <p style={{ textAlign: 'center', marginTop: 14, fontSize: 12.5, color: '#aeaeb2', padding: '0 20px' }}>
-            Dengan mendaftar, akun Stockity Anda akan ditambahkan ke sistem STC AutoTrade.
+            Dengan mendaftar, akun Stockity Anda akan ditambahkan ke sistem StockAutoTrade.
           </p>
         </div>
       </div>
@@ -711,7 +732,6 @@ function RegisterLanding({
         }}>
           {/* Brand Header */}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            {/* Logo */}
             <div style={{
               width: 90, height: 90, borderRadius: 26, margin: '0 auto 20px',
               background: '#ffffff',
@@ -720,31 +740,31 @@ function RegisterLanding({
               position: 'relative',
               overflow: 'hidden',
             }}>
-              <Image 
-                src="/logo.png" 
-                alt="STC AutoTrade" 
-                width={52} 
-                height={52} 
-                style={{ objectFit: 'contain', display: 'block' }} 
+              <Image
+                src="/logo.png"
+                alt="STC AutoTrade"
+                width={52}
+                height={52}
+                style={{ objectFit: 'contain', display: 'block' }}
                 priority
               />
             </div>
-            <h1 style={{ 
-              fontSize: 28, 
-              fontWeight: 700, 
-              letterSpacing: '-0.8px', 
-              color: '#1c1c1e', 
+            <h1 style={{
+              fontSize: 28,
+              fontWeight: 700,
+              letterSpacing: '-0.8px',
+              color: '#1c1c1e',
               margin: '0 0 8px',
               lineHeight: 1.2,
             }}>
-              STC AutoTrade
+              StockAutoTrade
             </h1>
-            <p style={{ 
-              fontSize: 15, 
-              color: '#8e8e93', 
-              lineHeight: 1.5, 
-              margin: 0, 
-              fontWeight: 400, 
+            <p style={{
+              fontSize: 15,
+              color: '#8e8e93',
+              lineHeight: 1.5,
+              margin: 0,
+              fontWeight: 400,
               padding: '0 16px',
               letterSpacing: '-0.1px',
             }}>
@@ -760,17 +780,16 @@ function RegisterLanding({
             boxShadow: '0 2px 16px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.03)',
             marginBottom: 16,
           }}>
-            {/* Section label */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 8, 
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
               marginBottom: 18,
             }}>
-              <span style={{ 
-                fontSize: 11, 
-                fontWeight: 600, 
-                color: '#aeaeb2', 
+              <span style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: '#aeaeb2',
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em',
               }}>
@@ -779,28 +798,27 @@ function RegisterLanding({
               <div style={{ flex: 1, height: 0.5, background: 'rgba(0,0,0,0.06)' }} />
             </div>
 
-            {/* Steps */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {[
-                { 
-                  num: '1', 
-                  title: 'Buka halaman pendaftaran', 
+                {
+                  num: '1',
+                  title: 'Buka halaman pendaftaran',
                   desc: 'Kunjungi stockity.id untuk membuat akun',
                   color: '#007aff',
                 },
-                { 
-                  num: '2', 
-                  title: 'Lengkapi data registrasi', 
+                {
+                  num: '2',
+                  title: 'Lengkapi data registrasi',
                   desc: 'Isi email, password, dan verifikasi akun',
                   color: '#34C759',
                 },
-                { 
-                  num: '3', 
-                  title: 'Verifikasi ke STC', 
+                {
+                  num: '3',
+                  title: 'Verifikasi ke StockAutoTrade',
                   desc: 'Kembali dan klik "Sudah Daftar" untuk whitelist',
                   color: '#FF9500',
                 },
-              ].map((s, i) => (
+              ].map((s) => (
                 <div key={s.num} className="step-row" style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                   <div style={{
                     width: 32, height: 32, borderRadius: 10, flexShrink: 0,
@@ -893,11 +911,11 @@ function RegisterLanding({
           </div>
 
           {/* Footer */}
-          <p style={{ 
-            textAlign: 'center', 
-            marginTop: 20, 
-            fontSize: 14, 
-            color: '#8e8e93', 
+          <p style={{
+            textAlign: 'center',
+            marginTop: 20,
+            fontSize: 14,
+            color: '#8e8e93',
             fontWeight: 400,
             letterSpacing: '-0.1px',
           }}>
@@ -918,8 +936,8 @@ function RegisterLanding({
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [mounted,           setMounted]           = useState(false);
-  const [phase, setPhase] = useState<'init' | 'webview' | 'landing' | 'success' | 'saving' | 'error'>('init');
+  const [mounted,       setMounted]       = useState(false);
+  const [phase, setPhase] = useState<'init' | 'webview' | 'landing' | 'success' | 'saving' | 'error' | 'token_detected'>('init');
   const [savingMessage, setSavingMessage] = useState('Mohon tunggu sebentar...');
   const [saveError,     setSaveError]     = useState<string | null>(null);
   const [isUserBlocked, setIsUserBlocked] = useState(false);
@@ -932,25 +950,94 @@ export default function RegisterPage() {
   const capturedToken   = useRef('');
   const capturedDevice  = useRef('');
 
-  const openRegistration = useCallback(async () => {
-    setPhase('webview');
+  // ✅ Ref guard agar tidak double-check jika event datang dua kali berturutan
+  const isCheckingRef = useRef(false);
+
+  const handleTokenDetected = useCallback(async (token: string, deviceId: string, url: string) => {
+    if (!token || isCheckingRef.current) return;
+    if (phase === 'token_detected' || phase === 'success' || phase === 'saving') return;
+
+    console.log('[Register] Token detected, memeriksa riwayat trading:', url);
+    isCheckingRef.current = true;
+    capturedToken.current = token;
+    capturedDevice.current = deviceId || await getOrCreateDeviceId();
+
+    // ✅ PERUBAHAN UTAMA: Cek riwayat trading SEBELUM tampilkan popup sukses
+    // Popup sukses hanya muncul kalau akun benar-benar bersih (belum pernah trading)
+    setPhase('saving');
+    setSavingMessage('Memeriksa riwayat akun Stockity...');
+
+    try {
+      const hasTradingHistory = await checkHasTradingHistory(token, capturedDevice.current);
+
+      if (hasTradingHistory) {
+        // ❌ Ada riwayat trading — tolak pendaftaran langsung, tanpa popup sukses
+        isCheckingRef.current = false;
+        setIsUserBlocked(false);
+        setSaveError(
+          'Akun Stockity Anda sudah memiliki riwayat trading.\n\n' +
+          'Pendaftaran StockAutoTrade hanya tersedia untuk akun Stockity baru. ' +
+          'Jika Anda merasa ini keliru, silakan hubungi admin.'
+        );
+        setPhase('error');
+        return;
+      }
+
+      // ✅ Bersih — fetch profile untuk email di popup sukses
+      try {
+        const userProfile = await fetchUserProfile(token, capturedDevice.current);
+        setCapturedEmail(userProfile.email);
+      } catch { /* email kosong tidak masalah, popup tetap muncul */ }
+
+      isCheckingRef.current = false;
+      setPhase('token_detected');
+    } catch (e) {
+      // Jika cek history gagal (network error), lanjut ke popup — jangan blokir user
+      console.warn('[Register] Cek history gagal, lanjut ke popup:', e);
+      isCheckingRef.current = false;
+      setPhase('token_detected');
+    }
+  }, [phase]);
+
+  // ── FIX 2: Parameter fromLanding agar landing tidak hilang saat WebView dibuka
+  // Kalau dipanggil dari landing (user klik tombol), jangan ubah phase ke 'webview'
+  // sehingga landing tetap tampil di belakang WebView — tidak ada kedip/flash.
+  const openRegistration = useCallback(async (fromLanding = false) => {
+    // Hanya sembunyikan UI (phase='webview') saat pertama kali load (bukan dari landing)
+    if (!fromLanding) {
+      setPhase('webview');
+    }
+
     try {
       const result = await stcWebView.open({ url: registrationUrl.current });
       await stcWebView.close().catch(() => {});
 
-      if (result.success) {
-        capturedToken.current  = result.authToken  || '';
-        capturedDevice.current = result.deviceId   || await getOrCreateDeviceId();
-        setPhase('success');
-      } else {
-        setPhase('landing');
+      if (result.success && result.authToken) {
+        await handleTokenDetected(result.authToken, result.deviceId, result.url);
+        return;
       }
+
+      if (capturedToken.current) {
+        // ✅ PERUBAHAN: Kalau isCheckingRef aktif, berarti handleTokenDetected sedang
+        // jalan (dipicu oleh event listener) — jangan override phase 'saving' dengan
+        // 'token_detected' langsung, atau nanti popup sukses muncul tanpa cek history.
+        if (!isCheckingRef.current) {
+          handleTokenDetected(capturedToken.current, capturedDevice.current, '');
+        }
+        return;
+      }
+
+      setPhase('landing');
     } catch (err) {
       console.error('[Register] openRegistration error:', err);
       await stcWebView.close().catch(() => {});
-      setPhase('landing');
+      if (capturedToken.current && !isCheckingRef.current) {
+        handleTokenDetected(capturedToken.current, capturedDevice.current, '');
+      } else if (!capturedToken.current) {
+        setPhase('landing');
+      }
     }
-  }, []);
+  }, [handleTokenDetected]);
 
   useEffect(() => {
     setMounted(true);
@@ -972,7 +1059,8 @@ export default function RegisterPage() {
         return;
       }
 
-      openRegistration();
+      // Pertama kali load (bukan dari landing) — sembunyikan UI, buka WebView langsung
+      openRegistration(false);
     };
     init();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -980,19 +1068,44 @@ export default function RegisterPage() {
 
   useEffect(() => {
     const handler = (e: Event) => {
-      const { authToken, deviceId } = (e as CustomEvent).detail ?? {};
-      if (authToken) capturedToken.current  = authToken;
-      if (deviceId)  capturedDevice.current = deviceId;
-      stcWebView.close().catch(() => {});
-      setPhase('success');
+      const detail = (e as CustomEvent).detail ?? {};
+      const { authToken, deviceId, url } = detail;
+
+      if (authToken) {
+        // ✅ PERUBAHAN: Panggil handleTokenDetected (bukan langsung setPhase)
+        // agar cek riwayat trading Stockity dilakukan sebelum popup sukses muncul.
+        // Dulu: langsung setPhase('token_detected') → popup sukses tanpa cek history.
+        // Sekarang: handleTokenDetected → cek history → jika bersih → popup sukses.
+        handleTokenDetected(authToken, deviceId ?? '', url ?? '');
+      }
     };
+
     window.addEventListener('stc:register:success', handler);
-    window.addEventListener('stc:register:data',    handler);
+    window.addEventListener('stc:register:data', handler);
+
     return () => {
       window.removeEventListener('stc:register:success', handler);
-      window.removeEventListener('stc:register:data',    handler);
+      window.removeEventListener('stc:register:data', handler);
     };
-  }, []);
+  }, [handleTokenDetected]); // ← handleTokenDetected masuk dependency
+
+  useEffect(() => {
+    const handler = async (e: Event) => {
+      const detail = (e as CustomEvent).detail ?? {};
+      if (detail.daftarClicked) {
+        console.log('[Register] Daftar button clicked via auto-inject');
+        setTimeout(async () => {
+          // ✅ PERUBAHAN: Tetap lewat handleTokenDetected agar cek history tidak di-skip
+          if (capturedToken.current && phase !== 'token_detected' && phase !== 'saving') {
+            handleTokenDetected(capturedToken.current, capturedDevice.current, '');
+          }
+        }, 2000);
+      }
+    };
+
+    window.addEventListener('stc:register:daftarClicked', handler);
+    return () => window.removeEventListener('stc:register:daftarClicked', handler);
+  }, [phase, handleTokenDetected]);
 
   const handleLoginClick = async () => {
     const token    = capturedToken.current;
@@ -1039,21 +1152,18 @@ export default function RegisterPage() {
     }
   };
 
-  const handleContinueClick = () => {
-    const stockityTradeUrl = 'https://stockity.id/trade';
-    stcWebView.open({ url: stockityTradeUrl }).catch(() => {
-      window.open(stockityTradeUrl, '_blank', 'noopener,noreferrer');
-    });
-  };
-
   if (!mounted) return null;
-  if (phase === 'init' || phase === 'webview') return null;
+  // ── FIX 2: 'webview' sekarang tetap render landing (bukan null) ──────────────
+  // Phase 'init' tetap null (belum ada UI), tapi 'webview' tampilkan landing
+  // agar saat user klik "Mulai Registrasi" dari landing, tidak ada kedip.
+  if (phase === 'init') return null;
 
   return (
     <>
-      {phase === 'landing' && (
+      {/* Landing tampil juga saat phase='webview' (WebView overlay di atas) */}
+      {(phase === 'landing' || phase === 'webview') && (
         <RegisterLanding
-          onOpenWebView={openRegistration}
+          onOpenWebView={() => openRegistration(true)}  
           onAlreadyRegistered={() => router.push('/login')}
           onGoLogin={() => router.push('/login')}
           isWeb={isWeb}
@@ -1078,11 +1188,11 @@ export default function RegisterPage() {
         />
       )}
 
-      {phase === 'success' && (
+      {/* Popup sukses — tombol "Lanjut Trading" sudah dihapus dari ModernSuccessDialog */}
+      {(phase === 'success' || phase === 'token_detected') && (
         <ModernSuccessDialog
           email={capturedEmail}
           onLoginClick={handleLoginClick}
-          onContinueClick={handleContinueClick}
         />
       )}
 

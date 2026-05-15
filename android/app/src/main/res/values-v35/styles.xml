@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    PATH: android/app/src/main/res/values-v35/styles.xml
+
+    Android 15 (API 35) memaksa edge-to-edge untuk semua app dengan targetSdk >= 35.
+    File ini meng-override style khusus untuk API 35+ agar konten tidak nabrak
+    status bar / navigation bar sistem.
+
+    Dua pendekatan digabung:
+      1. windowOptOutEdgeToEdgeEnforcement → disable enforcement di level Android
+      2. CSS env(safe-area-inset-top) di ClientLayout.tsx → fallback universal
+-->
+<resources>
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!-- Opt-out dari edge-to-edge enforcement Android 15 -->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+        <!-- Paksa background hitam agar tidak ada flash putih saat launch -->
+        <item name="android:windowBackground">#0a0a0a</item>
+    </style>
+</resources>

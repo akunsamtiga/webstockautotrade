@@ -149,12 +149,10 @@ function ProfilePageContent() {
 
   useEffect(() => {
     const init = async () => {
-      // ✅ FIXED: Gunakan isSessionValid untuk cek session lengkap
       const sessionValid = await isSessionValid();
       if (!sessionValid) { router.push('/login'); return; }
       loadProfile();
 
-      // ── Check admin status (silently, no block) ──
       try {
         const email = await storage.get('stc_email') ?? '';
         if (email) {
@@ -171,7 +169,6 @@ function ProfilePageContent() {
     if (!silent) setIsLoading(true); else setRefreshing(true);
     setError(null);
     try {
-      // ✅ FIXED: Gunakan getAuthToken yang sudah validasi session
       const token = await getAuthToken();
       if (!token) {
         router.push('/login');
@@ -197,7 +194,6 @@ function ProfilePageContent() {
   const handleUpdateCurrency = async (iso: string) => {
     setCurrencyLoading(true);
     try {
-      // ✅ FIXED: Gunakan getAuthToken
       const token = await getAuthToken();
       if (!token) return;
       await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/profile/currency`, {
@@ -211,6 +207,20 @@ function ProfilePageContent() {
   };
 
   const handleLogout = async () => {
+    // ── 0. ✅ Hapus WebView session (cookies & cache register/stockity.id) ───
+    // StcWebView punya CookieManager native sendiri di Android.
+    // clearSession() memanggil:
+    //   - CookieManager.removeAllCookies() + flush()  → hapus semua cookie
+    //   - clearCache / clearHistory / clearFormData   → hapus jejak navigasi
+    //   - WebStorage.deleteAllData()                  → hapus IndexedDB dll
+    // Ini memastikan WebView register tidak bisa auto-login setelah logout.
+    try {
+      const { stcWebView } = await import('@/plugins/StcWebViewPlugin');
+      await stcWebView.clearSession();
+    } catch (e) {
+      console.warn('[Logout] clearSession WebView error (non-fatal):', e);
+    }
+
     // 1. Hapus session keys (token, userId, dll)
     await sessionLogout();
 
@@ -497,21 +507,9 @@ function ProfilePageContent() {
           <div className="pf-desk-header">
             <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.5 }}>{t('profile.title')}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {/* Language Selector Button */}
-              <button 
+              <button
                 onClick={() => setLangSheetOpen(true)}
-                style={{ 
-                  width: 36, 
-                  height: 36, 
-                  borderRadius: 10, 
-                  background: 'rgba(0,0,0,0.05)', 
-                  border: 'none', 
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 18,
-                }}
+                style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,0,0,0.05)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}
                 title={t('language.title')}
               >
                 🌐
@@ -577,41 +575,24 @@ function ProfilePageContent() {
                 </div>
                 <span style={{ flex: 1, fontSize: 15, color: '#1c1c1e' }}>Dark Mode (Dashboard)</span>
                 <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={isDarkMode} 
+                  <input
+                    type="checkbox"
+                    checked={isDarkMode}
                     onChange={toggleDarkMode}
                     style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
                   />
-                  <div style={{
-                    width: 51,
-                    height: 31,
-                    borderRadius: 31,
-                    position: 'relative',
-                    transition: 'all 0.3s',
-                    background: isDarkMode ? '#10B981' : 'rgba(120,120,128,0.16)',
-                  }}>
-                    <div style={{
-                      position: 'absolute',
-                      top: 2,
-                      width: 27,
-                      height: 27,
-                      borderRadius: '50%',
-                      transition: 'left 0.3s',
-                      left: isDarkMode ? 22 : 2,
-                      background: '#fff',
-                      boxShadow: '0 3px 8px rgba(0,0,0,0.15), 0 3px 1px rgba(0,0,0,0.06)',
-                    }}/>
+                  <div style={{ width: 51, height: 31, borderRadius: 31, position: 'relative', transition: 'all 0.3s', background: isDarkMode ? '#10B981' : 'rgba(120,120,128,0.16)' }}>
+                    <div style={{ position: 'absolute', top: 2, width: 27, height: 27, borderRadius: '50%', transition: 'left 0.3s', left: isDarkMode ? 22 : 2, background: '#fff', boxShadow: '0 3px 8px rgba(0,0,0,0.15), 0 3px 1px rgba(0,0,0,0.06)' }}/>
                   </div>
                 </label>
               </div>
               {/* Language Selector */}
               <TappableRow
                 icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}
-                iconBg="linear-gradient(135deg, #10B981, #34D399)" 
-                label={t('language.title')} 
+                iconBg="linear-gradient(135deg, #10B981, #34D399)"
+                label={t('language.title')}
                 value={t(`language.${{ en: 'english', id: 'indonesian', ru: 'russian', es: 'spanish', ms: 'malay', hi: 'hindi', th: 'thai', tr: 'turkish' }[language] ?? 'english'}`).toLowerCase()}
-                onClick={() => setLangSheetOpen(true)} 
+                onClick={() => setLangSheetOpen(true)}
               />
               <TappableRow
                 icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}
@@ -621,17 +602,12 @@ function ProfilePageContent() {
             </Card>
           </div>
 
-          {/* ── ADMIN PANEL BUTTON ── */}
           {isAdminUser && (
             <div>
               <SectionLabel>Admin</SectionLabel>
               <Card>
                 <TappableRow
-                  icon={
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                    </svg>
-                  }
+                  icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
                   iconBg="linear-gradient(135deg, #F59E0B, #D97706)"
                   label="Admin Panel"
                   value={isSuperAdminUser ? 'Super Admin' : 'Admin'}
@@ -657,7 +633,6 @@ function ProfilePageContent() {
           </div>
 
           <div className="pf-mob-only">
-            {/* Mobile Logout Button */}
             <Card>
               <TappableRow
                 icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>}
@@ -680,9 +655,6 @@ function ProfilePageContent() {
 // ─────────────────────────────────────────────
 // EXPORT
 // ─────────────────────────────────────────────
-// LanguageProvider tidak diperlukan di sini — sudah disediakan oleh ClientLayout secara global.
-// Jika dibungkus lagi di sini akan membuat provider lokal yang terpisah dari global,
-// sehingga perubahan bahasa di halaman ini tidak tersinkron ke halaman lain (Dashboard dll).
 export default function ProfilePage() {
   return <ProfilePageContent />;
 }

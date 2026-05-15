@@ -216,6 +216,39 @@ export async function fetchUserCurrency(
   }
 }
 
+// ── checkHasTradingHistory ────────────────────────────────────────────────────
+// Cek apakah user sudah pernah melakukan trading di Stockity.
+// Digunakan di halaman register untuk menolak pendaftar yang bukan akun baru.
+//
+// Endpoint: /bo-deals-history/v3/deals/trade  (sama dengan StockityHistoryService)
+// Response: { data: { standard_trade_deals: [...], batch_key: string|null } }
+//
+// Returns: true  = ada riwayat trading → tolak pendaftaran
+//          false = akun baru / tidak ada riwayat → izinkan
+export async function checkHasTradingHistory(
+  authToken: string,
+  deviceId:  string,
+  locale     = 'id',
+): Promise<boolean> {
+  const headers = buildStockityHeaders(authToken, deviceId);
+  const buildUrl = (type: 'real' | 'demo') =>
+    `${STOCKITY_BASE_URL}bo-deals-history/v3/deals/trade?type=${type}&locale=${locale}`;
+
+  // Cek real dan demo secara paralel — kalau salah satu ada isinya, tolak
+  const [realResult, demoResult] = await Promise.allSettled([
+    httpGet(buildUrl('real'), headers),
+    httpGet(buildUrl('demo'), headers),
+  ]);
+
+  const hasDeals = (result: PromiseSettledResult<unknown>): boolean => {
+    if (result.status === 'rejected') return false;
+    const deals = (result.value as any)?.data?.standard_trade_deals ?? [];
+    return (deals as unknown[]).length > 0;
+  };
+
+  return hasDeals(realResult) || hasDeals(demoResult);
+}
+
 // ── loginToStockity ───────────────────────────────────────────────────────────
 // Mirrors: LoginApiService.login()
 export async function loginToStockity(

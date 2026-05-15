@@ -41,7 +41,10 @@ const LOGIN_STYLES = `
     flex-direction: column;
     align-items:    center;
     justify-content: center;
-    padding:        24px 20px 80px;
+    /* ── FIX ANDROID 15 ─────────────────────────────────────────────────
+       padding-top memperhitungkan tinggi status bar (safe-area-inset-top).
+       max() memastikan minimal 24px agar tetap ada jarak di device lama. */
+    padding:        max(24px, calc(env(safe-area-inset-top, 0px) + 12px)) 20px 80px;
     overflow-y:     auto;
     overflow-x:     hidden;
     -webkit-overflow-scrolling: touch;
@@ -230,7 +233,7 @@ const LOGIN_STYLES = `
   .logo-desktop {
     display: none;
     position: absolute;
-    top: 16px;
+    top: calc(16px + env(safe-area-inset-top, 0px));
     left: 16px;
     z-index: 10;
     align-items: center;
@@ -247,7 +250,7 @@ const LOGIN_STYLES = `
   /* Language Selector */
   .lang-selector {
     position: absolute;
-    top: 16px;
+    top: calc(16px + env(safe-area-inset-top, 0px));
     right: 16px;
     z-index: 10;
   }
@@ -396,7 +399,8 @@ const LOGIN_STYLES = `
     z-index: 300;
     display: flex;
     justify-content: center;
-    padding: 16px 20px 0;
+    /* ── FIX: Toast juga harus di bawah status bar ── */
+    padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 0;
     pointer-events: none;
   }
   .toast {
@@ -485,6 +489,16 @@ function LoginPageContent() {
   useEffect(() => {
     const init = async () => {
       setMounted(true);
+
+      // ✅ FIX STATUS BAR: Halaman login selalu light — set icon gelap di atas bg terang
+      if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
+        try {
+          const { StatusBar, Style } = await import('@capacitor/status-bar');
+          await StatusBar.setStyle({ style: Style.Light });          // icon/teks hitam
+          await StatusBar.setBackgroundColor({ color: '#F2F2F7' });  // bg abu terang
+        } catch { /* plugin tidak tersedia — abaikan */ }
+      }
+
       const savedEmail = await storage.get('stc_remember_email');
       const savedPass  = await storage.get('stc_remember_password');
       if (savedEmail) { setEmail(savedEmail); setRemember(true); }
@@ -890,8 +904,18 @@ function LoginPageContent() {
             <div className="foot">
               © 2026 StockAutoTrade ·{' '}
               <a className="foot-lnk" href="https://stockity.id/information/privacy" target="_blank" rel="noopener noreferrer">{t('login.terms')}</a>
-              {' '}·{' '}
-              <a className="foot-lnk" href="https://stockity.id/information/privacy" target="_blank" rel="noopener noreferrer">{t('login.privacy')}</a>
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: 10 }}>
+              <a
+                className="foot-lnk"
+                href="https://t.me/sanx_id"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 13, fontWeight: 500 }}
+              >
+                Butuh bantuan?
+              </a>
             </div>
           </div>
         </div>

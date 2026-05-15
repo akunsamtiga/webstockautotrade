@@ -1691,28 +1691,93 @@ const FastradePanel: React.FC<{status:FastradeStatus|null;logs:FastradeLog[];isL
           <p style={{fontSize:12,color:C.muted,textAlign:'center'}}>{T('dashboard.fastTrade.noActiveSession')}</p>
         </div>
       ):(
-        <div style={{overflowY:'auto',maxHeight:inModal?undefined:240,flex:inModal?1:undefined,minHeight:0}}>
-          <Row label="P&L" right={<span style={{color:pnlCol,fontFamily:'monospace'}}>{pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}</span>}/>
-          <Row label="W / L" right={<span style={{fontFamily:'monospace'}}><span style={{color:C.cyan}}>{wins}</span><span style={{color:C.muted}}> / </span><span style={{color:C.coral}}>{losses}</span></span>}/>
-          <Row label={T('dashboard.fastTrade.phase')} right={<span style={{color:accent,fontSize:10}}>{phaseMap[phase]??phase}</span>}/>
-          {trend&&<Row label={T('dashboard.fastTrade.trend')} right={<span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:5,color:trend==='call'?C.cyan:C.coral,background:trend==='call'?`${C.cyan}12`:`${C.coral}12`}}>{trend==='call'?'↑ CALL':'↓ PUT'}</span>} border={logs.length===0}/>}
-          {logs.length>0&&(
+        <div style={{overflowY:'auto',maxHeight:inModal?undefined:240,flex:inModal?1:undefined,minHeight:0,display:'flex',flexDirection:'column'}}>
+          {inModal ? (
+            /* ── MODAL: large centered stats ── */
             <>
-              <div style={{padding:'6px 12px 4px',borderBottom:`1px solid ${C.bdr}`}}>
-                <span style={{fontSize:9,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.fastTrade.history')}</span>
-              </div>
-              {logs.slice(-4).reverse().map((log,i,arr)=>{
-                const rc=log.result==='WIN'?accent:log.result==='LOSS'||log.result==='LOSE'?C.coral:C.amber;
-                const col=log.trend==='call'?C.cyan:C.coral;
-                return (
-                  <div key={log.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderBottom:i<arr.length-1?`1px solid ${C.bdr}`:'none',minWidth:0,overflow:'hidden'}}>
-                    <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:5,color:col,background:log.trend==='call'?`${C.cyan}12`:`${C.coral}12`,flexShrink:0}}>{log.trend==='call'?'CALL':'PUT'}</span>
-                    <span style={{fontSize:10,color:C.muted,flex:1,fontFamily:'monospace',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{log.amount!=null?Math.round(log.amount/100).toLocaleString('id-ID',{maximumFractionDigits:0}):''}</span>
-                    {log.result&&<span style={{fontSize:10,fontWeight:700,color:rc,flexShrink:0}}>{log.result}</span>}
-                    {log.profit!=null&&<span style={{fontSize:10,color:rc,fontFamily:'monospace',flexShrink:0}}>{log.profit>=0?'+':'-'}{Math.round(Math.abs(log.profit)/100).toLocaleString('id-ID',{maximumFractionDigits:0})}</span>}
+              <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10,padding:'18px 16px 14px',flexShrink:0}}>
+                {/* P&L hero */}
+                <div style={{textAlign:'center'}}>
+                  <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
+                  <div style={{fontSize:42,fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',textShadow:`0 0 24px ${pnlCol}55`}}>
+                    {pnl>=0?'+':'-'}Rp {Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
                   </div>
-                );
-              })}
+                </div>
+                {/* W / L chips */}
+                <div style={{display:'flex',gap:8,marginTop:4}}>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`}}>
+                    <span style={{fontSize:24,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
+                    <span style={{fontSize:10,fontWeight:600,color:C.cyan,letterSpacing:'0.08em',marginTop:2}}>WIN</span>
+                  </div>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.coral}12`,border:`1px solid ${C.coral}30`}}>
+                    <span style={{fontSize:24,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
+                    <span style={{fontSize:10,fontWeight:600,color:C.coral,letterSpacing:'0.08em',marginTop:2}}>LOSS</span>
+                  </div>
+                  {wr!==null&&(
+                    <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${accent}12`,border:`1px solid ${accent}30`}}>
+                      <span style={{fontSize:24,fontWeight:800,color:accent,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
+                      <span style={{fontSize:10,fontWeight:600,color:accent,letterSpacing:'0.08em',marginTop:2}}>WR</span>
+                    </div>
+                  )}
+                </div>
+                {/* Phase + Trend row */}
+                <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',justifyContent:'center'}}>
+                  <span style={{fontSize:12,fontWeight:600,color:accent,background:`${accent}12`,border:`1px solid ${accent}28`,padding:'4px 12px',borderRadius:99}}>
+                    {phaseMap[phase]??phase}
+                  </span>
+                  {trend&&(
+                    <span style={{fontSize:14,fontWeight:800,padding:'4px 14px',borderRadius:8,color:trend==='call'?C.cyan:C.coral,background:trend==='call'?`${C.cyan}14`:`${C.coral}14`,border:`1px solid ${trend==='call'?C.cyan:C.coral}30`}}>
+                      {trend==='call'?'↑ CALL':'↓ PUT'}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {logs.length>0&&(
+                <div style={{borderTop:`1px solid ${C.bdr}`,flexShrink:0}}>
+                  <div style={{padding:'6px 12px 4px'}}>
+                    <span style={{fontSize:9,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.fastTrade.history')}</span>
+                  </div>
+                  {logs.slice(-4).reverse().map((log,i,arr)=>{
+                    const rc=log.result==='WIN'?accent:log.result==='LOSS'||log.result==='LOSE'?C.coral:C.amber;
+                    const col=log.trend==='call'?C.cyan:C.coral;
+                    return (
+                      <div key={log.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderBottom:i<arr.length-1?`1px solid ${C.bdr}`:'none',minWidth:0,overflow:'hidden'}}>
+                        <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:5,color:col,background:log.trend==='call'?`${C.cyan}12`:`${C.coral}12`,flexShrink:0}}>{log.trend==='call'?'CALL':'PUT'}</span>
+                        <span style={{fontSize:10,color:C.muted,flex:1,fontFamily:'monospace',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{log.amount!=null?Math.round(log.amount/100).toLocaleString('id-ID',{maximumFractionDigits:0}):''}</span>
+                        {log.result&&<span style={{fontSize:10,fontWeight:700,color:rc,flexShrink:0}}>{log.result}</span>}
+                        {log.profit!=null&&<span style={{fontSize:10,color:rc,fontFamily:'monospace',flexShrink:0}}>{log.profit>=0?'+':'-'}{Math.round(Math.abs(log.profit)/100).toLocaleString('id-ID',{maximumFractionDigits:0})}</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          ) : (
+            /* ── NORMAL: compact row layout ── */
+            <>
+              <Row label="P&L" right={<span style={{color:pnlCol,fontFamily:'monospace'}}>{pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}</span>}/>
+              <Row label="W / L" right={<span style={{fontFamily:'monospace'}}><span style={{color:C.cyan}}>{wins}</span><span style={{color:C.muted}}> / </span><span style={{color:C.coral}}>{losses}</span></span>}/>
+              <Row label={T('dashboard.fastTrade.phase')} right={<span style={{color:accent,fontSize:10}}>{phaseMap[phase]??phase}</span>}/>
+              {trend&&<Row label={T('dashboard.fastTrade.trend')} right={<span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:5,color:trend==='call'?C.cyan:C.coral,background:trend==='call'?`${C.cyan}12`:`${C.coral}12`}}>{trend==='call'?'↑ CALL':'↓ PUT'}</span>} border={logs.length===0}/>}
+              {logs.length>0&&(
+                <>
+                  <div style={{padding:'6px 12px 4px',borderBottom:`1px solid ${C.bdr}`}}>
+                    <span style={{fontSize:9,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.fastTrade.history')}</span>
+                  </div>
+                  {logs.slice(-4).reverse().map((log,i,arr)=>{
+                    const rc=log.result==='WIN'?accent:log.result==='LOSS'||log.result==='LOSE'?C.coral:C.amber;
+                    const col=log.trend==='call'?C.cyan:C.coral;
+                    return (
+                      <div key={log.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderBottom:i<arr.length-1?`1px solid ${C.bdr}`:'none',minWidth:0,overflow:'hidden'}}>
+                        <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:5,color:col,background:log.trend==='call'?`${C.cyan}12`:`${C.coral}12`,flexShrink:0}}>{log.trend==='call'?'CALL':'PUT'}</span>
+                        <span style={{fontSize:10,color:C.muted,flex:1,fontFamily:'monospace',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{log.amount!=null?Math.round(log.amount/100).toLocaleString('id-ID',{maximumFractionDigits:0}):''}</span>
+                        {log.result&&<span style={{fontSize:10,fontWeight:700,color:rc,flexShrink:0}}>{log.result}</span>}
+                        {log.profit!=null&&<span style={{fontSize:10,color:rc,fontFamily:'monospace',flexShrink:0}}>{log.profit>=0?'+':'-'}{Math.round(Math.abs(log.profit)/100).toLocaleString('id-ID',{maximumFractionDigits:0})}</span>}
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </>
           )}
         </div>
@@ -1858,26 +1923,24 @@ const AISignalPanel: React.FC<{
  
       ) : (
         /* ── Active state ── */
-        <div style={{ overflowY: 'auto', flex: inModal ? 1 : undefined, minHeight: 0 }}>
+        <div style={{ overflowY: 'auto', flex: inModal ? 1 : undefined, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
  
-          {/* ── Infra Status Row ── */}
+          {/* ── Infra Status Row ── always shown ── */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6,
             padding: '6px 12px 5px',
             borderBottom: `1px solid ${C.bdr}`,
             background: `${C.sky}04`,
+            flexShrink: 0,
           }}>
-            {/* WebSocket */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1 }}>
               <Dot on={wsOk} col={C.cyan} pulse={wsOk} />
               <span style={{ fontSize: 9, fontWeight: 600, color: wsOk ? C.cyan : C.muted, letterSpacing: '0.06em' }}>WS</span>
             </div>
-            {/* Telegram Listener */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' }}>
               <Dot on={listenerActive} col={C.sky} pulse={listenerActive} />
               <span style={{ fontSize: 9, fontWeight: 600, color: listenerActive ? C.sky : C.muted, letterSpacing: '0.06em' }}>Listener</span>
             </div>
-            {/* Monitor count */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, justifyContent: 'flex-end' }}>
               <Dot on={monCount > 0} col={C.amber} pulse={monCount > 0} />
               <span style={{ fontSize: 9, fontWeight: 600, color: monCount > 0 ? C.amber : C.muted, letterSpacing: '0.06em' }}>
@@ -1885,180 +1948,148 @@ const AISignalPanel: React.FC<{
               </span>
             </div>
           </div>
- 
-          {/* ── P&L + W/L + WR ── */}
-          <Row
-            label={T('dashboard.fastTrade.sessionPnl')}
-            right={
-              <span style={{ color: pnlCol, fontFamily: 'monospace', fontWeight: 700 }}>
-                {pnl >= 0 ? '+' : '-'}{Math.round(Math.abs(pnl) / 100).toLocaleString('id-ID')}
-              </span>
-            }
-          />
-          <Row
-            label={T('dashboard.fastTrade.wlTotal')}
-            right={
-              <span style={{ fontFamily: 'monospace', fontSize: 11 }}>
-                <span style={{ color: C.cyan, fontWeight: 700 }}>{wins}</span>
-                <span style={{ color: C.muted }}> / </span>
-                <span style={{ color: C.coral, fontWeight: 700 }}>{losses}</span>
-                <span style={{ color: C.muted }}> / </span>
-                <span style={{ color: C.sub }}>{total}</span>
-              </span>
-            }
-          />
- 
-          {/* ── Martingale AlwaysSignal Status ── */}
-          {alwaysSignal?.isActive && (
-            <div style={{
-              margin: '0 10px 0',
-              padding: '6px 10px',
-              borderRadius: 8,
-              background: `${C.amber}0a`,
-              border: `1px solid ${C.amber}25`,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              marginTop: 6,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.amber, animation: 'pulse 1.4s ease-in-out infinite' }} />
-                <span style={{ fontSize: 10, fontWeight: 600, color: C.amber }}>Martingale</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {/* Step dots */}
-                <div style={{ display: 'flex', gap: 3 }}>
-                  {[...Array(alwaysSignal.maxSteps ?? 3)].map((_, i) => (
-                    <span key={i} style={{
-                      width: 6, height: 6, borderRadius: '50%',
-                      background: i < (alwaysSignal.currentStep ?? 0) ? C.amber : `${C.amber}28`,
-                      boxShadow: i < (alwaysSignal.currentStep ?? 0) ? `0 0 4px ${C.amber}` : 'none',
-                    }} />
-                  ))}
-                </div>
-                <span style={{ fontSize: 10, color: C.amber, fontWeight: 700 }}>
-                  {alwaysSignal.currentStep}/{alwaysSignal.maxSteps}
-                </span>
-              </div>
-            </div>
-          )}
- 
-          {/* ── Current Status / Last Signal ── */}
-          <div style={{ padding: '0 10px', marginTop: 6 }}>
-            <div style={{
-              padding: '7px 10px', borderRadius: 8,
-              background: `${C.sky}07`, border: `1px solid ${C.sky}18`,
-              display: 'flex', alignItems: 'flex-start', gap: 6,
-            }}>
-              <span style={{
-                width: 5, height: 5, borderRadius: '50%', background: C.sky, flexShrink: 0, marginTop: 4,
-                animation: 'pulse 2s ease-in-out infinite',
-              }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: `${C.sky}80`, display: 'block', marginBottom: 2 }}>
-                  {T('dashboard.aiSignal.status')}
-                </span>
-                <span style={{ fontSize: 10, color: C.sky, lineHeight: 1.4, display: 'block' }}>
-                  {alwaysSignal?.isActive
-                    ? alwaysSignal.status || `${T('dashboard.aiSignal.martingaleStep')} ${alwaysSignal.currentStep}/${alwaysSignal.maxSteps}`
-                    : pendingOrders.length > 0
-                    ? `${pendingOrders.length} ${T('dashboard.aiSignal.pendingSignals')}`
-                    : 'sedang konfigurasi analysis ai system'}
-                </span>
-              </div>
-            </div>
-          </div>
- 
-          {/* ── Pending Orders ── */}
-          {pendingOrders.length > 0 && (
-            <div style={{ marginTop: 8 }}>
-              <div style={{
-                padding: '5px 12px 4px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                borderTop: `1px solid ${C.bdr}`, borderBottom: `1px solid ${C.bdr}`,
-              }}>
-                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${C.sky}60` }}>
-                  {T('dashboard.aiSignal.queue')}
-                </span>
-                <span style={{ fontSize: 9, fontWeight: 700, color: C.sky, background: `${C.sky}12`, padding: '1px 6px', borderRadius: 99, border: `1px solid ${C.sky}25` }}>
-                  {pendingOrders.length}
-                </span>
-              </div>
- 
-              {pendingOrders.slice(0, 5).map((o, i, arr) => {
-                const col     = o.trend === 'call' ? C.cyan : C.coral;
-                const colBg   = o.trend === 'call' ? `${C.cyan}12` : `${C.coral}12`;
-                const secLeft = Math.max(0, Math.ceil((o.executionTime - now) / 1000));
-                const urgent  = secLeft < 30 && secLeft > 0;
-                const isMart  = o.martingaleStep > 0;
- 
-                return (
-                  <div key={o.id} style={{
-                    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
-                    borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : 'none',
-                    background: urgent ? `${col}05` : 'transparent',
-                    transition: 'background 0.3s',
-                  }}>
-                    {/* Trend badge */}
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 5,
-                      color: col, background: colBg, flexShrink: 0, letterSpacing: '0.04em',
-                    }}>
-                      {o.trend === 'call' ? '↑ CALL' : '↓ PUT'}
-                    </span>
- 
-                    {/* Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span style={{ fontSize: 10, color: C.sub, fontFamily: 'monospace', fontWeight: 600 }}>
-                          {formatExecTime(o.executionTime)}
-                        </span>
-                        {isMart && (
-                          <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 4px', borderRadius: 4, color: C.amber, background: `${C.amber}12`, border: `1px solid ${C.amber}25` }}>
-                            M{o.martingaleStep}
-                          </span>
-                        )}
-                      </div>
-                      <span style={{ fontSize: 9, color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                        {o.assetRic} · {Math.round(o.amount / 100).toLocaleString('id-ID')}
-                      </span>
-                    </div>
- 
-                    {/* Countdown */}
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, fontFamily: 'monospace', flexShrink: 0,
-                      color: urgent ? col : C.muted,
-                      animation: urgent ? 'pulse 0.8s ease-in-out infinite' : 'none',
-                    }}>
-                      {formatCountdown(o.executionTime)}
-                    </span>
+
+          {inModal ? (
+            /* ── MODAL: large centered hero stats ── */
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '18px 16px 14px', flexShrink: 0 }}>
+                {/* P&L hero */}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, marginBottom: 4 }}>Session P&L</div>
+                  <div style={{ fontSize: 42, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1, color: pnlCol, fontFamily: 'monospace', textShadow: `0 0 24px ${pnlCol}55` }}>
+                    {pnl >= 0 ? '+' : '-'}Rp {Math.round(Math.abs(pnl) / 100).toLocaleString('id-ID')}
                   </div>
-                );
-              })}
- 
-              {pendingOrders.length > 5 && (
-                <div style={{ padding: '5px 12px', textAlign: 'center' }}>
-                  <span style={{ fontSize: 9, color: C.muted }}>+{pendingOrders.length - 5} {T('dashboard.aiSignal.moreItems')}</span>
+                </div>
+                {/* W / L / WR chips */}
+                <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 18px', borderRadius: 12, background: `${C.cyan}12`, border: `1px solid ${C.cyan}30` }}>
+                    <span style={{ fontSize: 24, fontWeight: 800, color: C.cyan, lineHeight: 1, fontFamily: 'monospace' }}>{wins}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: C.cyan, letterSpacing: '0.08em', marginTop: 2 }}>WIN</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 18px', borderRadius: 12, background: `${C.coral}12`, border: `1px solid ${C.coral}30` }}>
+                    <span style={{ fontSize: 24, fontWeight: 800, color: C.coral, lineHeight: 1, fontFamily: 'monospace' }}>{losses}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: C.coral, letterSpacing: '0.08em', marginTop: 2 }}>LOSS</span>
+                  </div>
+                  {wr !== null && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 18px', borderRadius: 12, background: `${C.sky}12`, border: `1px solid ${C.sky}30` }}>
+                      <span style={{ fontSize: 24, fontWeight: 800, color: C.sky, lineHeight: 1, fontFamily: 'monospace' }}>{wr}%</span>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: C.sky, letterSpacing: '0.08em', marginTop: 2 }}>WR</span>
+                    </div>
+                  )}
+                </div>
+                {/* Martingale badge */}
+                {alwaysSignal?.isActive && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 99, background: `${C.amber}12`, border: `1px solid ${C.amber}35` }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.amber, animation: 'pulse 1.4s ease-in-out infinite' }} />
+                    <span style={{ fontSize: 11, fontWeight: 700, color: C.amber }}>Martingale K{alwaysSignal.currentStep}/{alwaysSignal.maxSteps}</span>
+                  </div>
+                )}
+                {/* Status text */}
+                <div style={{ textAlign: 'center', padding: '0 8px' }}>
+                  <span style={{ fontSize: 12, color: C.sky, lineHeight: 1.5 }}>
+                    {alwaysSignal?.isActive
+                      ? alwaysSignal.status || `Step ${alwaysSignal.currentStep}/${alwaysSignal.maxSteps}`
+                      : pendingOrders.length > 0
+                      ? `${pendingOrders.length} ${T('dashboard.aiSignal.pendingSignals')}`
+                      : 'Konfigurasi AI system...'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Pending orders list */}
+              {pendingOrders.length > 0 && (
+                <div style={{ borderTop: `1px solid ${C.bdr}`, flexShrink: 0 }}>
+                  <div style={{ padding: '5px 12px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${C.sky}60` }}>{T('dashboard.aiSignal.queue')}</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: C.sky, background: `${C.sky}12`, padding: '1px 6px', borderRadius: 99, border: `1px solid ${C.sky}25` }}>{pendingOrders.length}</span>
+                  </div>
+                  {pendingOrders.slice(0, 5).map((o, i, arr) => {
+                    const col = o.trend === 'call' ? C.cyan : C.coral;
+                    const secLeft = Math.max(0, Math.ceil((o.executionTime - now) / 1000));
+                    const urgent = secLeft < 30 && secLeft > 0;
+                    return (
+                      <div key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : 'none', background: urgent ? `${col}05` : 'transparent' }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 5, color: col, background: o.trend === 'call' ? `${C.cyan}12` : `${C.coral}12`, flexShrink: 0 }}>{o.trend === 'call' ? '↑ CALL' : '↓ PUT'}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: 10, color: C.sub, fontFamily: 'monospace', fontWeight: 600 }}>{formatExecTime(o.executionTime)}</span>
+                          <span style={{ fontSize: 9, color: C.muted, display: 'block' }}>{o.assetRic} · {Math.round(o.amount / 100).toLocaleString('id-ID')}</span>
+                        </div>
+                        <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'monospace', flexShrink: 0, color: urgent ? col : C.muted, animation: urgent ? 'pulse 0.8s ease-in-out infinite' : 'none' }}>{formatCountdown(o.executionTime)}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
-            </div>
-          )}
- 
-          {/* ── Empty pending ── */}
-          {pendingOrders.length === 0 && (
-            <div style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              gap: 5, padding: '12px 14px 8px',
-            }}>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {[...Array(3)].map((_, i) => (
-                  <span key={i} style={{
-                    width: 4, height: 4, borderRadius: '50%',
-                    background: C.sky, opacity: 0.25 + i * 0.2,
-                    animation: `pulse ${1.4 + i * 0.2}s ease-in-out infinite`,
-                    animationDelay: `${i * 0.3}s`,
-                  }} />
-                ))}
+            </>
+          ) : (
+            /* ── NORMAL: compact row layout ── */
+            <>
+              <Row label={T('dashboard.fastTrade.sessionPnl')} right={<span style={{ color: pnlCol, fontFamily: 'monospace', fontWeight: 700 }}>{pnl >= 0 ? '+' : '-'}{Math.round(Math.abs(pnl) / 100).toLocaleString('id-ID')}</span>}/>
+              <Row label={T('dashboard.fastTrade.wlTotal')} right={<span style={{ fontFamily: 'monospace', fontSize: 11 }}><span style={{ color: C.cyan, fontWeight: 700 }}>{wins}</span><span style={{ color: C.muted }}> / </span><span style={{ color: C.coral, fontWeight: 700 }}>{losses}</span><span style={{ color: C.muted }}> / </span><span style={{ color: C.sub }}>{total}</span></span>}/>
+              {alwaysSignal?.isActive && (
+                <div style={{ margin: '0 10px', padding: '6px 10px', borderRadius: 8, background: `${C.amber}0a`, border: `1px solid ${C.amber}25`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.amber, animation: 'pulse 1.4s ease-in-out infinite' }} />
+                    <span style={{ fontSize: 10, fontWeight: 600, color: C.amber }}>Martingale</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 3 }}>
+                      {[...Array(alwaysSignal.maxSteps ?? 3)].map((_, i) => (
+                        <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i < (alwaysSignal.currentStep ?? 0) ? C.amber : `${C.amber}28`, boxShadow: i < (alwaysSignal.currentStep ?? 0) ? `0 0 4px ${C.amber}` : 'none' }} />
+                      ))}
+                    </div>
+                    <span style={{ fontSize: 10, color: C.amber, fontWeight: 700 }}>{alwaysSignal.currentStep}/{alwaysSignal.maxSteps}</span>
+                  </div>
+                </div>
+              )}
+              <div style={{ padding: '0 10px', marginTop: 6 }}>
+                <div style={{ padding: '7px 10px', borderRadius: 8, background: `${C.sky}07`, border: `1px solid ${C.sky}18`, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.sky, flexShrink: 0, marginTop: 4, animation: 'pulse 2s ease-in-out infinite' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: `${C.sky}80`, display: 'block', marginBottom: 2 }}>{T('dashboard.aiSignal.status')}</span>
+                    <span style={{ fontSize: 10, color: C.sky, lineHeight: 1.4, display: 'block' }}>{alwaysSignal?.isActive ? alwaysSignal.status || `${T('dashboard.aiSignal.martingaleStep')} ${alwaysSignal.currentStep}/${alwaysSignal.maxSteps}` : pendingOrders.length > 0 ? `${pendingOrders.length} ${T('dashboard.aiSignal.pendingSignals')}` : 'sedang konfigurasi analysis ai system'}</span>
+                  </div>
+                </div>
               </div>
-            </div>
+              {pendingOrders.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ padding: '5px 12px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: `1px solid ${C.bdr}`, borderBottom: `1px solid ${C.bdr}` }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${C.sky}60` }}>{T('dashboard.aiSignal.queue')}</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: C.sky, background: `${C.sky}12`, padding: '1px 6px', borderRadius: 99, border: `1px solid ${C.sky}25` }}>{pendingOrders.length}</span>
+                  </div>
+                  {pendingOrders.slice(0, 5).map((o, i, arr) => {
+                    const col = o.trend === 'call' ? C.cyan : C.coral;
+                    const colBg = o.trend === 'call' ? `${C.cyan}12` : `${C.coral}12`;
+                    const secLeft = Math.max(0, Math.ceil((o.executionTime - now) / 1000));
+                    const urgent = secLeft < 30 && secLeft > 0;
+                    const isMart = o.martingaleStep > 0;
+                    return (
+                      <div key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : 'none', background: urgent ? `${col}05` : 'transparent', transition: 'background 0.3s' }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 5, color: col, background: colBg, flexShrink: 0, letterSpacing: '0.04em' }}>{o.trend === 'call' ? '↑ CALL' : '↓ PUT'}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span style={{ fontSize: 10, color: C.sub, fontFamily: 'monospace', fontWeight: 600 }}>{formatExecTime(o.executionTime)}</span>
+                            {isMart && <span style={{ fontSize: 8, fontWeight: 700, padding: '1px 4px', borderRadius: 4, color: C.amber, background: `${C.amber}12`, border: `1px solid ${C.amber}25` }}>M{o.martingaleStep}</span>}
+                          </div>
+                          <span style={{ fontSize: 9, color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{o.assetRic} · {Math.round(o.amount / 100).toLocaleString('id-ID')}</span>
+                        </div>
+                        <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'monospace', flexShrink: 0, color: urgent ? col : C.muted, animation: urgent ? 'pulse 0.8s ease-in-out infinite' : 'none' }}>{formatCountdown(o.executionTime)}</span>
+                      </div>
+                    );
+                  })}
+                  {pendingOrders.length > 5 && <div style={{ padding: '5px 12px', textAlign: 'center' }}><span style={{ fontSize: 9, color: C.muted }}>+{pendingOrders.length - 5} {T('dashboard.aiSignal.moreItems')}</span></div>}
+                </div>
+              )}
+              {pendingOrders.length === 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '12px 14px 8px' }}>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {[...Array(3)].map((_, i) => (
+                      <span key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: C.sky, opacity: 0.25 + i * 0.2, animation: `pulse ${1.4 + i * 0.2}s ease-in-out infinite`, animationDelay: `${i * 0.3}s` }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -2116,13 +2147,60 @@ const IndicatorPanel: React.FC<{status:IndicatorStatus|null;isLoading:boolean;fi
           <p style={{fontSize:12,color:C.muted,textAlign:'center'}}>{T('dashboard.indicator.notActive')}</p>
         </div>
       ):(
-        <div style={{overflowY:'auto',maxHeight:inModal?undefined:240,flex:inModal?1:undefined,minHeight:0}}>
-          <Row label="P&L" right={<span style={{color:pnlCol,fontFamily:'monospace'}}>{pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}</span>}/>
-          <Row label="W / L" right={<span style={{fontFamily:'monospace'}}><span style={{color:C.cyan}}>{wins}</span><span style={{color:C.muted}}> / </span><span style={{color:C.coral}}>{losses}</span></span>}/>
-          <Row label={T('dashboard.fastTrade.status')} right={<span style={{color:C.orange,fontSize:10}}>{status?.lastStatus||T('dashboard.indicator.monitoring')}</span>}/>
-          <Row label={T('dashboard.indicator.signalLabel')} right={lastTrend?<span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:5,color:lastTrend==='call'?C.cyan:C.coral,background:lastTrend==='call'?`${C.cyan}12`:`${C.coral}12`}}>{lastTrend==='call'?'↑ CALL':'↓ PUT'}</span>:<span style={{color:C.muted}}>—</span>}/>
-          {status?.currentIndicatorValue!=null&&(
-            <Row label={`${T('dashboard.indicator.valueLabel')} ${indType}`} right={<span style={{color:C.orange,fontFamily:'monospace'}}>{status.currentIndicatorValue.toFixed(4)}</span>} border={false}/>
+        <div style={{overflowY:'auto',maxHeight:inModal?undefined:240,flex:inModal?1:undefined,minHeight:0,display:'flex',flexDirection:'column'}}>
+          {inModal ? (
+            /* ── MODAL: large centered hero stats ── */
+            <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10,padding:'18px 16px 14px',flexShrink:0}}>
+              <div style={{textAlign:'center'}}>
+                <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
+                <div style={{fontSize:42,fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',textShadow:`0 0 24px ${pnlCol}55`}}>
+                  {pnl>=0?'+':'-'}Rp {Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
+                </div>
+              </div>
+              <div style={{display:'flex',gap:8,marginTop:4}}>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`}}>
+                  <span style={{fontSize:24,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
+                  <span style={{fontSize:10,fontWeight:600,color:C.cyan,letterSpacing:'0.08em',marginTop:2}}>WIN</span>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.coral}12`,border:`1px solid ${C.coral}30`}}>
+                  <span style={{fontSize:24,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
+                  <span style={{fontSize:10,fontWeight:600,color:C.coral,letterSpacing:'0.08em',marginTop:2}}>LOSS</span>
+                </div>
+                {wr!==null&&(
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.orange}12`,border:`1px solid ${C.orange}30`}}>
+                    <span style={{fontSize:24,fontWeight:800,color:C.orange,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
+                    <span style={{fontSize:10,fontWeight:600,color:C.orange,letterSpacing:'0.08em',marginTop:2}}>WR</span>
+                  </div>
+                )}
+              </div>
+              <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',justifyContent:'center'}}>
+                <span style={{fontSize:12,fontWeight:600,color:C.orange,background:`${C.orange}12`,border:`1px solid ${C.orange}28`,padding:'4px 12px',borderRadius:99}}>
+                  {status?.lastStatus||T('dashboard.indicator.monitoring')}
+                </span>
+                {lastTrend&&(
+                  <span style={{fontSize:14,fontWeight:800,padding:'4px 14px',borderRadius:8,color:lastTrend==='call'?C.cyan:C.coral,background:lastTrend==='call'?`${C.cyan}14`:`${C.coral}14`,border:`1px solid ${lastTrend==='call'?C.cyan:C.coral}30`}}>
+                    {lastTrend==='call'?'↑ CALL':'↓ PUT'}
+                  </span>
+                )}
+              </div>
+              {status?.currentIndicatorValue!=null&&(
+                <div style={{textAlign:'center'}}>
+                  <span style={{fontSize:10,color:C.muted,display:'block',marginBottom:2}}>{indType}</span>
+                  <span style={{fontSize:18,fontWeight:700,color:C.orange,fontFamily:'monospace'}}>{status.currentIndicatorValue.toFixed(4)}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* ── NORMAL: compact row layout ── */
+            <>
+              <Row label="P&L" right={<span style={{color:pnlCol,fontFamily:'monospace'}}>{pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}</span>}/>
+              <Row label="W / L" right={<span style={{fontFamily:'monospace'}}><span style={{color:C.cyan}}>{wins}</span><span style={{color:C.muted}}> / </span><span style={{color:C.coral}}>{losses}</span></span>}/>
+              <Row label={T('dashboard.fastTrade.status')} right={<span style={{color:C.orange,fontSize:10}}>{status?.lastStatus||T('dashboard.indicator.monitoring')}</span>}/>
+              <Row label={T('dashboard.indicator.signalLabel')} right={lastTrend?<span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:5,color:lastTrend==='call'?C.cyan:C.coral,background:lastTrend==='call'?`${C.cyan}12`:`${C.coral}12`}}>{lastTrend==='call'?'↑ CALL':'↓ PUT'}</span>:<span style={{color:C.muted}}>—</span>}/>
+              {status?.currentIndicatorValue!=null&&(
+                <Row label={`${T('dashboard.indicator.valueLabel')} ${indType}`} right={<span style={{color:C.orange,fontFamily:'monospace'}}>{status.currentIndicatorValue.toFixed(4)}</span>} border={false}/>
+              )}
+            </>
           )}
         </div>
       )}
@@ -2187,21 +2265,62 @@ const MomentumPanel: React.FC<{status:MomentumStatus|null;isLoading:boolean;fill
           <p style={{fontSize:12,color:C.muted,textAlign:'center'}}>{T('dashboard.momentum.notActive')}</p>
         </div>
       ):(
-        <div style={{overflowY:'auto',maxHeight:inModal?undefined:240,flex:inModal?1:undefined,minHeight:0}}>
-          <Row label="P&L" right={<span style={{color:pnlCol,fontFamily:'monospace'}}>{pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}</span>}/>
-          <Row label="W / L" right={<span style={{fontFamily:'monospace'}}><span style={{color:C.cyan}}>{wins}</span><span style={{color:C.muted}}> / </span><span style={{color:C.coral}}>{losses}</span></span>}/>
-          <Row label={T('dashboard.fastTrade.status')} right={<span style={{color:C.pink,fontSize:10}}>{status?.lastStatus||T('dashboard.momentum.scanning')}</span>}/>
-          {status?.lastDetectedPattern?(
-            <Row
-              label={T('dashboard.momentum.pattern')}
-              border={!status.lastSignalTime}
-              right={<span style={{color:C.pink,fontSize:10,fontWeight:700}}>{PATTERN_LABELS[status.lastDetectedPattern]??status.lastDetectedPattern}</span>}
-            />
-          ):(
-<Row label={T('dashboard.momentum.pattern')} right={<span style={{color:C.muted}}>—</span>} border={false}/>
-          )}
-          {status?.lastSignalTime&&(
-            <Row label={T('dashboard.momentum.signalTime')} right={<span style={{color:C.muted,fontFamily:'monospace',fontSize:10}}>{new Date(status.lastSignalTime).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>} border={false}/>
+        <div style={{overflowY:'auto',maxHeight:inModal?undefined:240,flex:inModal?1:undefined,minHeight:0,display:'flex',flexDirection:'column'}}>
+          {inModal ? (
+            /* ── MODAL: large centered hero stats ── */
+            <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10,padding:'18px 16px 14px',flexShrink:0}}>
+              <div style={{textAlign:'center'}}>
+                <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:C.muted,marginBottom:4}}>Session P&L</div>
+                <div style={{fontSize:42,fontWeight:800,letterSpacing:'-0.03em',lineHeight:1,color:pnlCol,fontFamily:'monospace',textShadow:`0 0 24px ${pnlCol}55`}}>
+                  {pnl>=0?'+':'-'}Rp {Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
+                </div>
+              </div>
+              <div style={{display:'flex',gap:8,marginTop:4}}>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`}}>
+                  <span style={{fontSize:24,fontWeight:800,color:C.cyan,lineHeight:1,fontFamily:'monospace'}}>{wins}</span>
+                  <span style={{fontSize:10,fontWeight:600,color:C.cyan,letterSpacing:'0.08em',marginTop:2}}>WIN</span>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.coral}12`,border:`1px solid ${C.coral}30`}}>
+                  <span style={{fontSize:24,fontWeight:800,color:C.coral,lineHeight:1,fontFamily:'monospace'}}>{losses}</span>
+                  <span style={{fontSize:10,fontWeight:600,color:C.coral,letterSpacing:'0.08em',marginTop:2}}>LOSS</span>
+                </div>
+                {wr!==null&&(
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'8px 18px',borderRadius:12,background:`${C.pink}12`,border:`1px solid ${C.pink}30`}}>
+                    <span style={{fontSize:24,fontWeight:800,color:C.pink,lineHeight:1,fontFamily:'monospace'}}>{wr}%</span>
+                    <span style={{fontSize:10,fontWeight:600,color:C.pink,letterSpacing:'0.08em',marginTop:2}}>WR</span>
+                  </div>
+                )}
+              </div>
+              <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',justifyContent:'center'}}>
+                <span style={{fontSize:12,fontWeight:600,color:C.pink,background:`${C.pink}12`,border:`1px solid ${C.pink}28`,padding:'4px 12px',borderRadius:99}}>
+                  {status?.lastStatus||T('dashboard.momentum.scanning')}
+                </span>
+              </div>
+              {status?.lastDetectedPattern&&(
+                <div style={{textAlign:'center'}}>
+                  <span style={{fontSize:10,color:C.muted,display:'block',marginBottom:2}}>{T('dashboard.momentum.pattern')}</span>
+                  <span style={{fontSize:16,fontWeight:800,color:C.pink}}>{PATTERN_LABELS[status.lastDetectedPattern]??status.lastDetectedPattern}</span>
+                </div>
+              )}
+              {status?.lastSignalTime&&(
+                <span style={{fontSize:11,color:C.muted,fontFamily:'monospace'}}>{new Date(status.lastSignalTime).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
+              )}
+            </div>
+          ) : (
+            /* ── NORMAL: compact row layout ── */
+            <>
+              <Row label="P&L" right={<span style={{color:pnlCol,fontFamily:'monospace'}}>{pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}</span>}/>
+              <Row label="W / L" right={<span style={{fontFamily:'monospace'}}><span style={{color:C.cyan}}>{wins}</span><span style={{color:C.muted}}> / </span><span style={{color:C.coral}}>{losses}</span></span>}/>
+              <Row label={T('dashboard.fastTrade.status')} right={<span style={{color:C.pink,fontSize:10}}>{status?.lastStatus||T('dashboard.momentum.scanning')}</span>}/>
+              {status?.lastDetectedPattern?(
+                <Row label={T('dashboard.momentum.pattern')} border={!status.lastSignalTime} right={<span style={{color:C.pink,fontSize:10,fontWeight:700}}>{PATTERN_LABELS[status.lastDetectedPattern]??status.lastDetectedPattern}</span>}/>
+              ):(
+                <Row label={T('dashboard.momentum.pattern')} right={<span style={{color:C.muted}}>—</span>} border={false}/>
+              )}
+              {status?.lastSignalTime&&(
+                <Row label={T('dashboard.momentum.signalTime')} right={<span style={{color:C.muted,fontFamily:'monospace',fontSize:10}}>{new Date(status.lastSignalTime).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>} border={false}/>
+              )}
+            </>
           )}
         </div>
       )}

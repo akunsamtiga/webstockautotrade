@@ -3,10 +3,10 @@
 // JS/TS interface untuk StcWebViewPlugin.java
 // Digunakan di register/page.tsx sebagai pengganti @capacitor/browser
 //
-// Usage:
-//   import { stcWebView } from '@/plugins/StcWebViewPlugin';
-//   const result = await stcWebView.open({ url: REGISTRATION_URL });
-//   if (result.authToken) { ... }
+// ✅ FIXED v2:
+//   - Tambah window event emission untuk token detection
+//   - Popup sukses muncul langsung tanpa nunggu WebView ditutup
+//   - Auto-click hanya helper, bukan prerequisite
 
 import { registerPlugin, PluginListenerHandle } from '@capacitor/core';
 
@@ -41,53 +41,82 @@ export interface StcWebViewDaftarClickedEvent {
   daftarClicked: boolean;
 }
 
-// ── Plugin Interface dengan method terpisah ────────────────────────────────────
-// Gunakan method terpisah alih-alih overload untuk menghindari error TypeScript
+// ── Plugin Interface ───────────────────────────────────────────────────────────
 export interface StcWebViewPlugin {
-  /**
-   * Buka in-app WebView fullscreen.
-   * Promise resolve ketika success URL terdeteksi ATAU timeout.
-   * Jika resolve dengan success=false, berarti user menutup manual.
-   */
   open(options: StcWebViewOpenOptions): Promise<StcWebViewOpenResult>;
-
-  /** Tutup WebView dari JS secara manual */
   close(): Promise<void>;
-
-  /** 
-   * Tambah listener untuk event browserFinished (user tutup manual)
-   * @deprecated Gunakan addListenerBrowserFinished untuk type safety
-   */
+  /** Hapus cookies + cache WebView — dipanggil saat logout */
+  clearSession(): Promise<void>;
   addListener(
     eventName: string,
     listenerFunc: (event: unknown) => void
   ): Promise<PluginListenerHandle>;
 }
 
-// ── Register plugin (nama harus match dengan @CapacitorPlugin(name = "StcWebView")) ──
+// ── Register plugin ────────────────────────────────────────────────────────────
 const StcWebViewNative = registerPlugin<StcWebViewPlugin>('StcWebView', {
-  // Web fallback — tidak ada native WebView di browser, pakai Capacitor Browser
   web: () => import('./StcWebViewWeb').then(m => new m.StcWebViewWeb()),
 });
 
-// ── Helper: deteksi apakah running di native Capacitor ───────────────────────
+// ── Helper: deteksi native ────────────────────────────────────────────────────
 function isNative(): boolean {
   return typeof window !== 'undefined' &&
     (window as any).Capacitor?.isNativePlatform?.() === true;
 }
 
-// ── stcWebView: unified API — native atau fallback ke @capacitor/browser ─────
+// ✅ HELPER: Emit window event untuk token detection
+function emitTokenDetected(authToken: string, deviceId: string, url: string) {
+  if (typeof window === 'undefined') return;
+  const event = new CustomEvent('stc:register:success', {
+    detail: { authToken, deviceId, url },
+  });
+  window.dispatchEvent(event);
+}
+
+// ✅ HELPER: Emit window event untuk daftar clicked
+function emitDaftarClicked() {
+  if (typeof window === 'undefined') return;
+  const event = new CustomEvent('stc:register:daftarClicked', {
+    detail: { daftarClicked: true },
+  });
+  window.dispatchEvent(event);
+}
+
+// ── stcWebView: unified API ─────────────────────────────────────────────────────
 export const stcWebView = {
-  /**
-   * Buka WebView.
-   * - Native Android: pakai StcWebViewPlugin (in-app, bisa baca cookies)
-   * - Web/browser: fallback ke window.open atau @capacitor/browser
-   */
   async open(options: StcWebViewOpenOptions): Promise<StcWebViewOpenResult> {
     if (isNative()) {
-      return StcWebViewNative.open(options);
+      // ✅ PERUBAHAN: Setup listener untuk token detection DAN daftar clicked
+      // sebelum open() dipanggil, agar event tidak terlewat
+
+      // Listener untuk browserFinished
+      StcWebViewNative.addListener('browserFinished', (event: unknown) => {
+        const e = event as StcWebViewBrowserFinishedEvent;
+        if (e.finished && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('stc:register:finished', { detail: e }));
+        }
+      }).catch(() => {});
+
+      // ✅ Listener untuk daftarButtonClicked — percepat token check
+      StcWebViewNative.addListener('daftarButtonClicked', (event: unknown) => {
+        const e = event as StcWebViewDaftarClickedEvent;
+        if (e.daftarClicked) {
+          emitDaftarClicked();
+        }
+      }).catch(() => {});
+
+      const result = await StcWebViewNative.open(options);
+
+      // ✅ PERUBAHAN: Kalau token ditemukan di result, emit event langsung
+      // sebelum return, agar popup muncul tanpa nunggu WebView ditutup
+      if (result.success && result.authToken) {
+        emitTokenDetected(result.authToken, result.deviceId, result.url);
+      }
+
+      return result;
     }
-    // Web fallback — buka external, return empty token
+
+    // Web fallback
     try {
       const { Browser } = await import('@capacitor/browser');
       await Browser.open({ url: options.url, presentationStyle: 'fullscreen' });
@@ -104,15 +133,53 @@ export const stcWebView = {
   },
 
   /**
-   * Listener untuk event browserFinished (user menutup WebView manual)
+   * Hapus cookies & cache WebView saat logout.
+   *
+   * Di Android, CookieManager dipakai bersama antara Capacitor WebView
+   * dan StcWebView in-app — sehingga clearAllCookies() efektif untuk keduanya.
+   *
+   * Urutan:
+   *   1. CapacitorCookies.clearAllCookies()  → hapus semua cookie native
+   *   2. StcWebViewNative.clearSession()     → jika ada impl Java (opsional)
+   *   3. Hapus cookie di domain stockity.id  → defence-in-depth
    */
+  async clearSession(): Promise<void> {
+    if (!isNative()) return;
+
+    // 1. Hapus semua cookie via CapacitorCookies (native Android CookieManager)
+    try {
+      const { CapacitorCookies } = await import('@capacitor/core');
+      await CapacitorCookies.clearAllCookies();
+    } catch (e) {
+      console.warn('[StcWebView] clearAllCookies error:', e);
+    }
+
+    // 2. Panggil clearSession() di native plugin jika sudah diimplementasi di Java
+    //    (graceful — tidak error kalau belum ada)
+    try {
+      await (StcWebViewNative as any).clearSession?.();
+    } catch { /* ignore — method mungkin belum ada di Java */ }
+
+    // 3. Defence-in-depth: hapus cookie per-domain stockity.id
+    const STOCKITY_DOMAINS = [
+      'https://stockity.id',
+      'https://api.stockity.id',
+      'https://www.stockity.id',
+    ];
+    for (const url of STOCKITY_DOMAINS) {
+      try {
+        const { CapacitorCookies } = await import('@capacitor/core');
+        await CapacitorCookies.clearCookies({ url });
+      } catch { /* ignore */ }
+    }
+  },
+
   async addListenerBrowserFinished(
     fn: (e: StcWebViewBrowserFinishedEvent) => void
   ): Promise<PluginListenerHandle> {
     if (isNative()) {
       return StcWebViewNative.addListener('browserFinished', fn as (event: unknown) => void);
     }
-    // Web fallback: listen ke @capacitor/browser browserFinished
     try {
       const { Browser } = await import('@capacitor/browser');
       const handle = await Browser.addListener('browserFinished', () =>
@@ -124,17 +191,12 @@ export const stcWebView = {
     }
   },
 
-  /**
-   * ✅ TAMBAHAN: Listener untuk event daftarButtonClicked (auto-click berhasil)
-   * Hanya tersedia di native Android
-   */
   async addListenerDaftarClicked(
     fn: (e: StcWebViewDaftarClickedEvent) => void
   ): Promise<PluginListenerHandle> {
     if (isNative()) {
       return StcWebViewNative.addListener('daftarButtonClicked', fn as (event: unknown) => void);
     }
-    // Web fallback: tidak ada auto-click di web
     return { remove: async () => {} };
   },
 };

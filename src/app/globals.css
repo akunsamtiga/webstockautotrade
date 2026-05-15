@@ -35,8 +35,8 @@ html, body {
 }
 
 body {
-  padding-top:    0 !important;
-  padding-bottom: 0 !important;
+  padding-top:    var(--sat);   /* safe-area-inset-top  — fix Android 15 edge-to-edge */
+  padding-bottom: var(--sab);   /* safe-area-inset-bottom — fix system nav bar bawah  */
   padding-right:  var(--sar);
   padding-left:   var(--sal);
 }
@@ -76,7 +76,36 @@ body {
   --font-mono:   'SF Mono', ui-monospace, 'Courier New', monospace;
 }
 
-/* LIGHT MODE */
+/* LIGHT MODE — via JS (ThemeWrapper set data-theme="light" di body) */
+/* ✅ FIX: Fallback via media query sebelum JS sempat load
+   Memastikan warna body/area status-bar sudah benar sejak frame pertama,
+   tidak ada flash hitam saat HP dalam mode terang. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:          #F2F2F7;
+    --s1:          #FFFFFF;
+    --s2:          #F9F9FB;
+    --s3:          #F2F2F7;
+    --blue:        #007AFF;
+    --blue-dim:    rgba(0, 122, 255, 0.09);
+    --blue-glow:   rgba(0, 122, 255, 0.06);
+    --blue-bdr:    rgba(0, 122, 255, 0.25);
+    --coral:       #FF3B30;
+    --coral-dim:   rgba(255, 59, 48, 0.09);
+    --amber:       #FF9500;
+    --amber-dim:   rgba(255, 149, 0, 0.09);
+    --violet:      #AF52DE;
+    --violet-dim:  rgba(175, 82, 222, 0.09);
+    --bdr:         rgba(60, 60, 67, 0.13);
+    --bdr-act:     rgba(0, 122, 255, 0.30);
+    --faint:       rgba(0, 122, 255, 0.04);
+    --text:        #000000;
+    --sub:         rgba(60, 60, 67, 0.60);
+    --muted:       rgba(60, 60, 67, 0.30);
+  }
+}
+
+/* LIGHT MODE — via JS */
 [data-theme="light"] {
   --bg:          #F2F2F7;
   --s1:          #FFFFFF;

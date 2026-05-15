@@ -31,10 +31,5 @@ public class MainActivity extends BridgeActivity {
                 new WindowInsetsControllerCompat(getWindow(), decorView);
         ctrl.setAppearanceLightStatusBars(false); // false = icon putih
 
-        // ── Android < 15: setDecorFitsSystemWindows masih bekerja ─────────────
-        // Android 15 (API 35): baris ini diabaikan, opt-out via values-v35/styles.xml
-        if (Build.VERSION.SDK_INT < 35) {
-            WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
-        }
     }
 }
