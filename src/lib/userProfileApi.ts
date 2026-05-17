@@ -74,6 +74,17 @@ export function getFullName(p: UserProfile): string {
   return full || p.nickname || p.username || p.email;
 }
 
+// ── resolveAvatarUrl ──────────────────────────────────────────────────────────
+// Endpoint passport/v1/user_profile  → avatar = "uploads/user/xxx.png"  (relative)
+// Endpoint platform/private/v2/profile → avatar = "https://stockity.id/uploads/..." (full)
+// Fungsi ini menormalisasi keduanya menjadi full URL yang siap dipakai di <img src>.
+export function resolveAvatarUrl(avatar: string | null | undefined): string | null {
+  if (!avatar || avatar.trim() === '') return null;
+  if (avatar.startsWith('https://') || avatar.startsWith('http://')) return avatar;
+  // Relative path — prepend CDN base stockity.id
+  return `https://stockity.id/${avatar.replace(/^\//, '')}`;
+}
+
 // ── buildStockityHeaders ──────────────────────────────────────────────────────
 function buildStockityHeaders(
   authToken: string,
@@ -188,7 +199,12 @@ export async function fetchUserProfile(
     throw new Error('Terjadi kesalahan saat memproses akun (data kosong)');
   }
 
-  return json.data;
+  // Normalisasi avatar: endpoint ini mengembalikan relative path ("uploads/user/...")
+  // resolveAvatarUrl akan mengubahnya menjadi full URL "https://stockity.id/uploads/user/..."
+  return {
+    ...json.data,
+    avatar: resolveAvatarUrl(json.data.avatar) ?? undefined,
+  };
 }
 
 // ── fetchUserCurrency ─────────────────────────────────────────────────────────

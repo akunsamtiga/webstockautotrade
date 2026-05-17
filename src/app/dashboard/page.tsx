@@ -2365,28 +2365,23 @@ const MobileSessionSheet: React.FC<{
   if (!open) return null;
 
   return (
-    <div style={{position:'fixed',inset:0,zIndex:80,display:'flex',alignItems:'flex-end',justifyContent:'center',padding:'0',animation:'fade-in 0.15s ease'}}>
+    <div style={{position:'fixed',inset:0,zIndex:80,display:'flex',alignItems:'center',justifyContent:'center',padding:'16px 16px calc(56px + env(safe-area-inset-bottom, 0px) + 8px) 16px',animation:'fade-in 0.15s ease'}}>
       {/* backdrop */}
       <div
         onClick={onClose}
         style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.65)',backdropFilter:'blur(16px)',WebkitBackdropFilter:'blur(16px)'}}
       />
-      {/* bottom sheet */}
+      {/* modal */}
       <div style={{
-        position:'relative',width:'100%',maxWidth:480,
-        maxHeight:'82dvh',
+        position:'relative',width:'100%',maxWidth:460,height:'88dvh',maxHeight:640,
         display:'flex',flexDirection:'column',
         background:C.card,
-        borderRadius:'20px 20px 0 0',
+        borderRadius:20,
         border:`1px solid ${C.bdr}`,
-        borderBottom:'none',
         overflow:'hidden',
-        animation:'slide-up 0.30s cubic-bezier(0.32,0.72,0,1)',
+        animation:'slide-up 0.28s cubic-bezier(0.32,0.72,0,1)',
       }}>
-        {/* drag handle */}
-        <div style={{display:'flex',justifyContent:'center',padding:'10px 0 2px',flexShrink:0}}>
-          <div style={{width:36,height:4,borderRadius:99,background:C.muted,opacity:0.3}}/>
-        </div>
+        <div style={{display:'none'}}/>
         {/* header */}
         <div style={{
           flexShrink:0,
@@ -2428,8 +2423,6 @@ const MobileSessionSheet: React.FC<{
             <SchedulePanel orders={orders} logs={logs} onOpenModal={()=>{onOpenModal();onClose();}} isRunning={isRunning} isLoading={false} fillHeight={false} inModal={true}/>
           )}
         </div>
-        {/* safe area spacer */}
-        <div style={{height:'env(safe-area-inset-bottom, 8px)',background:C.bg,flexShrink:0}}/>
       </div>
     </div>
   );

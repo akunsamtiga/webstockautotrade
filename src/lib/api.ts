@@ -335,6 +335,8 @@ export interface IndicatorConfig {
     multiplierValue: number;
     multiplierType: 'FIXED' | 'PERCENTAGE';
     isAlwaysSignal: boolean;
+    stopLoss?: number;
+    stopProfit?: number;
   };
   [key: string]: unknown;
 }
@@ -361,6 +363,8 @@ export interface UpdateIndicatorConfigPayload {
   isEnabled?: boolean;
   sensitivity?: number;
   amount?: number;
+  stopLoss?: number;
+  stopProfit?: number;
 }
 
 // ─────────────────────────────────────────────
@@ -406,6 +410,9 @@ export interface UpdateMomentumConfigPayload {
   maxSteps?: number;
   multiplierValue?: number;
   baseAmount?: number;
+  isAlwaysSignal?: boolean;
+  stopLoss?: number;
+  stopProfit?: number;
 }
 
 export interface MomentumLog {

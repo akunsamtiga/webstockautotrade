@@ -732,23 +732,14 @@ function RegisterLanding({
         }}>
           {/* Brand Header */}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div style={{
-              width: 90, height: 90, borderRadius: 26, margin: '0 auto 20px',
-              background: '#ffffff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.04)',
-              position: 'relative',
-              overflow: 'hidden',
-            }}>
-              <Image
-                src="/logo.png"
-                alt="STC AutoTrade"
-                width={52}
-                height={52}
-                style={{ objectFit: 'contain', display: 'block' }}
-                priority
-              />
-            </div>
+            <Image
+              src="/logo.png"
+              alt="STC AutoTrade"
+              width={80}
+              height={80}
+              style={{ objectFit: 'contain', display: 'block', margin: '0 auto 20px' }}
+              priority
+            />
             <h1 style={{
               fontSize: 28,
               fontWeight: 700,
@@ -896,9 +887,9 @@ function RegisterLanding({
               onClick={isWeb ? onShowWebModal : onAlreadyRegistered}
               style={{
                 width: '100%', height: 44, borderRadius: 14,
-                background: 'transparent',
-                color: '#34C759',
-                border: '1.5px solid rgba(52,199,89,0.25)',
+                background: '#34C759',
+                color: '#ffffff',
+                border: 'none',
                 fontSize: 15, fontWeight: 600, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 fontFamily: 'inherit', letterSpacing: '-0.2px',
@@ -910,22 +901,7 @@ function RegisterLanding({
             </button>
           </div>
 
-          {/* Footer */}
-          <p style={{
-            textAlign: 'center',
-            marginTop: 20,
-            fontSize: 14,
-            color: '#8e8e93',
-            fontWeight: 400,
-            letterSpacing: '-0.1px',
-          }}>
-            Sudah punya akun?{' '}
-            <button onClick={onGoLogin} style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: '#007aff', fontWeight: 600, fontSize: 'inherit',
-              fontFamily: 'inherit', padding: 0, letterSpacing: '-0.2px',
-            }}>Masuk</button>
-          </p>
+
         </div>
       </div>
     </>

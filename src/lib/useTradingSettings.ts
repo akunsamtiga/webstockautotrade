@@ -51,7 +51,7 @@ const DEFAULTS: TradingSettings = {
   selectedRic:          '',
   isDemo:               true,
   duration:             60,
-  amount:               50_000,
+  amount:               14_000,
   martingale:           { enabled: false, maxStep: 3, multiplier: 2.5, alwaysSignal: false },
   ftTf:                 '1m',
   stopLoss:             0,

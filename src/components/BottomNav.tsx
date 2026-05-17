@@ -42,6 +42,15 @@ export function BottomNav() {
         labelColor: (active: boolean) => active ? '#007AFF' : 'rgba(60,60,67,0.45)',
       };
 
+  // ── Dispatch loading event — hanya jika berpindah ke halaman berbeda ──────
+  const handleNavClick = (href: string) => {
+    const isActive =
+      pathname === href || pathname.startsWith(href + '/');
+    if (!isActive) {
+      window.dispatchEvent(new CustomEvent('stc:navstart'));
+    }
+  };
+
   return (
     <>
       <style>{`
@@ -105,6 +114,7 @@ export function BottomNav() {
                 href={href}
                 className="bnav-item"
                 style={{ color: col }}
+                onClick={() => handleNavClick(href)}
               >
                 <div
                   className="bnav-indicator"

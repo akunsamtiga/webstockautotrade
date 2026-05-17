@@ -22,10 +22,12 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#0a0a0a' },
-    { media: '(prefers-color-scheme: dark)',  color: '#0a0a0a' },
-  ],
+  // ✅ FIX: Nilai ini adalah initial/fallback sebelum JS berjalan.
+  //    Karena app default = dark, kedua nilai pakai warna dark.
+  //    ThemeWrapper akan override meta[name="theme-color"] secara dinamis
+  //    setelah tema dimuat — inilah yang sebenarnya mengontrol warna status
+  //    bar di Android WebView.
+  themeColor: '#000000',
   viewportFit: 'cover',
 }
 

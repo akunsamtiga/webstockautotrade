@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, type ProfileBalance } from '@/lib/api';
+import { resolveAvatarUrl } from '@/lib/userProfileApi';
 import { storage, isSessionValid, sessionLogout, getAuthToken } from '@/lib/storage';
 import { checkIsAdmin, checkIsSuperAdmin } from '@/lib/supabaseRepository';
 import { LanguageProvider, useLanguage, formatCurrency, formatDate, Language } from '@/lib';
@@ -49,6 +50,21 @@ const CurrencySheet: React.FC<{
   const { t } = useLanguage();
   const [q, setQ] = useState('');
   const inputRef  = useRef<HTMLInputElement>(null);
+
+  // ✅ FIX: Lock body scroll when sheet is open (mobile UX)
+  useEffect(() => {
+    if (open) {
+      const originalOverflow = document.body.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.touchAction = originalTouchAction;
+      };
+    }
+  }, [open]);
+
   useEffect(() => {
     if (open) { setQ(''); setTimeout(() => inputRef.current?.focus(), 300); }
   }, [open]);
@@ -57,12 +73,12 @@ const CurrencySheet: React.FC<{
     ? currencies.filter(c => c.iso.toLowerCase().includes(q.toLowerCase()) || (c.name || '').toLowerCase().includes(q.toLowerCase()))
     : currencies;
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, touchAction: 'none' }}>
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', animation: 'bd-in 0.25s ease' }} />
       <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 400, maxHeight: '70dvh', display: 'flex', flexDirection: 'column', background: '#f2f2f7', borderRadius: 20, boxShadow: '0 24px 64px rgba(0,0,0,0.22)', animation: 'pop-in 0.28s cubic-bezier(0.32,0.72,0,1)', overflow: 'hidden' }}>
         <div style={{ flexShrink: 0, padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid rgba(60,60,67,0.14)' }}>
           <span style={{ fontSize: 17, fontWeight: 600, color: '#1c1c1e', letterSpacing: -0.4 }}>{t('profile.selectCurrency')}</span>
-          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(116,116,128,0.12)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3c3c43' }}>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(116,116,128,0.12)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3c3c43', WebkitTapHighlightColor: 'transparent' }}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
           </button>
         </div>
@@ -73,20 +89,20 @@ const CurrencySheet: React.FC<{
               style={{ width: '100%', padding: '8px 10px 8px 34px', borderRadius: 10, background: 'rgba(116,116,128,0.12)', border: 'none', outline: 'none', fontSize: 15, color: '#1c1c1e', fontFamily: 'inherit' }} />
           </div>
         </div>
-        <div style={{ overflowY: 'auto', flex: 1, background: '#fff' }}>
+        <div style={{ overflowY: 'auto', flex: 1, background: '#fff', overscrollBehaviorY: 'contain', WebkitOverflowScrolling: 'touch' }}>
           {filtered.length === 0
             ? <div style={{ padding: '48px 0', textAlign: 'center', color: '#aeaeb2', fontSize: 14 }}>{t('common.notFound')}</div>
             : filtered.map((c, i) => {
                 const sel = c.iso === current;
                 return (
                   <button key={c.iso} onClick={() => onSelect(c.iso).then(onClose)} disabled={loading}
-                    style={{ width: '100%', background: 'transparent', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', padding: '13px 20px', borderBottom: i < filtered.length - 1 ? '1px solid rgba(60,60,67,0.08)' : 'none', gap: 14, opacity: loading ? 0.6 : 1 }}>
-                    <div style={{ flex: 1, textAlign: 'left' }}>
-                      <p style={{ fontSize: 16, color: '#1c1c1e', fontWeight: sel ? 600 : 400 }}>{c.iso}</p>
-                      {c.name && <p style={{ fontSize: 13, color: '#6e6e73', marginTop: 1 }}>{c.name}</p>}
+                    style={{ width: '100%', background: 'transparent', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', padding: '13px 20px', borderBottom: i < filtered.length - 1 ? '1px solid rgba(60,60,67,0.08)' : 'none', gap: 14, opacity: loading ? 0.6 : 1, WebkitTapHighlightColor: 'transparent' }}>
+                    <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
+                      <p style={{ fontSize: 16, color: '#1c1c1e', fontWeight: sel ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.iso}</p>
+                      {c.name && <p style={{ fontSize: 13, color: '#6e6e73', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</p>}
                     </div>
-                    {c.symbol && <span style={{ fontSize: 14, color: '#aeaeb2' }}>{c.symbol}</span>}
-                    {sel && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>}
+                    {c.symbol && <span style={{ fontSize: 14, color: '#aeaeb2', flexShrink: 0 }}>{c.symbol}</span>}
+                    {sel && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M20 6L9 17l-5-5"/></svg>}
                   </button>
                 );
               })}
@@ -101,9 +117,24 @@ const CurrencySheet: React.FC<{
 // ─────────────────────────────────────────────
 const LogoutAlert: React.FC<{ open: boolean; onCancel: () => void; onConfirm: () => void }> = ({ open, onCancel, onConfirm }) => {
   const { t } = useLanguage();
+
+  // ✅ FIX: Lock body scroll when alert is open (mobile UX)
+  useEffect(() => {
+    if (open) {
+      const originalOverflow = document.body.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.touchAction = originalTouchAction;
+      };
+    }
+  }, [open]);
+
   if (!open) return null;
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px', touchAction: 'none' }}>
       <div onClick={onCancel} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', animation: 'bd-in 0.2s ease' }} />
       <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 320, animation: 'pop-in 0.28s cubic-bezier(0.32,0.72,0,1)' }}>
         <div style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.22)' }}>
@@ -117,8 +148,8 @@ const LogoutAlert: React.FC<{ open: boolean; onCancel: () => void; onConfirm: ()
             <p style={{ fontSize: 14, color: '#6e6e73', lineHeight: 1.5 }}>{t('profile.logoutMessage')}</p>
           </div>
           <div style={{ borderTop: '1px solid rgba(60,60,67,0.10)', display: 'flex' }}>
-            <button onClick={onCancel} style={{ flex: 1, padding: '16px', background: 'transparent', border: 'none', borderRight: '1px solid rgba(60,60,67,0.10)', cursor: 'pointer', fontSize: 17, fontWeight: 600, color: '#007aff', fontFamily: 'inherit' }}>{t('common.cancel')}</button>
-            <button onClick={onConfirm} style={{ flex: 1, padding: '16px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 17, fontWeight: 400, color: '#ff3b30', fontFamily: 'inherit' }}>{t('profile.logout')}</button>
+            <button onClick={onCancel} style={{ flex: 1, padding: '16px', background: 'transparent', border: 'none', borderRight: '1px solid rgba(60,60,67,0.10)', cursor: 'pointer', fontSize: 17, fontWeight: 600, color: '#007aff', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent' }}>{t('common.cancel')}</button>
+            <button onClick={onConfirm} style={{ flex: 1, padding: '16px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 17, fontWeight: 400, color: '#ff3b30', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent' }}>{t('profile.logout')}</button>
           </div>
         </div>
       </div>
@@ -141,6 +172,7 @@ function ProfilePageContent() {
   const [langSheetOpen, setLangSheetOpen]     = useState(false);
   const [currencyLoading, setCurrencyLoading] = useState(false);
   const [showLogout, setShowLogout]           = useState(false);
+  const [logoutSplash, setLogoutSplash]       = useState(false);
   const [copied, setCopied]                   = useState(false);
   const [isAdminUser,      setIsAdminUser]      = useState(false);
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
@@ -207,13 +239,14 @@ function ProfilePageContent() {
   };
 
   const handleLogout = async () => {
-    // ── 0. ✅ Hapus WebView session (cookies & cache register/stockity.id) ───
-    // StcWebView punya CookieManager native sendiri di Android.
-    // clearSession() memanggil:
-    //   - CookieManager.removeAllCookies() + flush()  → hapus semua cookie
-    //   - clearCache / clearHistory / clearFormData   → hapus jejak navigasi
-    //   - WebStorage.deleteAllData()                  → hapus IndexedDB dll
-    // Ini memastikan WebView register tidak bisa auto-login setelah logout.
+    setShowLogout(false);
+    // Sembunyikan BottomNav sebelum splash muncul — mencegah nav tampil
+    // di atas splash akibat stacking context yang dibuat opacity/transition
+    // pada <main> di ClientLayout.
+    window.dispatchEvent(new CustomEvent('stc:hidenav'));
+    setLogoutSplash(true);
+    await new Promise(res => setTimeout(res, 1800));
+
     try {
       const { stcWebView } = await import('@/plugins/StcWebViewPlugin');
       await stcWebView.clearSession();
@@ -221,24 +254,15 @@ function ProfilePageContent() {
       console.warn('[Logout] clearSession WebView error (non-fatal):', e);
     }
 
-    // 1. Hapus session keys (token, userId, dll)
     await sessionLogout();
 
-    // 2. Simpan remember-me sebelum wipe localStorage
     const rememberEmail = localStorage.getItem('stc_remember_email');
     const rememberPass  = localStorage.getItem('stc_remember_password');
-
-    // 3. Wipe seluruh localStorage (hapus trading settings, cache lokal, dll)
     localStorage.clear();
-
-    // 4. Kembalikan remember-me
     if (rememberEmail) localStorage.setItem('stc_remember_email',    rememberEmail);
     if (rememberPass)  localStorage.setItem('stc_remember_password', rememberPass);
-
-    // 5. Hapus seluruh sessionStorage
     sessionStorage.clear();
 
-    // 6. Hapus Browser Cache API (service worker cache, dll)
     try {
       if ('caches' in window) {
         const keys = await caches.keys();
@@ -246,7 +270,6 @@ function ProfilePageContent() {
       }
     } catch { /* ignore */ }
 
-    // 7. Hapus IndexedDB (Firebase local persistence)
     try {
       const dbs = await indexedDB.databases?.() ?? [];
       await Promise.all(dbs.map(db => db.name ? indexedDB.deleteDatabase(db.name) : Promise.resolve()));
@@ -301,7 +324,7 @@ function ProfilePageContent() {
             {verified ? t('profile.verified') : t('profile.notVerified')}
           </span>
         )}
-        <span style={{ fontSize: 14, color: value ? '#8e8e93' : '#c7c7cc', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{value || '—'}</span>
+        <span style={{ fontSize: 14, color: value ? '#8e8e93' : '#c7c7cc', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 'min(180px, 50vw)' }}>{value || '—'}</span>
       </div>
     </div>
   );
@@ -312,25 +335,40 @@ function ProfilePageContent() {
   }) => (
     <button onClick={onClick} className="pf-tap-row" style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '10px 16px 10px 14px', borderBottom: last ? 'none' : '1px solid rgba(60,60,67,0.07)', gap: 12, textAlign: 'left', WebkitTapHighlightColor: 'transparent' }}>
       <div style={{ width: 30, height: 30, borderRadius: 7, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>
-      <span style={{ flex: 1, fontSize: 15, color: danger ? '#ff3b30' : '#1c1c1e' }}>{label}</span>
-      {value && <span style={{ fontSize: 14, color: '#8e8e93', marginRight: 4 }}>{value}</span>}
-      {chevron && <svg width="6" height="11" viewBox="0 0 7 12" fill="none"><path d="M1 1l5 5-5 5" stroke={danger ? '#ff3b30' : '#8e8e93'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+      <span style={{ flex: 1, fontSize: 15, color: danger ? '#ff3b30' : '#1c1c1e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+      {value && <span style={{ fontSize: 14, color: '#8e8e93', marginRight: 4, flexShrink: 0, maxWidth: '40vw', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>}
+      {chevron && <svg width="6" height="11" viewBox="0 0 7 12" fill="none" style={{ flexShrink: 0 }}><path d="M1 1l5 5-5 5" stroke={danger ? '#ff3b30' : '#8e8e93'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
     </button>
   );
 
   const AvatarBlock = () => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-      <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(145deg, #007aff, #5ac8fa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 700, color: '#fff', boxShadow: '0 4px 20px rgba(0,122,255,0.28)', marginBottom: 12, animation: 'pop-in 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.08s both', flexShrink: 0 }}>
-        {isLoading ? '' : getInitials()}
+      <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(145deg, #007aff, #5ac8fa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 700, color: '#fff', boxShadow: '0 4px 20px rgba(0,122,255,0.28)', marginBottom: 12, animation: 'pop-in 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.08s both', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
+        {isLoading ? '' : profile?.avatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={resolveAvatarUrl(profile.avatar) ?? profile.avatar}
+            alt={getDisplayName()}
+            width={80}
+            height={80}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }}
+            onError={(e) => {
+              // Fallback ke initials jika gambar gagal dimuat (404, CORS, dll)
+              (e.currentTarget as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        ) : (
+          getInitials()
+        )}
       </div>
       {isLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, width: '100%' }}>
-          <Skel w={130} h={18} r={6} /><Skel w={170} h={13} r={5} />
+          <Skel w="60%" h={18} r={6} /><Skel w="75%" h={13} r={5} />
         </div>
       ) : (
         <>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.4, marginBottom: 3, lineHeight: 1.2 }}>{getDisplayName()}</h2>
-          <p style={{ fontSize: 13, color: '#6e6e73', marginBottom: 10, wordBreak: 'break-all', maxWidth: 220 }}>{profile?.email}</p>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.4, marginBottom: 3, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 12px' }}>{getDisplayName()}</h2>
+          <p style={{ fontSize: 13, color: '#6e6e73', marginBottom: 10, wordBreak: 'break-all', maxWidth: 'min(220px, 80vw)', lineHeight: 1.4 }}>{profile?.email}</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
             {profile?.docsVerified && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#34c759', background: 'rgba(52,199,89,0.12)', padding: '3px 10px', borderRadius: 99 }}>
@@ -339,7 +377,7 @@ function ProfilePageContent() {
               </span>
             )}
             {profile?.id && (
-              <button className="pf-copy-btn" onClick={copyId} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#6e6e73', background: 'rgba(116,116,128,0.10)', padding: '3px 10px', borderRadius: 99, border: 'none', cursor: 'pointer', transition: 'opacity 0.15s' }}>
+              <button className="pf-copy-btn" onClick={copyId} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#6e6e73', background: 'rgba(116,116,128,0.10)', padding: '3px 10px', borderRadius: 99, border: 'none', cursor: 'pointer', transition: 'opacity 0.15s', WebkitTapHighlightColor: 'transparent' }}>
                 ID: {String(profile.id).slice(0, 8)}…
                 {copied
                   ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#34c759" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
@@ -370,14 +408,14 @@ function ProfilePageContent() {
             <div style={{ width: 30, height: 30, borderRadius: 8, background: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {icon}
             </div>
-            <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase' as const, letterSpacing: '0.04em', lineHeight: 1.2 }}>{label}</span>
+            <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase' as const, letterSpacing: '0.04em', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
           </div>
           <div style={{ minWidth: 0 }}>
             {isLoading
               ? <Skel w="85%" h={16} r={4} />
               : <p className="balance-num" style={{ fontSize: 15, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.4, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fmtBalance(val)}</p>
             }
-            <p style={{ fontSize: 10, color: '#aeaeb2', marginTop: 3 }}>{sub}</p>
+            <p style={{ fontSize: 10, color: '#aeaeb2', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</p>
           </div>
         </div>
       ))}
@@ -395,7 +433,48 @@ function ProfilePageContent() {
         @keyframes spin       { to{transform:rotate(360deg)} }
         @keyframes number-in  { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
 
-        .pf-tap-row:hover  { background: rgba(0,0,0,0.03) !important; }
+        @keyframes lo-fade-in { from{opacity:0} to{opacity:1} }
+        @keyframes lo-icon-in { from{opacity:0;transform:scale(0.6)} 70%{transform:scale(1.08)} to{opacity:1;transform:scale(1)} }
+        @keyframes lo-msg-in  { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes lo-ring    { 0%,100%{transform:scale(1);opacity:0.8} 50%{transform:scale(1.06);opacity:0.35} }
+        @keyframes lo-orb-1   { from{transform:translate(0,0)} to{transform:translate(30px,22px)} }
+        @keyframes lo-orb-2   { from{transform:translate(0,0)} to{transform:translate(-25px,-18px)} }
+        @keyframes lo-bar     { from{width:0%} to{width:100%} }
+
+        .lo-splash {
+          position: fixed; inset: 0; z-index: 9999;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          font-family: -apple-system,'SF Pro Display',BlinkMacSystemFont,'Helvetica Neue',sans-serif;
+          -webkit-font-smoothing: antialiased;
+          background: linear-gradient(160deg, #fff8f0 0%, #ffffff 50%, #f0f4ff 100%);
+          overflow: hidden;
+          animation: lo-fade-in 0.32s cubic-bezier(0.22,1,0.36,1) forwards;
+        }
+        .lo-orb {
+          position: absolute; border-radius: 50%; pointer-events: none;
+        }
+        .lo-orb-1 { width:380px;height:380px;background:radial-gradient(circle,rgba(255,149,0,0.18) 0%,transparent 70%);filter:blur(80px);top:-100px;right:-100px;animation:lo-orb-1 7s ease-in-out infinite alternate; }
+        .lo-orb-2 { width:340px;height:340px;background:radial-gradient(circle,rgba(0,122,255,0.14) 0%,transparent 70%);filter:blur(75px);bottom:-80px;left:-80px;animation:lo-orb-2 6s ease-in-out infinite alternate; }
+        .lo-orb-3 { width:260px;height:260px;background:radial-gradient(circle,rgba(191,90,242,0.10) 0%,transparent 70%);filter:blur(70px);top:40%;left:-60px;animation:lo-orb-1 5s ease-in-out infinite alternate; }
+
+        .lo-icon-wrap { position:relative;width:110px;height:110px;display:flex;align-items:center;justify-content:center;margin-bottom:28px; }
+        .lo-ring      { position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,149,0,0.20);animation:lo-ring 2.2s ease-in-out infinite; }
+        .lo-ring-2    { inset:-12px;border-color:rgba(255,149,0,0.12);animation-delay:0.4s; }
+        .lo-ring-3    { inset:-24px;border-color:rgba(255,149,0,0.06);animation-delay:0.8s; }
+        .lo-icon      { width:90px;height:90px;border-radius:28px;background:#fff;border:1px solid rgba(255,149,0,0.18);box-shadow:0 8px 36px rgba(255,149,0,0.16),0 2px 8px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;position:relative;z-index:1;animation:lo-icon-in 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.12s both;font-size:40px;line-height:1; }
+
+        .lo-text  { text-align:center;padding:0 32px;animation:lo-msg-in 0.5s cubic-bezier(0.22,1,0.36,1) 0.24s both; }
+        .lo-title { font-size:clamp(26px,8vw,32px);font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:8px;background:linear-gradient(135deg,#1c1c1e 0%,#3a3a3c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+        .lo-sub   { font-size:14.5px;color:#6e6e73;font-weight:400;line-height:1.6; }
+
+        .lo-bar-wrap { margin-top:36px;width:120px;height:3px;background:rgba(0,0,0,0.07);border-radius:99px;overflow:hidden;animation:lo-msg-in 0.5s cubic-bezier(0.22,1,0.36,1) 0.35s both; }
+        .lo-bar      { height:100%;border-radius:99px;background:linear-gradient(90deg,#ff9500,#ff6b00);animation:lo-bar 1.65s cubic-bezier(0.4,0,0.2,1) 0.4s forwards; }
+
+        /* ✅ FIX: Only apply hover on devices that support it (prevents stuck hover on mobile) */
+        @media (hover: hover) {
+          .pf-tap-row:hover  { background: rgba(0,0,0,0.03) !important; }
+        }
         .pf-tap-row:active { background: rgba(0,0,0,0.06) !important; }
         .pf-copy-btn:active { opacity: 0.6; }
 
@@ -418,19 +497,25 @@ function ProfilePageContent() {
 
         .balance-num { animation: number-in 0.4s ease both; }
 
-        .pf-body { flex: 1; overflow: hidden; display: flex; }
-        .pf-mob-header { display: flex; }
+        /* ✅ FIX: Mobile layout uses column direction explicitly */
+        .pf-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+        .pf-mob-header { display: flex; flex-shrink: 0; }
         .pf-desk-header { display: none; }
         .pf-left { display: none; }
         .pf-right {
-          flex: 1; overflow-y: auto;
-          padding: 20px 16px 100px;
+          flex: 1;
+          overflow-y: auto;
+          overscroll-behavior-y: contain;
+          -webkit-overflow-scrolling: touch;
+          padding: 20px 16px calc(56px + env(safe-area-inset-bottom, 0px) + 24px);
           display: flex; flex-direction: column; gap: 22px;
+          min-height: 0;
         }
         .pf-right::-webkit-scrollbar { width: 0; }
         .pf-mob-only { display: block; }
 
         @media (min-width: 768px) {
+          .pf-body { flex-direction: row; }
           .pf-mob-header { display: none; }
           .pf-desk-header { display: flex !important; align-items: center; justify-content: space-between; padding-bottom: 4px; }
           .pf-left {
@@ -442,7 +527,11 @@ function ProfilePageContent() {
             border-right: 0.5px solid rgba(60,60,67,0.11);
           }
           .pf-left::-webkit-scrollbar { width: 0; }
-          .pf-right { padding: 24px 28px 100px; gap: 20px; }
+          .pf-right {
+            padding: 24px 28px 100px;
+            gap: 20px;
+            overscroll-behavior-y: auto;
+          }
           .pf-mob-only { display: none; }
           .pf-left > * { animation: fade-up 0.4s cubic-bezier(0.22,1,0.36,1) both; }
           .pf-left > *:nth-child(1) { animation-delay: 0.05s; }
@@ -458,8 +547,30 @@ function ProfilePageContent() {
         }
       ` }} />
 
+      {/* ── LOGOUT SPLASH ── */}
+      {logoutSplash && (
+        <div className="lo-splash">
+          <div className="lo-orb lo-orb-1" />
+          <div className="lo-orb lo-orb-2" />
+          <div className="lo-orb lo-orb-3" />
+          <div className="lo-icon-wrap">
+            <div className="lo-ring" />
+            <div className="lo-ring lo-ring-2" />
+            <div className="lo-ring lo-ring-3" />
+            <div className="lo-icon">👋</div>
+          </div>
+          <div className="lo-text">
+            <p className="lo-title">Sampai jumpa!</p>
+            <p className="lo-sub">Anda berhasil keluar.<br/>Sampai bertemu kembali.</p>
+          </div>
+          <div className="lo-bar-wrap">
+            <div className="lo-bar" />
+          </div>
+        </div>
+      )}
+
       {/* ── MOBILE HEADER ── */}
-      <div className="pf-mob-header" style={{ position: 'sticky', top: 0, zIndex: 50, flexShrink: 0, background: 'rgba(242,242,247,0.92)', backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)', borderBottom: '0.5px solid rgba(60,60,67,0.16)' }}>
+      <div className="pf-mob-header" style={{ width: '100%', zIndex: 50, background: 'rgba(242,242,247,0.92)', backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)', borderBottom: '0.5px solid rgba(60,60,67,0.16)' }}>
         <div style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <h1 style={{ fontSize: 17, fontWeight: 600, color: '#1c1c1e', letterSpacing: -0.4 }}>{t('profile.title')}</h1>
         </div>
@@ -497,7 +608,7 @@ function ProfilePageContent() {
                 iconBg="#ff3b30" label={t('profile.logout')} danger onClick={() => setShowLogout(true)} last
               />
             </Card>
-            <p style={{ textAlign: 'center', fontSize: 11.5, color: '#c7c7cc', marginTop: 14 }}>StockAutoTrade v2.0.0</p>
+            <p style={{ textAlign: 'center', fontSize: 11.5, color: '#c7c7cc', marginTop: 14 }}>STC AutoTrade v2.0.0</p>
           </div>
         </div>
 
@@ -528,7 +639,7 @@ function ProfilePageContent() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 10, background: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.16)' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
               <span style={{ fontSize: 13, color: '#ff3b30', flex: 1 }}>{error}</span>
-              <button onClick={() => setError(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ff3b30', opacity: 0.6, padding: 4 }}>
+              <button onClick={() => setError(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ff3b30', opacity: 0.6, padding: 4, flexShrink: 0 }}>
                 <svg width="11" height="11" viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
               </button>
             </div>
@@ -573,8 +684,8 @@ function ProfilePageContent() {
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                   </svg>
                 </div>
-                <span style={{ flex: 1, fontSize: 15, color: '#1c1c1e' }}>Dark Mode (Dashboard)</span>
-                <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
+                <span style={{ flex: 1, fontSize: 15, color: '#1c1c1e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Dark Mode (Dashboard)</span>
+                <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
                   <input
                     type="checkbox"
                     checked={isDarkMode}
@@ -623,11 +734,11 @@ function ProfilePageContent() {
             <Card>
               <TappableRow
                 icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"/></svg>}
-                iconBg="#5ac8fa" label={t('profile.termsOfService')} onClick={() => {}}
+                iconBg="#5ac8fa" label={t('profile.termsOfService')} onClick={() => window.open('https://stockity.id/information/agreement', '_blank')}
               />
               <TappableRow
                 icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
-                iconBg="#34c759" label={t('profile.privacyPolicy')} onClick={() => {}} last
+                iconBg="#34c759" label={t('profile.privacyPolicy')} onClick={() => window.open('https://stockity.id/information/privacy', '_blank')} last
               />
             </Card>
           </div>
@@ -639,7 +750,7 @@ function ProfilePageContent() {
                 iconBg="#ff3b30" label={t('profile.logout')} danger onClick={() => setShowLogout(true)} last
               />
             </Card>
-            <p style={{ textAlign: 'center', fontSize: 12, color: '#c7c7cc', marginTop: 14 }}>StockAutoTrade v2.0.0</p>
+            <p style={{ textAlign: 'center', fontSize: 12, color: '#c7c7cc', marginTop: 14 }}>STC AutoTrade v2.0.0</p>
           </div>
 
         </div>

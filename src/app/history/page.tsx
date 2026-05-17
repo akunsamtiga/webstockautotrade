@@ -99,6 +99,20 @@ function HistoryPageContent() {
     init();
   }, []); // eslint-disable-line
 
+  // ✅ FIX: Lock body scroll when filter panel is open (mobile UX)
+  useEffect(() => {
+    if (showFilters) {
+      const originalOverflow = document.body.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.touchAction = originalTouchAction;
+      };
+    }
+  }, [showFilters]);
+
   const loadHistory = useCallback(async (silent = false) => {
     if (!silent) setIsLoading(true); else setRefreshing(true);
     try {
@@ -238,6 +252,7 @@ function HistoryPageContent() {
       color: active ? color : '#6e6e73',
       cursor: 'pointer', transition: 'all 0.18s', whiteSpace: 'nowrap',
       WebkitTapHighlightColor: 'transparent',
+      flexShrink: 0,
     }}>
       {label}
     </button>
@@ -251,13 +266,14 @@ function HistoryPageContent() {
       background: '#fff', borderRadius: 14, padding: '14px 16px',
       boxShadow: '0 1px 0 rgba(0,0,0,0.04), 0 2px 12px rgba(0,0,0,0.04)',
       display: 'flex', flexDirection: 'column', gap: 6,
+      minWidth: 0,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, fontWeight: 500, color: '#6e6e73', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>{icon}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 0 }}>
+        <span style={{ fontSize: 11, fontWeight: 500, color: '#6e6e73', textTransform: 'uppercase', letterSpacing: '0.05em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', color, flexShrink: 0 }}>{icon}</div>
       </div>
-      <p style={{ fontSize: 22, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.5, lineHeight: 1 }}>{value}</p>
-      {sub && <p style={{ fontSize: 11, color: '#aeaeb2' }}>{sub}</p>}
+      <p style={{ fontSize: 22, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.5, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</p>
+      {sub && <p style={{ fontSize: 11, color: '#aeaeb2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</p>}
     </div>
   );
 
@@ -281,7 +297,7 @@ function HistoryPageContent() {
         {/* Left accent stripe */}
         <div style={{ width: 3, flexShrink: 0, borderRadius: '0 2px 2px 0', background: accentGrad, margin: '8px 0' }} />
 
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 11, padding: '11px 14px 11px 12px' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 11, padding: '11px 14px 11px 12px', minWidth: 0 }}>
 
           {/* Icon bubble */}
           <div style={{
@@ -298,34 +314,34 @@ function HistoryPageContent() {
           <div style={{ flex: 1, minWidth: 0 }}>
             {/* Row 1: badges + direction */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: type.color, background: type.bg, padding: '2px 7px', borderRadius: 5, border: `1px solid ${type.color}22` }}>
+              <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: type.color, background: type.bg, padding: '2px 7px', borderRadius: 5, border: `1px solid ${type.color}22`, flexShrink: 0 }}>
                 {type.label}
               </span>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.03em', color: isCall ? '#34c759' : '#ff3b30' }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.03em', color: isCall ? '#34c759' : '#ff3b30', flexShrink: 0 }}>
                 {isCall ? `↑ Buy` : `↓ Sell`}
               </span>
               {log.martingaleStep !== undefined && log.martingaleStep > 0 && (
-                <span style={{ fontSize: 9.5, fontWeight: 700, color: '#ff9500', background: 'rgba(255,149,0,0.10)', border: '1px solid rgba(255,149,0,0.20)', padding: '1px 6px', borderRadius: 4 }}>
+                <span style={{ fontSize: 9.5, fontWeight: 700, color: '#ff9500', background: 'rgba(255,149,0,0.10)', border: '1px solid rgba(255,149,0,0.20)', padding: '1px 6px', borderRadius: 4, flexShrink: 0 }}>
                   MG ×{log.martingaleStep}
                 </span>
               )}
               {pending && (
-                <span style={{ fontSize: 9.5, fontWeight: 600, color: '#8e8e93', background: 'rgba(142,142,147,0.10)', border: '1px solid rgba(142,142,147,0.20)', padding: '1px 6px', borderRadius: 4 }}>
+                <span style={{ fontSize: 9.5, fontWeight: 600, color: '#8e8e93', background: 'rgba(142,142,147,0.10)', border: '1px solid rgba(142,142,147,0.20)', padding: '1px 6px', borderRadius: 4, flexShrink: 0 }}>
                   {t('history.pending') || 'Pending'}
                 </span>
               )}
             </div>
             {/* Row 2: time + date + note */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 11.5, fontWeight: 600, color: '#3c3c43', fontFamily: "'SF Mono','Fira Mono',monospace", letterSpacing: '0.01em', background: 'rgba(60,60,67,0.06)', borderRadius: 5, padding: '1px 6px' }}>
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: '#3c3c43', fontFamily: "'SF Mono','Fira Mono',monospace", letterSpacing: '0.01em', background: 'rgba(60,60,67,0.06)', borderRadius: 5, padding: '1px 6px', flexShrink: 0 }}>
                 {log.time}
               </span>
-              <span style={{ fontSize: 10, color: '#c7c7cc' }}>•</span>
-              <span style={{ fontSize: 11, color: '#8e8e93' }}>{fmtDate(log.executedAt)}</span>
+              <span style={{ fontSize: 10, color: '#c7c7cc', flexShrink: 0 }}>•</span>
+              <span style={{ fontSize: 11, color: '#8e8e93', flexShrink: 0 }}>{fmtDate(log.executedAt)}</span>
               {log.note && (
                 <>
-                  <span style={{ fontSize: 10, color: '#c7c7cc' }}>•</span>
-                  <span style={{ fontSize: 10.5, color: '#8e8e93', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 90 }}>
+                  <span style={{ fontSize: 10, color: '#c7c7cc', flexShrink: 0 }}>•</span>
+                  <span style={{ fontSize: 10.5, color: '#8e8e93', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 'min(90px, 25vw)' }}>
                     {log.note}
                   </span>
                 </>
@@ -334,19 +350,19 @@ function HistoryPageContent() {
           </div>
 
           {/* Right: amount + result + profit */}
-          <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-            <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.2 }}>
+          <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, minWidth: 0 }}>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 'min(110px, 28vw)' }}>
               Rp {fmt(log.amount)}
             </span>
             {res ? (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', color: res.color, background: res.bg, padding: '3px 8px', borderRadius: 99, border: `1px solid ${res.color}30` }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', color: res.color, background: res.bg, padding: '3px 8px', borderRadius: 99, border: `1px solid ${res.color}30`, flexShrink: 0, whiteSpace: 'nowrap' }}>
                 {res.icon} {res.label}
               </span>
             ) : (
-              <span style={{ fontSize: 10, color: '#aeaeb2', background: 'rgba(60,60,67,0.06)', padding: '3px 8px', borderRadius: 99, border: '1px solid rgba(60,60,67,0.10)' }}>—</span>
+              <span style={{ fontSize: 10, color: '#aeaeb2', background: 'rgba(60,60,67,0.06)', padding: '3px 8px', borderRadius: 99, border: '1px solid rgba(60,60,67,0.10)', flexShrink: 0, whiteSpace: 'nowrap' }}>—</span>
             )}
             {log.profit != null && log.result && (
-              <span style={{ fontSize: 11.5, fontWeight: 700, color: profitPos ? '#34c759' : '#ff3b30', letterSpacing: -0.2 }}>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: profitPos ? '#34c759' : '#ff3b30', letterSpacing: -0.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 'min(100px, 28vw)' }}>
                 {profitPos ? '+' : '−'}Rp {fmt(log.profit)}
               </span>
             )}
@@ -358,14 +374,23 @@ function HistoryPageContent() {
   };
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#f2f2f7', fontFamily: "-apple-system,'SF Pro Display',BlinkMacSystemFont,'Helvetica Neue',sans-serif", WebkitFontSmoothing: 'antialiased', paddingBottom: 100 }}>
+    // ✅ FIX: Hapus overflow:'hidden', display:'flex', flexDirection:'column' dari root.
+    //    Root div TIDAK boleh jadi scroll container — biarkan <main> (globals.css)
+    //    yang handle scroll. Root cukup minHeight:'100%' agar background penuh.
+    <div style={{
+      minHeight: '100%',
+      background: '#f2f2f7',
+      fontFamily: "-apple-system,'SF Pro Display',BlinkMacSystemFont,'Helvetica Neue',sans-serif",
+      WebkitFontSmoothing: 'antialiased',
+    }}>
       <style>{`
         @keyframes skel-pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
         @keyframes spin        { to{transform:rotate(360deg)} }
         @keyframes fade-up     { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 
-        .hist-chip-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+        .hist-chip-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
         .hist-chip-scroll::-webkit-scrollbar { display: none; }
+        .hist-tap { -webkit-tap-highlight-color: transparent; }
         .hist-tap:active { opacity: 0.6; }
 
         .hist-row { animation: fade-up 0.3s cubic-bezier(0.22,1,0.36,1) both; }
@@ -375,6 +400,11 @@ function HistoryPageContent() {
         .hist-row:nth-child(4)  { animation-delay: 0.12s; }
         .hist-row:nth-child(5)  { animation-delay: 0.15s; }
         .hist-row:nth-child(n+6){ animation-delay: 0.18s; }
+
+        /* ✅ FIX: Only apply hover on devices that support it (prevents stuck hover on mobile) */
+        @media (hover: hover) {
+          .hist-sidebar button:hover { background: rgba(0,0,0,0.02) !important; }
+        }
 
         @media (min-width: 768px) {
           .hist-grid-2 { grid-template-columns: 1fr 1fr !important; }
@@ -386,29 +416,44 @@ function HistoryPageContent() {
       `}</style>
 
       {/* ── STICKY HEADER ── */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 50, flexShrink: 0, background: 'rgba(242,242,247,0.92)', backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)', borderBottom: '0.5px solid rgba(60,60,67,0.16)' }}>
+      {/* ✅ FIX: position:'sticky' + top:0 agar header nempel saat <main> discroll */}
+      <div style={{
+        position: 'sticky',
+        top: 0,
+        width: '100%',
+        zIndex: 50,
+        background: 'rgba(242,242,247,0.92)',
+        backdropFilter: 'saturate(180%) blur(20px)',
+        WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+        borderBottom: '0.5px solid rgba(60,60,67,0.16)',
+      }}>
         <div style={{ maxWidth: 1120, margin: '0 auto', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <h1 style={{ flex: 1, fontSize: 17, fontWeight: 600, color: '#1c1c1e', letterSpacing: -0.4 }}>{t('history.title')}</h1>
-          
-          {/* Language Selector */}
-          
-          
+          <h1 style={{ flex: 1, fontSize: 17, fontWeight: 600, color: '#1c1c1e', letterSpacing: -0.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('history.title')}</h1>
+
           <button onClick={() => loadHistory(true)} disabled={refreshing || isLoading} className="hist-tap"
-            style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(0,0,0,0.05)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#007aff', cursor: 'pointer', opacity: (refreshing || isLoading) ? 0.4 : 1 }}>
+            style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(0,0,0,0.05)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#007aff', cursor: 'pointer', opacity: (refreshing || isLoading) ? 0.4 : 1, flexShrink: 0 }}>
             <RotateCcw size={15} style={{ animation: (refreshing || isLoading) ? 'spin 0.8s linear infinite' : 'none' }} />
           </button>
           <button onClick={() => setShowFilters(v => !v)} className="hist-tap"
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 99, background: showFilters ? 'rgba(0,122,255,0.10)' : 'rgba(0,0,0,0.05)', border: `1px solid ${showFilters ? 'rgba(0,122,255,0.22)' : 'rgba(60,60,67,0.12)'}`, color: showFilters ? '#007aff' : '#3c3c43', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 99, background: showFilters ? 'rgba(0,122,255,0.10)' : 'rgba(0,0,0,0.05)', border: `1px solid ${showFilters ? 'rgba(0,122,255,0.22)' : 'rgba(60,60,67,0.12)'}`, color: showFilters ? '#007aff' : '#3c3c43', fontSize: 13, fontWeight: 500, cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>
             <Filter size={13} />
-            {t('common.filter')}
-            {hasActiveFilter && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#007aff', marginLeft: 1 }} />}
+            <span style={{ whiteSpace: 'nowrap' }}>{t('common.filter')}</span>
+            {hasActiveFilter && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#007aff', marginLeft: 1, flexShrink: 0 }} />}
           </button>
         </div>
       </div>
 
       {/* ── BODY ── */}
-      <div style={{ maxWidth: 1120, margin: '0 auto', padding: '20px 16px 0' }}>
-        <div className="hist-layout" style={{ display: 'block' }}>
+      {/* ✅ FIX: Hapus wrapper flex+overflow:hidden dan inner overflowY:auto.
+           Konten mengalir natural — scroll ditangani <main> di globals.css.
+           padding-bottom sudah include tinggi bottom nav + safe area. */}
+      <div style={{
+        maxWidth: 1120,
+        margin: '0 auto',
+        width: '100%',
+        padding: '20px 16px calc(56px + env(safe-area-inset-bottom, 0px) + 24px)',
+      }}>
+        <div className="hist-layout" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* ══ SIDEBAR (desktop) ══ */}
           <div className="hist-sidebar" style={{ display: 'none', flexDirection: 'column', gap: 16 }}>
@@ -447,11 +492,11 @@ function HistoryPageContent() {
               {(['all', 'schedule', 'fastrade', 'ctc', 'indicator', 'momentum'] as LogType[]).map((val, i, arr) => {
                 const active = typeFilter === val;
                 const colors: Record<LogType, string> = {
-                  all: '#007aff', schedule: '#34c759', fastrade: '#007aff', 
+                  all: '#007aff', schedule: '#34c759', fastrade: '#007aff',
                   ctc: '#af52de', indicator: '#ff9500', momentum: '#ff2d55'
                 };
                 return (
-                  <button key={val} onClick={() => setTypeFilter(val)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', background: active ? `${colors[val]}08` : 'transparent', border: 'none', borderBottom: i < arr.length - 1 ? '1px solid rgba(60,60,67,0.07)' : 'none', borderLeft: active ? `2px solid ${colors[val]}` : '2px solid transparent', cursor: 'pointer', textAlign: 'left' }}>
+                  <button key={val} onClick={() => setTypeFilter(val)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', background: active ? `${colors[val]}08` : 'transparent', border: 'none', borderBottom: i < arr.length - 1 ? '1px solid rgba(60,60,67,0.07)' : 'none', borderLeft: active ? `2px solid ${colors[val]}` : '2px solid transparent', cursor: 'pointer', textAlign: 'left', WebkitTapHighlightColor: 'transparent' }}>
                     <span style={{ fontSize: 14, color: active ? colors[val] : '#1c1c1e', fontWeight: active ? 600 : 400 }}>{getTypeLabel(val)}</span>
                     {active && <ChevronRight size={13} color={colors[val]} />}
                   </button>
@@ -464,7 +509,7 @@ function HistoryPageContent() {
               {(['all', 'today', 'week', 'month'] as DateFilter[]).map((val, i, arr) => {
                 const active = dateFilter === val;
                 return (
-                  <button key={val} onClick={() => setDateFilter(val)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', background: active ? 'rgba(0,122,255,0.06)' : 'transparent', border: 'none', borderBottom: i < arr.length - 1 ? '1px solid rgba(60,60,67,0.07)' : 'none', borderLeft: active ? '2px solid #007aff' : '2px solid transparent', cursor: 'pointer', textAlign: 'left' }}>
+                  <button key={val} onClick={() => setDateFilter(val)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', background: active ? 'rgba(0,122,255,0.06)' : 'transparent', border: 'none', borderBottom: i < arr.length - 1 ? '1px solid rgba(60,60,67,0.07)' : 'none', borderLeft: active ? '2px solid #007aff' : '2px solid transparent', cursor: 'pointer', textAlign: 'left', WebkitTapHighlightColor: 'transparent' }}>
                     <span style={{ fontSize: 14, color: active ? '#007aff' : '#1c1c1e', fontWeight: active ? 600 : 400 }}>{getPeriodLabel(val)}</span>
                     {active && <ChevronRight size={13} color="#007aff" />}
                   </button>
@@ -474,34 +519,34 @@ function HistoryPageContent() {
           </div>
 
           {/* ══ MAIN COLUMN ══ */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
 
             <div className="hist-main-top" style={{ display: 'block' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <StatTile 
-                  label={t('history.totalTrades')} 
-                  value={isLoading ? '—' : stats.totalTrades} 
-                  sub={isLoading ? '' : `${stats.wins}P · ${stats.losses}L${stats.draws > 0 ? ` · ${stats.draws}${t('history.draw')[0]}` : ''}`} 
-                  color="#007aff" 
-                  icon={<BarChart3 size={14} />} 
+                <StatTile
+                  label={t('history.totalTrades')}
+                  value={isLoading ? '—' : stats.totalTrades}
+                  sub={isLoading ? '' : `${stats.wins}P · ${stats.losses}L${stats.draws > 0 ? ` · ${stats.draws}${t('history.draw')[0]}` : ''}`}
+                  color="#007aff"
+                  icon={<BarChart3 size={14} />}
                 />
-                <StatTile 
-                  label={t('history.winRate')} 
-                  value={isLoading ? '—' : `${stats.winRate}%`} 
-                  sub={isLoading ? '' : `${pnlPos ? '+' : '-'}Rp ${fmt(stats.totalPnL)}`} 
-                  color={stats.winRate >= 50 ? '#34c759' : '#ff3b30'} 
-                  icon={stats.winRate >= 50 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />} 
+                <StatTile
+                  label={t('history.winRate')}
+                  value={isLoading ? '—' : `${stats.winRate}%`}
+                  sub={isLoading ? '' : `${pnlPos ? '+' : '-'}Rp ${fmt(stats.totalPnL)}`}
+                  color={stats.winRate >= 50 ? '#34c759' : '#ff3b30'}
+                  icon={stats.winRate >= 50 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                 />
               </div>
             </div>
 
             {showFilters && (
               <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 0 rgba(0,0,0,0.04), 0 2px 12px rgba(0,0,0,0.04)', padding: '14px 16px', animation: 'fade-up 0.22s ease both' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1c1c1e' }}>{t('common.filter')}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, minWidth: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1c1c1e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('common.filter')}</span>
                   {hasActiveFilter && (
                     <button onClick={() => { setTypeFilter('all'); setResultFilter('all'); setDateFilter('all'); }}
-                      style={{ fontSize: 13, color: '#ff3b30', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>{t('history.resetFilters')}</button>
+                      style={{ fontSize: 13, color: '#ff3b30', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>{t('history.resetFilters')}</button>
                   )}
                 </div>
                 <p style={{ fontSize: 11, color: '#6e6e73', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('history.filterByType')}</p>
@@ -528,7 +573,7 @@ function HistoryPageContent() {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, padding: '0 4px' }}>
                 <p style={{ fontSize: 11.5, fontWeight: 500, color: '#6e6e73', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('history.trades')}</p>
-                <p style={{ fontSize: 11.5, color: '#aeaeb2' }}>{filteredLogs.length} {t('common.data')}</p>
+                <p style={{ fontSize: 11.5, color: '#aeaeb2', whiteSpace: 'nowrap', flexShrink: 0 }}>{filteredLogs.length} {t('common.data')}</p>
               </div>
               <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 0 rgba(0,0,0,0.04), 0 2px 12px rgba(0,0,0,0.04)' }}>
                 {isLoading ? (
