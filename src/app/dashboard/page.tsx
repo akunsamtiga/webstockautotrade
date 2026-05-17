@@ -4284,7 +4284,7 @@ export default function DashboardPage() {
   if (!settingsLoaded) return null;
 
   return (
-    <div style={{minHeight:'100%',background:colors.bg,paddingBottom:88,color:colors.text,transition:'background 0.3s, color 0.3s',overscrollBehavior:'none',WebkitOverflowScrolling:'touch' as any}}>
+    <div style={{minHeight:'100%',background:colors.bg,paddingBottom:88,color:colors.text,transition:'background 0.3s, color 0.3s'}}>
       {/* Asset Picker Modal — top level */}
       <PickerModal
         open={assetPickerOpen}
@@ -4354,15 +4354,10 @@ export default function DashboardPage() {
         @keyframes profit-slide-down { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
         @keyframes win-flash   { 0%{box-shadow:0 0 0 0 rgba(0,122,255,0)} 15%{box-shadow:0 0 0 4px rgba(0,122,255,0.28)} 100%{box-shadow:0 0 0 0 rgba(0,122,255,0)} }
         @keyframes lose-flash  { 0%{box-shadow:0 0 0 0 rgba(255,59,48,0)} 15%{box-shadow:0 0 0 4px rgba(255,59,48,0.28)} 100%{box-shadow:0 0 0 0 rgba(255,59,48,0)} }
-        /* All animations default to GPU-compositable props only */
-        @media (max-width: 767px) {
-          @keyframes win-flash  { 0%,100%{opacity:1} 15%{opacity:0.7} }
-          @keyframes lose-flash { 0%,100%{opacity:1} 15%{opacity:0.7} }
-        }
 @keyframes header-shimmer {
-  0%   { transform: translateX(-200%); }
-  40%  { transform: translateX(200%); }
-  100% { transform: translateX(200%); }
+  0%   { background-position: 200% center; }
+  40%  { background-position: -200% center; }
+  100% { background-position: -200% center; }
 }
           .ds-card {
           background: ${isDarkMode ? '#1C1C1E' : '#ffffff'};
@@ -4370,18 +4365,16 @@ export default function DashboardPage() {
           border-radius: 16px;
           box-shadow: ${isDarkMode ? '0 2px 12px rgba(0,0,0,0.40)' : '0 2px 8px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.03)'};
           transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
-          transform: translateZ(0);
         }
 
         @media (max-width: 767px) {
-          .ds-card {
-            /* Remove box-shadow transition on mobile — not GPU-composited, causes scroll jank */
-            transition: background 0.3s, border-color 0.3s !important;
-            box-shadow: ${isDarkMode ? '0 1px 6px rgba(0,0,0,0.35)' : '0 1px 3px rgba(0,0,0,0.04)'} !important;
-          }
           .ds-card, .ds-card:hover {
             border: 0.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(60,60,67,0.12)'} !important;
-            transform: translateZ(0) !important;
+            box-shadow: ${isDarkMode
+              ? '0 2px 12px rgba(0,0,0,0.40)'
+              : '0 1px 4px rgba(0,0,0,0.05)'
+            } !important;
+            transform: none !important;
           }
         }
 
@@ -4405,20 +4398,6 @@ export default function DashboardPage() {
 
         .schedule-item { transition: background 0.15s; }
         .schedule-item:hover { background: ${isDarkMode ? 'rgba(10,132,255,0.07)' : 'rgba(0,122,255,0.05)'} !important; }
-
-        /* ── Mobile scroll performance ───────────────────────────────── */
-        @media (max-width: 767px) {
-          /* Promote ping-animated dots to GPU layer so they don't block scroll compositing */
-          [style*="ping 1"] {
-            will-change: transform, opacity;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-          }
-          /* Ensure scroll-blocking transitions are off the critical path */
-          * {
-            -webkit-tap-highlight-color: transparent;
-          }
-        }
       `}</style>
 
       <OrderInputModal
@@ -4900,7 +4879,7 @@ export default function DashboardPage() {
 
         {/* ── MOBILE ── */}
         {deviceType==='mobile'&&(
-          <div style={{display:'flex',flexDirection:'column',gap:g,touchAction:'pan-y',WebkitOverflowScrolling:'touch' as any,overscrollBehaviorY:'contain'}}>
+          <div style={{display:'flex',flexDirection:'column',gap:g}}>
             {/* Header Image - Fullwidth, no top margin */}
             {/* Header Image - Full bleed, breaks out of padding */}
             <div 
@@ -4934,22 +4913,16 @@ export default function DashboardPage() {
       zIndex: 1,
     }}
   />
-  {/* Shimmer overlay — uses transform (GPU-composited) instead of background-position */}
+  {/* Shimmer overlay */}
 <div style={{
   position: 'absolute',
   inset: 0,
   zIndex: 2,
-  overflow: 'hidden',
+  background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 55%, transparent 70%)',
+  backgroundSize: '300% 100%',
+  animation: 'header-shimmer 12s ease-in-out infinite',
   pointerEvents: 'none',
-}}>
-  <div style={{
-    position: 'absolute',
-    inset: 0,
-    background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 55%, transparent 70%)',
-    animation: 'header-shimmer 12s ease-in-out infinite',
-    willChange: 'transform',
-  }}/>
-</div>
+}}/>
 
 </div>
             {TopCards}

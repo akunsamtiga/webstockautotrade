@@ -8,6 +8,7 @@ import { checkIsAdmin, checkIsSuperAdmin } from '@/lib/supabaseRepository';
 import { LanguageProvider, useLanguage, formatCurrency, formatDate, Language } from '@/lib';
 import { LanguageSheet } from '@/components/LanguageSelector';
 import { useDarkMode } from '@/lib/DarkModeContext';
+import { AppUpdateCard } from '@/components/AppUpdateCard';
 
 // ─────────────────────────────────────────────
 // TYPES
@@ -731,6 +732,7 @@ function ProfilePageContent() {
 
           <div>
             <SectionLabel>{t('profile.help')}</SectionLabel>
+
             <Card>
               <TappableRow
                 icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"/></svg>}
@@ -741,6 +743,10 @@ function ProfilePageContent() {
                 iconBg="#34c759" label={t('profile.privacyPolicy')} onClick={() => window.open('https://stockity.id/information/privacy', '_blank')} last
               />
             </Card>
+          </div>
+          <div>
+            <SectionLabel>Pembaruan</SectionLabel>
+            <AppUpdateCard />
           </div>
 
           <div className="pf-mob-only">

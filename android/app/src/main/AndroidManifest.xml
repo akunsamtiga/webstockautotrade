@@ -25,6 +25,10 @@
 
         </activity>
 
+        <!--
+            FileProvider — dipakai oleh ApkInstallerPlugin untuk membuat URI
+            yang bisa dibaca oleh package installer Android.
+        -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -32,11 +36,22 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"></meta-data>
+                android:resource="@xml/file_paths"/>
         </provider>
+
     </application>
 
     <!-- Permissions -->
 
+    <!-- Akses internet untuk download APK dan fitur app lainnya -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+        ✅ BARU: Izin untuk install APK dari sumber tidak dikenal (API 26+).
+        Tanpa ini, ACTION_VIEW dengan APK tidak bisa memicu package installer.
+        User akan diminta mengizinkan "Install from unknown sources" untuk app ini
+        pertama kali — itu normal dan hanya perlu sekali.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
 </manifest>

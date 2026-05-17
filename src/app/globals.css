@@ -172,6 +172,11 @@ main {
   height: 100%;
   overflow-y: scroll;
   overflow-x: hidden;
+  /* ✅ SCROLL PERFORMANCE FIXES */
+  -webkit-overflow-scrolling: touch;  /* momentum scroll di iOS */
+  touch-action: pan-y;                /* browser langsung kenali gestur vertikal, tanpa delay */
+  overscroll-behavior: contain;       /* cegah scroll chain ke parent/body */
+  will-change: scroll-position;       /* hint GPU agar scroll container di-promote ke layer sendiri */
   scrollbar-width: none;
   -ms-overflow-style: none;
 }

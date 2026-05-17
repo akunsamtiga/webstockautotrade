@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    FileProvider paths — dipakai oleh ApkInstallerPlugin dan fitur lain.
+
+    cache-path  → getContext().getCacheDir()
+                  Tempat ApkInstallerPlugin menyimpan app-update.apk sebelum install.
+
+    external-path → getExternalStorageDirectory()
+                    Dipakai oleh fitur lain (gambar, dsb).
+-->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- ✅ cache dir: tempat ApkInstallerPlugin menyimpan APK sementara -->
+    <cache-path name="apk_cache" path="." />
+
+    <!-- existing: external storage untuk fitur lain -->
     <external-path name="my_images" path="." />
-    <cache-path name="my_cache_images" path="." />
 </paths>
