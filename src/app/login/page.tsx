@@ -1150,7 +1150,7 @@ function LoginPageContent() {
           },
           {
             step: 'Langkah 2 — Registrasi Berhasil',
-            text: <span>Selamat! Akan muncul pesan sukses seperti gambar di atas. Selanjutnya, tekan tombol <strong>"Login STC AutoTrade"</strong> untuk langsung menuju halaman login 🎉</span>,
+            text: <span>Selamat! Akan muncul pesan sukses seperti gambar di atas. Selanjutnya, tekan tombol <strong>&ldquo;Login STC AutoTrade&rdquo;</strong> untuk langsung menuju halaman login 🎉</span>,
           },
           {
             step: 'Langkah 3 — Masuk ke Akun',

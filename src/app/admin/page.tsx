@@ -1199,7 +1199,7 @@ export default function AdminPage() {
                 {searchQ ? (
                   <>
                     <p className="text-sm font-semibold text-slate-600">Tidak ditemukan</p>
-                    <p className="text-xs text-slate-400 mt-1">"{searchQ}" tidak cocok dengan data apapun</p>
+                    <p className="text-xs text-slate-400 mt-1">&ldquo;{searchQ}&rdquo; tidak cocok dengan data apapun</p>
                   </>
                 ) : (
                   <>

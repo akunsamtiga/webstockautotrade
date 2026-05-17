@@ -1632,6 +1632,48 @@ const SchedulePanel: React.FC<{orders:ScheduleOrder[];logs:ExecutionLog[];onOpen
   );
 };
 // ═══════════════════════════════════════════
+// PNL HERO — auto-fit, centered, fills 1 line
+// ═══════════════════════════════════════════
+const PnlHero: React.FC<{pnl:number;pnlCol:string;children?:React.ReactNode}> = ({pnl,pnlCol,children}) => {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [fs, setFs] = React.useState(72);
+  const fullText = `${pnl>=0?'+':'-'}Rp\u00A0${Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}`;
+
+  React.useEffect(() => {
+    const fit = () => {
+      const wrap = wrapRef.current;
+      const txt  = textRef.current;
+      if (!wrap || !txt) return;
+      const avail = wrap.offsetWidth - 8;
+      let s = 88;
+      txt.style.fontSize = s + 'px';
+      while (txt.scrollWidth > avail && s > 14) { s--; txt.style.fontSize = s + 'px'; }
+      setFs(s);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    if (wrapRef.current) ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, [fullText]);
+
+  return (
+    <div style={{padding:'24px 20px 20px',borderBottom:`1px solid ${C.bdr}`,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+      <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted}}>Session P&L</div>
+      <div ref={wrapRef} style={{width:'100%',textAlign:'center',overflow:'hidden'}}>
+        <span ref={textRef} style={{
+          fontSize:fs,fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,
+          color:pnlCol,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',
+          display:'inline-block',
+        }}>
+          {fullText}
+        </span>
+      </div>
+      {children}
+    </div>
+  );
+};
+// ═══════════════════════════════════════════
 const FastradePanel: React.FC<{status:FastradeStatus|null;logs:FastradeLog[];isLoading:boolean;fillHeight?:boolean;inModal?:boolean}> =
 ({status,logs,isLoading,fillHeight,inModal}) => {
   const isOn   = status?.isRunning??false;
@@ -1696,18 +1738,7 @@ const FastradePanel: React.FC<{status:FastradeStatus|null;logs:FastradeLog[];isL
             /* ── MODAL: clean minimal ── */
             <>
               {/* PNL Hero */}
-              <div style={{padding:'28px 24px 20px',borderBottom:`1px solid ${C.bdr}`}}>
-                <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted,marginBottom:6}}>Session P&L</div>
-                <div style={{display:'flex',alignItems:'baseline',gap:6}}>
-                  <span style={{fontSize:13,fontWeight:700,color:pnlCol,opacity:0.75,lineHeight:1}}>Rp</span>
-                  <span style={{
-                    fontSize:'clamp(30px,9vw,42px)',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,
-                    color:pnlCol,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',
-                  }}>
-                    {pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
-                  </span>
-                </div>
-              </div>
+              <PnlHero pnl={pnl} pnlCol={pnlCol}/>
               {/* Stats row */}
               <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
                 {[
@@ -1952,24 +1983,14 @@ const AISignalPanel: React.FC<{
             /* ── MODAL: clean minimal ── */
             <>
               {/* PNL Hero */}
-              <div style={{padding:'28px 24px 20px',borderBottom:`1px solid ${C.bdr}`}}>
-                <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted,marginBottom:6}}>Session P&L</div>
-                <div style={{display:'flex',alignItems:'baseline',gap:6}}>
-                  <span style={{fontSize:13,fontWeight:700,color:pnlCol,opacity:0.75,lineHeight:1}}>Rp</span>
-                  <span style={{
-                    fontSize:'clamp(30px,9vw,42px)',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,
-                    color:pnlCol,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',
-                  }}>
-                    {pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
-                  </span>
-                </div>
+              <PnlHero pnl={pnl} pnlCol={pnlCol}>
                 {alwaysSignal?.isActive&&(
-                  <div style={{display:'inline-flex',alignItems:'center',gap:5,marginTop:10,padding:'4px 10px',borderRadius:99,background:`${C.amber}10`,border:`1px solid ${C.amber}30`}}>
+                  <div style={{display:'inline-flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:99,background:`${C.amber}10`,border:`1px solid ${C.amber}30`}}>
                     <span style={{width:5,height:5,borderRadius:'50%',background:C.amber,animation:'pulse 1.4s ease-in-out infinite'}}/>
                     <span style={{fontSize:11,fontWeight:600,color:C.amber}}>Martingale K{alwaysSignal.currentStep}/{alwaysSignal.maxSteps}</span>
                   </div>
                 )}
-              </div>
+              </PnlHero>
               {/* Stats row */}
               <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
                 {[
@@ -2147,18 +2168,7 @@ const IndicatorPanel: React.FC<{status:IndicatorStatus|null;isLoading:boolean;fi
             /* ── MODAL: clean minimal ── */
             <div style={{display:'flex',flexDirection:'column',flex:1}}>
               {/* PNL Hero */}
-              <div style={{padding:'28px 24px 20px',borderBottom:`1px solid ${C.bdr}`}}>
-                <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted,marginBottom:6}}>Session P&L</div>
-                <div style={{display:'flex',alignItems:'baseline',gap:6}}>
-                  <span style={{fontSize:13,fontWeight:700,color:pnlCol,opacity:0.75,lineHeight:1}}>Rp</span>
-                  <span style={{
-                    fontSize:'clamp(30px,9vw,42px)',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,
-                    color:pnlCol,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',
-                  }}>
-                    {pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
-                  </span>
-                </div>
-              </div>
+              <PnlHero pnl={pnl} pnlCol={pnlCol}/>
               {/* Stats row */}
               <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
                 {[
@@ -2269,18 +2279,7 @@ const MomentumPanel: React.FC<{status:MomentumStatus|null;isLoading:boolean;fill
             /* ── MODAL: clean minimal ── */
             <div style={{display:'flex',flexDirection:'column',flex:1}}>
               {/* PNL Hero */}
-              <div style={{padding:'28px 24px 20px',borderBottom:`1px solid ${C.bdr}`}}>
-                <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted,marginBottom:6}}>Session P&L</div>
-                <div style={{display:'flex',alignItems:'baseline',gap:6}}>
-                  <span style={{fontSize:13,fontWeight:700,color:pnlCol,opacity:0.75,lineHeight:1}}>Rp</span>
-                  <span style={{
-                    fontSize:'clamp(30px,9vw,42px)',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,
-                    color:pnlCol,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',
-                  }}>
-                    {pnl>=0?'+':'-'}{Math.round(Math.abs(pnl)/100).toLocaleString('id-ID')}
-                  </span>
-                </div>
-              </div>
+              <PnlHero pnl={pnl} pnlCol={pnlCol}/>
               {/* Stats row */}
               <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
                 {[
@@ -3668,7 +3667,7 @@ export default function DashboardPage() {
   const rsiOversold          = _s.rsiOversold;
   const momentumPatterns     = _s.momentumPatterns;
 
-  const setTradingMode          = (v: TradingMode)                               => _upd('tradingMode', v);
+  const setTradingMode          = useCallback((v: TradingMode)                               => _upd('tradingMode', v), [_upd]);
   const setSelectedRic          = (v: string)                                    => _upd('selectedRic', v);
   const setIsDemo               = (v: boolean)                                   => _upd('isDemo', v);
   const setDuration             = (v: number)                                    => _upd('duration', v);
@@ -4285,7 +4284,7 @@ export default function DashboardPage() {
   if (!settingsLoaded) return null;
 
   return (
-    <div style={{minHeight:'100%',background:colors.bg,paddingBottom:88,color:colors.text,transition:'background 0.3s, color 0.3s'}}>
+    <div style={{minHeight:'100%',background:colors.bg,paddingBottom:88,color:colors.text,transition:'background 0.3s, color 0.3s',overscrollBehavior:'none',WebkitOverflowScrolling:'touch' as any}}>
       {/* Asset Picker Modal — top level */}
       <PickerModal
         open={assetPickerOpen}
@@ -4355,10 +4354,15 @@ export default function DashboardPage() {
         @keyframes profit-slide-down { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
         @keyframes win-flash   { 0%{box-shadow:0 0 0 0 rgba(0,122,255,0)} 15%{box-shadow:0 0 0 4px rgba(0,122,255,0.28)} 100%{box-shadow:0 0 0 0 rgba(0,122,255,0)} }
         @keyframes lose-flash  { 0%{box-shadow:0 0 0 0 rgba(255,59,48,0)} 15%{box-shadow:0 0 0 4px rgba(255,59,48,0.28)} 100%{box-shadow:0 0 0 0 rgba(255,59,48,0)} }
+        /* All animations default to GPU-compositable props only */
+        @media (max-width: 767px) {
+          @keyframes win-flash  { 0%,100%{opacity:1} 15%{opacity:0.7} }
+          @keyframes lose-flash { 0%,100%{opacity:1} 15%{opacity:0.7} }
+        }
 @keyframes header-shimmer {
-  0%   { background-position: 200% center; }
-  40%  { background-position: -200% center; }
-  100% { background-position: -200% center; }
+  0%   { transform: translateX(-200%); }
+  40%  { transform: translateX(200%); }
+  100% { transform: translateX(200%); }
 }
           .ds-card {
           background: ${isDarkMode ? '#1C1C1E' : '#ffffff'};
@@ -4366,16 +4370,18 @@ export default function DashboardPage() {
           border-radius: 16px;
           box-shadow: ${isDarkMode ? '0 2px 12px rgba(0,0,0,0.40)' : '0 2px 8px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.03)'};
           transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+          transform: translateZ(0);
         }
 
         @media (max-width: 767px) {
+          .ds-card {
+            /* Remove box-shadow transition on mobile — not GPU-composited, causes scroll jank */
+            transition: background 0.3s, border-color 0.3s !important;
+            box-shadow: ${isDarkMode ? '0 1px 6px rgba(0,0,0,0.35)' : '0 1px 3px rgba(0,0,0,0.04)'} !important;
+          }
           .ds-card, .ds-card:hover {
             border: 0.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(60,60,67,0.12)'} !important;
-            box-shadow: ${isDarkMode
-              ? '0 2px 12px rgba(0,0,0,0.40)'
-              : '0 1px 4px rgba(0,0,0,0.05)'
-            } !important;
-            transform: none !important;
+            transform: translateZ(0) !important;
           }
         }
 
@@ -4399,6 +4405,20 @@ export default function DashboardPage() {
 
         .schedule-item { transition: background 0.15s; }
         .schedule-item:hover { background: ${isDarkMode ? 'rgba(10,132,255,0.07)' : 'rgba(0,122,255,0.05)'} !important; }
+
+        /* ── Mobile scroll performance ───────────────────────────────── */
+        @media (max-width: 767px) {
+          /* Promote ping-animated dots to GPU layer so they don't block scroll compositing */
+          [style*="ping 1"] {
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+          }
+          /* Ensure scroll-blocking transitions are off the critical path */
+          * {
+            -webkit-tap-highlight-color: transparent;
+          }
+        }
       `}</style>
 
       <OrderInputModal
@@ -4880,7 +4900,7 @@ export default function DashboardPage() {
 
         {/* ── MOBILE ── */}
         {deviceType==='mobile'&&(
-          <div style={{display:'flex',flexDirection:'column',gap:g}}>
+          <div style={{display:'flex',flexDirection:'column',gap:g,touchAction:'pan-y',WebkitOverflowScrolling:'touch' as any,overscrollBehaviorY:'contain'}}>
             {/* Header Image - Fullwidth, no top margin */}
             {/* Header Image - Full bleed, breaks out of padding */}
             <div 
@@ -4914,16 +4934,22 @@ export default function DashboardPage() {
       zIndex: 1,
     }}
   />
-  {/* Shimmer overlay */}
+  {/* Shimmer overlay — uses transform (GPU-composited) instead of background-position */}
 <div style={{
   position: 'absolute',
   inset: 0,
   zIndex: 2,
-  background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 55%, transparent 70%)',
-  backgroundSize: '300% 100%',
-  animation: 'header-shimmer 12s ease-in-out infinite',
+  overflow: 'hidden',
   pointerEvents: 'none',
-}}/>
+}}>
+  <div style={{
+    position: 'absolute',
+    inset: 0,
+    background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 55%, transparent 70%)',
+    animation: 'header-shimmer 12s ease-in-out infinite',
+    willChange: 'transform',
+  }}/>
+</div>
 
 </div>
             {TopCards}
