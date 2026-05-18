@@ -984,6 +984,9 @@ export default function RegisterPage() {
       setPhase('webview');
     }
 
+    // ✅ Selalu clear cookies/cache WebView sebelum buka agar halaman registrasi fresh
+    await stcWebView.clearSession().catch(() => {});
+
     try {
       const result = await stcWebView.open({ url: registrationUrl.current });
       await stcWebView.close().catch(() => {});
@@ -1021,6 +1024,14 @@ export default function RegisterPage() {
       const token = await storage.get('stc_token');
       if (token) { router.replace('/dashboard'); return; }
 
+      // ✅ FRESH START: Reset semua state sesi sebelumnya setiap kali halaman register dibuka
+      capturedToken.current  = '';
+      capturedDevice.current = '';
+      isCheckingRef.current  = false;
+      setCapturedEmail('');
+      setSaveError(null);
+      setIsUserBlocked(false);
+
       try {
         const cfg = await getRegistrationConfig();
         registrationUrl.current = cfg.registrationUrl;
@@ -1034,6 +1045,9 @@ export default function RegisterPage() {
         setPhase('landing');
         return;
       }
+
+      // ✅ Clear WebView cookies/cache sebelum buka registrasi agar selalu fresh
+      await stcWebView.clearSession().catch(() => {});
 
       // Pertama kali load (bukan dari landing) — sembunyikan UI, buka WebView langsung
       openRegistration(false);
