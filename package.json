@@ -1,6 +1,6 @@
 {
   "name": "stockautotrade",
-  "version": "3.0",
+  "version": "2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
