@@ -117,7 +117,7 @@ export async function checkForUpdate(): Promise<UpdateCheckResult> {
     const latest = await getLatestApkFromBucket();
 
     if (!latest) {
-      return { ...base, error: 'Tidak dapat memeriksa pembaruan saat ini.' };
+      return { ...base, error: 'Versi sudah terbaru, tidak ada pembaruan saat ini.' };
     }
 
     const hasUpdate = latest.versionCode > APP_VERSION_CODE;

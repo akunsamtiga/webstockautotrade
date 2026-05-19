@@ -36,8 +36,8 @@ function getColors(isDark: boolean) {
   return {
     // Surfaces — Apple system backgrounds
     bg:    isDark ? '#000000' : '#F2F2F7',
-    card:  isDark ? '#1C1C1E' : '#FFFFFF',
-    card2: isDark ? '#2C2C2E' : '#F9F9FB',
+    card:  isDark ? '#2c2c2f' : '#FFFFFF',
+    card2: isDark ? '#38383a' : '#F9F9FB',
     // Borders — hairline Apple style
     bdr:   isDark ? 'rgba(255,255,255,0.10)' : 'rgba(60,60,67,0.13)',
     bdrAct: isDark ? 'rgba(10,132,255,0.40)' : 'rgba(0,122,255,0.35)',
@@ -139,6 +139,21 @@ const Toggle: React.FC<{checked:boolean;onChange:(v:boolean)=>void;disabled?:boo
       }}/>
     </div>
   </label>
+);
+
+// Pure visual toggle — no label/input, tidak intercept klik, dipakai di dalam wrapper div
+const ToggleVisual: React.FC<{checked:boolean;disabled?:boolean;accent?:string}> = ({checked,disabled,accent=C.cyan}) => (
+  <div style={{display:'inline-flex',alignItems:'center',pointerEvents:'none',opacity:disabled?0.4:1}}>
+    <div style={{width:51,height:31,borderRadius:31,position:'relative',transition:'background 0.25s ease',background:checked?accent:'rgba(120,120,128,0.20)'}}>
+      <div style={{
+        position:'absolute',top:2,width:27,height:27,borderRadius:'50%',
+        transition:'left 0.25s cubic-bezier(0.25,0.46,0.45,0.94)',
+        left:checked?22:2,
+        background:'#FFFFFF',
+        boxShadow:'0 2px 6px rgba(0,0,0,0.22), 0 1px 2px rgba(0,0,0,0.10)',
+      }}/>
+    </div>
+  </div>
 );
 
 const StatusChip: React.FC<{col:string;label:string;pulse?:boolean}> = ({col,label,pulse}) => (
@@ -3398,13 +3413,20 @@ const SettingsCard: React.FC<{
               <p style={{ fontSize:12,fontWeight:600,color:C.text,marginBottom:10 }}>{T('dashboard.martingale.compensation')}</p>
               <div style={{ display:'flex',gap:8 }}>
                 {/* Toggle card */}
-                <button disabled={disabled} onClick={()=>set('enabled',!martingale.enabled)} style={{
-                  flex:1,height:44,borderRadius:12,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'0 12px',
-                  background:martingale.enabled?`${C.cyan}18`:C.card2,border:`0.8px solid ${martingale.enabled?`${C.cyan}60`:C.bdr}`,transition:'all 0.15s',
-                }}>
+                <div
+                  onClick={()=>{ if(!disabled) set('enabled',!martingale.enabled); }}
+                  style={{
+                    flex:1,height:44,borderRadius:12,cursor:disabled?'not-allowed':'pointer',
+                    display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'0 12px',
+                    background:martingale.enabled?`${C.cyan}18`:C.card2,
+                    border:`0.8px solid ${martingale.enabled?`${C.cyan}60`:C.bdr}`,
+                    transition:'all 0.15s',opacity:disabled?0.65:1,
+                    WebkitTapHighlightColor:'transparent',userSelect:'none',
+                  } as React.CSSProperties}
+                >
                   <span style={{ fontSize:11,fontWeight:700,color:C.text,letterSpacing:'0.02em' }}>Martingale</span>
-                  <Toggle checked={martingale.enabled} onChange={v=>set('enabled',v)} disabled={disabled} accent={C.cyan}/>
-                </button>
+                  <ToggleVisual checked={martingale.enabled} disabled={disabled} accent={C.cyan}/>
+                </div>
                 {/* Pengaturan card — hanya tampil saat enabled */}
                 {martingale.enabled&&(
                   <button disabled={disabled} onClick={()=>setShowMartingaleDialog(true)} style={{
@@ -4630,18 +4652,29 @@ export default function DashboardPage() {
           padding: 11px 14px;
           border-radius: 10px;
           font-size: 16px;
-          background: ${isDarkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)'};
+          background: ${isDarkMode ? '#2c2c2e' : '#f2f2f7'} !important;
           border: 0.5px solid ${isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(60,60,67,0.18)'};
-          color: ${isDarkMode ? '#ffffff' : '#000000'};
+          color: ${isDarkMode ? '#ffffff' : '#000000'} !important;
+          -webkit-text-fill-color: ${isDarkMode ? '#ffffff' : '#000000'} !important;
+          caret-color: ${isDarkMode ? '#ffffff' : '#000000'} !important;
           outline: none;
           font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
           transition: border-color 0.18s, background 0.18s;
           resize: vertical;
           box-sizing: border-box;
           -webkit-font-smoothing: antialiased;
+          -webkit-appearance: none;
+          appearance: none;
         }
         .ds-input:focus { border-color: ${isDarkMode ? 'rgba(10,132,255,0.60)' : 'rgba(0,122,255,0.55)'}; box-shadow: 0 0 0 3px ${isDarkMode ? 'rgba(10,132,255,0.14)' : 'rgba(0,122,255,0.10)'}; }
-        .ds-input::placeholder { color: ${isDarkMode ? 'rgba(235,235,245,0.30)' : 'rgba(60,60,67,0.30)'}; }
+        .ds-input::placeholder { color: ${isDarkMode ? 'rgba(235,235,245,0.50)' : 'rgba(60,60,67,0.35)'}; }
+        .ds-input:-webkit-autofill,
+        .ds-input:-webkit-autofill:hover,
+        .ds-input:-webkit-autofill:focus {
+          -webkit-box-shadow: 0 0 0px 1000px ${isDarkMode ? '#2c2c2e' : '#f2f2f7'} inset !important;
+          -webkit-text-fill-color: ${isDarkMode ? '#ffffff' : '#000000'} !important;
+          caret-color: ${isDarkMode ? '#ffffff' : '#000000'} !important;
+        }
 
         .schedule-item { transition: background 0.15s; }
         .schedule-item:hover { background: ${isDarkMode ? 'rgba(10,132,255,0.07)' : 'rgba(0,122,255,0.05)'} !important; }

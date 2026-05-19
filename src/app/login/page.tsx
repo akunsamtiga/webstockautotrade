@@ -413,6 +413,7 @@ const LOGIN_STYLES = `
     cursor: pointer;
     text-align: left;
     font-size: 14px;
+    color: var(--text-1);
     transition: background 0.15s;
     font-family: var(--font);
   }
@@ -965,7 +966,7 @@ function LoginPageContent() {
         >
           {/* Logo Desktop */}
           <div className="logo-desktop">
-            <Image src="/logo.png" alt="STC AutoTrade" width={32} height={32} style={{ height: '32px', width: 'auto' }} />
+            <Image src="/logo.png" alt="StockAutoTrade" width={32} height={32} style={{ height: '32px', width: 'auto' }} />
           </div>
 
           {/* Language Selector */}
@@ -1011,8 +1012,8 @@ function LoginPageContent() {
             <div className="brand">
               {/* Logo Mobile */}
               <div className="logo-mobile">
-                <Image src="/logo.png" alt="STC AutoTrade" width={120} height={120} style={{ height: '120px', width: 'auto' }} />
-                <span className="logo-mobile-name">STC AutoTrade</span>
+                <Image src="/logo.png" alt="StockAutoTrade" width={120} height={120} style={{ height: '120px', width: 'auto' }} />
+                <span className="logo-mobile-name">StockAutoTrade</span>
               </div>
               <p className="brand-sub">{t('login.subtitle')}</p>
             </div>
@@ -1111,7 +1112,7 @@ function LoginPageContent() {
                     <rect x="3" y="11" width="18" height="11" rx="2"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                   </svg>
-                  <span className="badge-txt">{t('common.encrypted')} & {t('common.secure')}</span>
+                  <span className="badge-txt">Koneksi aman 256-bit SSL</span>
                 </div>
               </div>
             </div>
@@ -1135,7 +1136,7 @@ function LoginPageContent() {
           </div>
 
           <div style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--text-3)', padding: '16px 0' }}>
-            © 2026 STC AutoTrade ·{' '}
+            © 2026 StockAutoTrade ·{' '}
             <a href="https://stockity.id/information/privacy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-3)', fontWeight: 500, cursor: 'pointer', transition: 'opacity 0.14s' }}>{t('login.terms')}</a>
           </div>
         </div>
@@ -1150,11 +1151,11 @@ function LoginPageContent() {
           },
           {
             step: 'Langkah 2 — Registrasi Berhasil',
-            text: <span>Selamat! Akan muncul pesan sukses seperti gambar di atas. Selanjutnya, tekan tombol <strong>&ldquo;Login STC AutoTrade&rdquo;</strong> untuk langsung menuju halaman login 🎉</span>,
+            text: <span>Selamat! Akan muncul pesan sukses seperti gambar di atas. Selanjutnya, tekan tombol <strong>&ldquo;Login StockAutoTrade&rdquo;</strong> untuk langsung menuju halaman login 🎉</span>,
           },
           {
             step: 'Langkah 3 — Masuk ke Akun',
-            text: <span>Hampir selesai! Masukkan <strong>email</strong> dan <strong>password</strong> yang tadi didaftarkan, lalu tekan login. Selamat bergabung di STC AutoTrade! 🚀</span>,
+            text: <span>Hampir selesai! Masukkan <strong>email</strong> dan <strong>password</strong> yang tadi didaftarkan, lalu tekan login. Selamat bergabung di StockAutoTrade! 🚀</span>,
           },
         ];
         const cap = TUTOR_CAPTIONS[tutorialPage];

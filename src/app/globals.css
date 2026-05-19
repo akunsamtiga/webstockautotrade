@@ -193,6 +193,8 @@ input, textarea, select { font-size: max(16px, 1em); }
   padding: 11px 14px;
   background: var(--s2) !important;
   color: var(--text) !important;
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text) !important;
   border: 0.5px solid var(--bdr) !important;
   border-radius: 10px !important;
   font-family: var(--font-exo) !important;

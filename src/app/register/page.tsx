@@ -413,7 +413,7 @@ function WebRegisterModal({
       if (hasTradingHistory) {
         throw new Error(
           'Akun Stockity Anda sudah memiliki riwayat trading.\n\n' +
-          'Pendaftaran STC AutoTrade hanya tersedia untuk akun Stockity baru. ' +
+          'Pendaftaran StockAutoTrade hanya tersedia untuk akun Stockity baru. ' +
           'Jika Anda merasa ini keliru, silakan hubungi admin.',
         );
       }
@@ -734,7 +734,7 @@ function RegisterLanding({
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <Image
               src="/logo.png"
-              alt="STC AutoTrade"
+              alt="StockAutoTrade"
               width={80}
               height={80}
               style={{ objectFit: 'contain', display: 'block', margin: '0 auto 20px' }}

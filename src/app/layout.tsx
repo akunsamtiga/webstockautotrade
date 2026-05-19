@@ -4,7 +4,7 @@ import { ClientLayout } from '@/components/ClientLayout'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'STC AutoTrade',
+  title: 'StockAutoTrade',
   description: 'Trading Bot Automation System',
   generator: 'v0.app',
   icons: {
@@ -156,7 +156,7 @@ export default function RootLayout({
             {/* Logo besar di tengah */}
             <Image
               src="/logo.png"
-              alt="STC AutoTrade"
+              alt="StockAutoTrade"
               className="splash-logo"
               width={160}
               height={160}

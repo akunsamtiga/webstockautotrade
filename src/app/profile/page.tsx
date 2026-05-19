@@ -36,8 +36,14 @@ interface CurrencyOption { iso: string; name?: string; symbol?: string; }
 // ─────────────────────────────────────────────
 // SKELETON
 // ─────────────────────────────────────────────
-const Skel: React.FC<{ w?: number | string; h?: number; r?: number }> = ({ w = '100%', h = 16, r = 6 }) => (
-  <div style={{ width: w, height: h, borderRadius: r, background: 'rgba(60,60,67,0.08)', animation: 'skel-pulse 1.6s ease-in-out infinite' }} />
+const Skel: React.FC<{ w?: number | string; h?: number; r?: number; dark?: boolean }> = ({
+  w = '100%', h = 16, r = 6, dark = false,
+}) => (
+  <div style={{
+    width: w, height: h, borderRadius: r,
+    background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(60,60,67,0.08)',
+    animation: 'skel-pulse 1.6s ease-in-out infinite',
+  }} />
 );
 
 // ─────────────────────────────────────────────
@@ -47,20 +53,20 @@ const CurrencySheet: React.FC<{
   open: boolean; onClose: () => void;
   currencies: CurrencyOption[]; current: string;
   onSelect: (iso: string) => Promise<void>; loading: boolean;
-}> = ({ open, onClose, currencies, current, onSelect, loading }) => {
+  dark?: boolean;
+}> = ({ open, onClose, currencies, current, onSelect, loading, dark = false }) => {
   const { t } = useLanguage();
   const [q, setQ] = useState('');
   const inputRef  = useRef<HTMLInputElement>(null);
 
-  // ✅ FIX: Lock body scroll when sheet is open (mobile UX)
   useEffect(() => {
     if (open) {
-      const originalOverflow = document.body.style.overflow;
+      const originalOverflow    = document.body.style.overflow;
       const originalTouchAction = document.body.style.touchAction;
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow    = 'hidden';
       document.body.style.touchAction = 'none';
       return () => {
-        document.body.style.overflow = originalOverflow;
+        document.body.style.overflow    = originalOverflow;
         document.body.style.touchAction = originalTouchAction;
       };
     }
@@ -70,39 +76,52 @@ const CurrencySheet: React.FC<{
     if (open) { setQ(''); setTimeout(() => inputRef.current?.focus(), 300); }
   }, [open]);
   if (!open) return null;
+
+  const sheetBg  = dark ? '#1c1c1e' : '#f2f2f7';
+  const listBg   = dark ? '#2c2c2e' : '#ffffff';
+  const textPrim = dark ? '#ffffff' : '#1c1c1e';
+  const textSec  = dark ? 'rgba(235,235,245,0.4)' : '#6e6e73';
+  const sepColor = dark ? 'rgba(84,84,88,0.4)' : 'rgba(60,60,67,0.08)';
+  const inputBg  = dark ? 'rgba(255,255,255,0.10)' : 'rgba(116,116,128,0.12)';
+  const inputTxt = dark ? '#ffffff' : '#1c1c1e';
+  const hdrBorder= dark ? 'rgba(84,84,88,0.5)' : 'rgba(60,60,67,0.14)';
+  const closeBg  = dark ? 'rgba(255,255,255,0.12)' : 'rgba(116,116,128,0.12)';
+  const closeTxt = dark ? 'rgba(235,235,245,0.6)' : '#3c3c43';
+
   const filtered = q.trim()
     ? currencies.filter(c => c.iso.toLowerCase().includes(q.toLowerCase()) || (c.name || '').toLowerCase().includes(q.toLowerCase()))
     : currencies;
+
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, touchAction: 'none' }}>
-      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', animation: 'bd-in 0.25s ease' }} />
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 400, maxHeight: '70dvh', display: 'flex', flexDirection: 'column', background: '#f2f2f7', borderRadius: 20, boxShadow: '0 24px 64px rgba(0,0,0,0.22)', animation: 'pop-in 0.28s cubic-bezier(0.32,0.72,0,1)', overflow: 'hidden' }}>
-        <div style={{ flexShrink: 0, padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid rgba(60,60,67,0.14)' }}>
-          <span style={{ fontSize: 17, fontWeight: 600, color: '#1c1c1e', letterSpacing: -0.4 }}>{t('profile.selectCurrency')}</span>
-          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(116,116,128,0.12)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3c3c43', WebkitTapHighlightColor: 'transparent' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', animation: 'bd-in 0.25s ease' }} />
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 400, maxHeight: '70dvh', display: 'flex', flexDirection: 'column', background: sheetBg, borderRadius: 20, boxShadow: dark ? '0 24px 64px rgba(0,0,0,0.6)' : '0 24px 64px rgba(0,0,0,0.22)', animation: 'pop-in 0.28s cubic-bezier(0.32,0.72,0,1)', overflow: 'hidden' }}>
+        <div style={{ flexShrink: 0, padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `0.5px solid ${hdrBorder}` }}>
+          <span style={{ fontSize: 17, fontWeight: 600, color: textPrim, letterSpacing: -0.4 }}>{t('profile.selectCurrency')}</span>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: '50%', background: closeBg, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: closeTxt, WebkitTapHighlightColor: 'transparent' }}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
           </button>
         </div>
         <div style={{ flexShrink: 0, padding: '10px 16px' }}>
           <div style={{ position: 'relative' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(60,60,67,0.4)" strokeWidth="2.2" strokeLinecap="round" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={dark ? 'rgba(235,235,245,0.3)' : 'rgba(60,60,67,0.4)'} strokeWidth="2.2" strokeLinecap="round" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder={t('common.search')}
-              style={{ width: '100%', padding: '8px 10px 8px 34px', borderRadius: 10, background: 'rgba(116,116,128,0.12)', border: 'none', outline: 'none', fontSize: 15, color: '#1c1c1e', fontFamily: 'inherit' }} />
+              style={{ width: '100%', padding: '8px 10px 8px 34px', borderRadius: 10, background: inputBg, border: 'none', outline: 'none', fontSize: 15, color: inputTxt, fontFamily: 'inherit' }} />
           </div>
         </div>
-        <div style={{ overflowY: 'auto', flex: 1, background: '#fff', overscrollBehaviorY: 'contain', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ overflowY: 'auto', flex: 1, background: listBg, overscrollBehaviorY: 'contain', WebkitOverflowScrolling: 'touch' }}>
           {filtered.length === 0
-            ? <div style={{ padding: '48px 0', textAlign: 'center', color: '#aeaeb2', fontSize: 14 }}>{t('common.notFound')}</div>
+            ? <div style={{ padding: '48px 0', textAlign: 'center', color: textSec, fontSize: 14 }}>{t('common.notFound')}</div>
             : filtered.map((c, i) => {
                 const sel = c.iso === current;
                 return (
                   <button key={c.iso} onClick={() => onSelect(c.iso).then(onClose)} disabled={loading}
-                    style={{ width: '100%', background: 'transparent', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', padding: '13px 20px', borderBottom: i < filtered.length - 1 ? '1px solid rgba(60,60,67,0.08)' : 'none', gap: 14, opacity: loading ? 0.6 : 1, WebkitTapHighlightColor: 'transparent' }}>
+                    style={{ width: '100%', background: 'transparent', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', padding: '13px 20px', borderBottom: i < filtered.length - 1 ? `1px solid ${sepColor}` : 'none', gap: 14, opacity: loading ? 0.6 : 1, WebkitTapHighlightColor: 'transparent' }}>
                     <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
-                      <p style={{ fontSize: 16, color: '#1c1c1e', fontWeight: sel ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.iso}</p>
-                      {c.name && <p style={{ fontSize: 13, color: '#6e6e73', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</p>}
+                      <p style={{ fontSize: 16, color: textPrim, fontWeight: sel ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.iso}</p>
+                      {c.name && <p style={{ fontSize: 13, color: textSec, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</p>}
                     </div>
-                    {c.symbol && <span style={{ fontSize: 14, color: '#aeaeb2', flexShrink: 0 }}>{c.symbol}</span>}
+                    {c.symbol && <span style={{ fontSize: 14, color: textSec, flexShrink: 0 }}>{c.symbol}</span>}
                     {sel && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007aff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M20 6L9 17l-5-5"/></svg>}
                   </button>
                 );
@@ -116,40 +135,46 @@ const CurrencySheet: React.FC<{
 // ─────────────────────────────────────────────
 // LOGOUT CONFIRM
 // ─────────────────────────────────────────────
-const LogoutAlert: React.FC<{ open: boolean; onCancel: () => void; onConfirm: () => void }> = ({ open, onCancel, onConfirm }) => {
+const LogoutAlert: React.FC<{ open: boolean; onCancel: () => void; onConfirm: () => void; dark?: boolean }> = ({
+  open, onCancel, onConfirm, dark = false,
+}) => {
   const { t } = useLanguage();
 
-  // ✅ FIX: Lock body scroll when alert is open (mobile UX)
   useEffect(() => {
     if (open) {
-      const originalOverflow = document.body.style.overflow;
+      const originalOverflow    = document.body.style.overflow;
       const originalTouchAction = document.body.style.touchAction;
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow    = 'hidden';
       document.body.style.touchAction = 'none';
       return () => {
-        document.body.style.overflow = originalOverflow;
+        document.body.style.overflow    = originalOverflow;
         document.body.style.touchAction = originalTouchAction;
       };
     }
   }, [open]);
 
   if (!open) return null;
+  const alertBg  = dark ? 'rgba(44,44,46,0.96)' : 'rgba(255,255,255,0.96)';
+  const textPrim = dark ? '#ffffff' : '#1c1c1e';
+  const textSec  = dark ? 'rgba(235,235,245,0.5)' : '#6e6e73';
+  const divider  = dark ? 'rgba(84,84,88,0.4)' : 'rgba(60,60,67,0.10)';
+
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px', touchAction: 'none' }}>
-      <div onClick={onCancel} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', animation: 'bd-in 0.2s ease' }} />
+      <div onClick={onCancel} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', animation: 'bd-in 0.2s ease' }} />
       <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 320, animation: 'pop-in 0.28s cubic-bezier(0.32,0.72,0,1)' }}>
-        <div style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.22)' }}>
+        <div style={{ background: alertBg, backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 16, overflow: 'hidden', boxShadow: dark ? '0 20px 60px rgba(0,0,0,0.6)' : '0 20px 60px rgba(0,0,0,0.22)' }}>
           <div style={{ padding: '24px 20px 16px', textAlign: 'center' }}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,59,48,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,59,48,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
               </svg>
             </div>
-            <p style={{ fontSize: 17, fontWeight: 600, color: '#1c1c1e', marginBottom: 6, letterSpacing: -0.3 }}>{t('profile.logoutConfirm')}</p>
-            <p style={{ fontSize: 14, color: '#6e6e73', lineHeight: 1.5 }}>{t('profile.logoutMessage')}</p>
+            <p style={{ fontSize: 17, fontWeight: 600, color: textPrim, marginBottom: 6, letterSpacing: -0.3 }}>{t('profile.logoutConfirm')}</p>
+            <p style={{ fontSize: 14, color: textSec, lineHeight: 1.5 }}>{t('profile.logoutMessage')}</p>
           </div>
-          <div style={{ borderTop: '1px solid rgba(60,60,67,0.10)', display: 'flex' }}>
-            <button onClick={onCancel} style={{ flex: 1, padding: '16px', background: 'transparent', border: 'none', borderRight: '1px solid rgba(60,60,67,0.10)', cursor: 'pointer', fontSize: 17, fontWeight: 600, color: '#007aff', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent' }}>{t('common.cancel')}</button>
+          <div style={{ borderTop: `1px solid ${divider}`, display: 'flex' }}>
+            <button onClick={onCancel} style={{ flex: 1, padding: '16px', background: 'transparent', border: 'none', borderRight: `1px solid ${divider}`, cursor: 'pointer', fontSize: 17, fontWeight: 600, color: '#007aff', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent' }}>{t('common.cancel')}</button>
             <button onClick={onConfirm} style={{ flex: 1, padding: '16px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 17, fontWeight: 400, color: '#ff3b30', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent' }}>{t('profile.logout')}</button>
           </div>
         </div>
@@ -180,6 +205,30 @@ function ProfilePageContent() {
   const [error, setError]                     = useState<string | null>(null);
   const [refreshing, setRefreshing]           = useState(false);
 
+  // ── Dark Mode Theme ──────────────────────────────────────────────────────────
+  const D = isDarkMode;
+  const th = {
+    pageBg:        D ? '#000000'                        : '#f2f2f7',
+    cardBg:        D ? '#1c1c1e'                        : '#ffffff',
+    sidebarBg:     D ? 'rgba(22,22,24,0.80)'            : 'rgba(228,228,235,0.55)',
+    sidebarBorder: D ? 'rgba(255,255,255,0.08)'         : 'rgba(60,60,67,0.11)',
+    headerBg:      D ? 'rgba(28,28,30,0.94)'            : 'rgba(242,242,247,0.92)',
+    textPrimary:   D ? '#ffffff'                        : '#1c1c1e',
+    textSecondary: D ? 'rgba(235,235,245,0.60)'         : '#3c3c43',
+    textTertiary:  D ? 'rgba(235,235,245,0.40)'         : '#6e6e73',
+    textQuaternary:D ? 'rgba(235,235,245,0.25)'         : '#8e8e93',
+    textFaint:     D ? 'rgba(235,235,245,0.18)'         : '#aeaeb2',
+    textPlaceholder:D? 'rgba(235,235,245,0.12)'         : '#c7c7cc',
+    separator:     D ? 'rgba(84,84,88,0.40)'            : 'rgba(60,60,67,0.07)',
+    border:        D ? 'rgba(84,84,88,0.55)'            : 'rgba(60,60,67,0.14)',
+    btnBg:         D ? 'rgba(255,255,255,0.08)'         : 'rgba(0,0,0,0.05)',
+    inputBg:       D ? 'rgba(255,255,255,0.10)'         : 'rgba(116,116,128,0.12)',
+    cardShadow:    D
+      ? '0 1px 0 rgba(255,255,255,0.04), 0 2px 12px rgba(0,0,0,0.35)'
+      : '0 1px 0 rgba(0,0,0,0.04), 0 2px 12px rgba(0,0,0,0.04)',
+    divider:       D ? 'rgba(84,84,88,0.40)'            : 'rgba(60,60,67,0.10)',
+  };
+
   useEffect(() => {
     const init = async () => {
       const sessionValid = await isSessionValid();
@@ -203,10 +252,7 @@ function ProfilePageContent() {
     setError(null);
     try {
       const token = await getAuthToken();
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      if (!token) { router.push('/login'); return; }
       const [prof, bal] = await Promise.all([api.getProfile(), api.balance().catch(() => null)]);
       setProfile(prof); setBalance(bal);
 
@@ -241,9 +287,6 @@ function ProfilePageContent() {
 
   const handleLogout = async () => {
     setShowLogout(false);
-    // Sembunyikan BottomNav sebelum splash muncul — mencegah nav tampil
-    // di atas splash akibat stacking context yang dibuat opacity/transition
-    // pada <main> di ClientLayout.
     window.dispatchEvent(new CustomEvent('stc:hidenav'));
     setLogoutSplash(true);
     await new Promise(res => setTimeout(res, 1800));
@@ -308,24 +351,35 @@ function ProfilePageContent() {
 
   const currency = balance?.currency || 'IDR';
 
+  // ── Sub-components (theme-aware) ─────────────────────────────────────────────
+
   const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-    <p style={{ fontSize: 13, fontWeight: 600, color: '#6e6e73', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>{children}</p>
+    <p style={{ fontSize: 11.5, fontWeight: 500, color: th.textTertiary, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 4px', marginBottom: 6 }}>{children}</p>
   );
 
   const Card = ({ children, mb }: { children: React.ReactNode; mb?: number }) => (
-    <div className="pf-card" style={{ marginBottom: mb ?? 0 }}>{children}</div>
+    <div style={{
+      marginBottom: mb ?? 0,
+      background: th.cardBg,
+      borderRadius: 12,
+      overflow: 'hidden',
+      boxShadow: th.cardShadow,
+      transition: 'background 0.3s ease',
+    }}>
+      {children}
+    </div>
   );
 
   const InfoRow = ({ label, value, verified, last }: { label: string; value?: string | null; verified?: boolean; last?: boolean }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 16px', borderBottom: last ? 'none' : '1px solid rgba(60,60,67,0.07)', gap: 12 }}>
-      <span style={{ fontSize: 14, color: '#3c3c43', flexShrink: 0 }}>{label}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 16px', borderBottom: last ? 'none' : `1px solid ${th.separator}`, gap: 12 }}>
+      <span style={{ fontSize: 14, color: th.textSecondary, flexShrink: 0 }}>{label}</span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
         {verified != null && (
-          <span style={{ fontSize: 11, fontWeight: 600, color: verified ? '#34c759' : '#ff9500', background: verified ? 'rgba(52,199,89,0.10)' : 'rgba(255,149,0,0.10)', padding: '2px 7px', borderRadius: 99, flexShrink: 0 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: verified ? '#34c759' : '#ff9500', background: verified ? 'rgba(52,199,89,0.12)' : 'rgba(255,149,0,0.12)', padding: '2px 7px', borderRadius: 99, flexShrink: 0 }}>
             {verified ? t('profile.verified') : t('profile.notVerified')}
           </span>
         )}
-        <span style={{ fontSize: 14, color: value ? '#8e8e93' : '#c7c7cc', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 'min(180px, 50vw)' }}>{value || '—'}</span>
+        <span style={{ fontSize: 14, color: value ? th.textQuaternary : th.textPlaceholder, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 'min(180px, 50vw)' }}>{value || '—'}</span>
       </div>
     </div>
   );
@@ -334,11 +388,11 @@ function ProfilePageContent() {
     icon: React.ReactNode; iconBg: string; label: string; value?: string;
     danger?: boolean; onClick: () => void; last?: boolean; chevron?: boolean;
   }) => (
-    <button onClick={onClick} className="pf-tap-row" style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '10px 16px 10px 14px', borderBottom: last ? 'none' : '1px solid rgba(60,60,67,0.07)', gap: 12, textAlign: 'left', WebkitTapHighlightColor: 'transparent' }}>
+    <button onClick={onClick} className="pf-tap-row" style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '10px 16px 10px 14px', borderBottom: last ? 'none' : `1px solid ${th.separator}`, gap: 12, textAlign: 'left', WebkitTapHighlightColor: 'transparent' }}>
       <div style={{ width: 30, height: 30, borderRadius: 7, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>
-      <span style={{ flex: 1, fontSize: 15, color: danger ? '#ff3b30' : '#1c1c1e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
-      {value && <span style={{ fontSize: 14, color: '#8e8e93', marginRight: 4, flexShrink: 0, maxWidth: '40vw', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>}
-      {chevron && <svg width="6" height="11" viewBox="0 0 7 12" fill="none" style={{ flexShrink: 0 }}><path d="M1 1l5 5-5 5" stroke={danger ? '#ff3b30' : '#8e8e93'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+      <span style={{ flex: 1, fontSize: 15, color: danger ? '#ff3b30' : th.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+      {value && <span style={{ fontSize: 14, color: th.textQuaternary, marginRight: 4, flexShrink: 0, maxWidth: '40vw', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>}
+      {chevron && <svg width="6" height="11" viewBox="0 0 7 12" fill="none" style={{ flexShrink: 0 }}><path d="M1 1l5 5-5 5" stroke={danger ? '#ff3b30' : th.textFaint} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
     </button>
   );
 
@@ -353,10 +407,7 @@ function ProfilePageContent() {
             width={80}
             height={80}
             style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }}
-            onError={(e) => {
-              // Fallback ke initials jika gambar gagal dimuat (404, CORS, dll)
-              (e.currentTarget as HTMLImageElement).style.display = 'none';
-            }}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
         ) : (
           getInitials()
@@ -364,12 +415,12 @@ function ProfilePageContent() {
       </div>
       {isLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, width: '100%' }}>
-          <Skel w="60%" h={18} r={6} /><Skel w="75%" h={13} r={5} />
+          <Skel w="60%" h={18} r={6} dark={D} /><Skel w="75%" h={13} r={5} dark={D} />
         </div>
       ) : (
         <>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.4, marginBottom: 3, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 12px' }}>{getDisplayName()}</h2>
-          <p style={{ fontSize: 13, color: '#6e6e73', marginBottom: 10, wordBreak: 'break-all', maxWidth: 'min(220px, 80vw)', lineHeight: 1.4 }}>{profile?.email}</p>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: th.textPrimary, letterSpacing: -0.4, marginBottom: 3, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 12px' }}>{getDisplayName()}</h2>
+          <p style={{ fontSize: 13, color: th.textTertiary, marginBottom: 10, wordBreak: 'break-all', maxWidth: 'min(220px, 80vw)', lineHeight: 1.4 }}>{profile?.email}</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
             {profile?.docsVerified && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#34c759', background: 'rgba(52,199,89,0.12)', padding: '3px 10px', borderRadius: 99 }}>
@@ -378,7 +429,7 @@ function ProfilePageContent() {
               </span>
             )}
             {profile?.id && (
-              <button className="pf-copy-btn" onClick={copyId} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#6e6e73', background: 'rgba(116,116,128,0.10)', padding: '3px 10px', borderRadius: 99, border: 'none', cursor: 'pointer', transition: 'opacity 0.15s', WebkitTapHighlightColor: 'transparent' }}>
+              <button className="pf-copy-btn" onClick={copyId} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: th.textTertiary, background: D ? 'rgba(255,255,255,0.08)' : 'rgba(116,116,128,0.10)', padding: '3px 10px', borderRadius: 99, border: 'none', cursor: 'pointer', transition: 'opacity 0.15s', WebkitTapHighlightColor: 'transparent' }}>
                 ID: {String(profile.id).slice(0, 8)}…
                 {copied
                   ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#34c759" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
@@ -400,11 +451,11 @@ function ProfilePageContent() {
           icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34c759" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>,
         },
         {
-          label: t('profile.balanceDemo'), color: '#ff9500', bgColor: 'rgba(255,149,0,0.10)', val: balance?.demo_balance, sub: t('common.virtual'),
+          label: t('profile.balanceDemo'), color: '#ff9500', bgColor: 'rgba(255,149,0,0.12)', val: balance?.demo_balance, sub: t('common.virtual'),
           icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff9500" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>,
         },
       ].map(({ label, color, bgColor, val, sub, icon }) => (
-        <div key={label} style={{ flex: 1, minWidth: 0, background: '#fff', borderRadius: 12, padding: '11px 12px', boxShadow: '0 1px 0 rgba(0,0,0,0.04), 0 2px 10px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div key={label} style={{ flex: 1, minWidth: 0, background: th.cardBg, borderRadius: 12, padding: '11px 12px', boxShadow: th.cardShadow, display: 'flex', flexDirection: 'column', gap: 8, transition: 'background 0.3s ease' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 30, height: 30, borderRadius: 8, background: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {icon}
@@ -413,10 +464,10 @@ function ProfilePageContent() {
           </div>
           <div style={{ minWidth: 0 }}>
             {isLoading
-              ? <Skel w="85%" h={16} r={4} />
-              : <p className="balance-num" style={{ fontSize: 15, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.4, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fmtBalance(val)}</p>
+              ? <Skel w="85%" h={16} r={4} dark={D} />
+              : <p className="balance-num" style={{ fontSize: 15, fontWeight: 700, color: th.textPrimary, letterSpacing: -0.4, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fmtBalance(val)}</p>
             }
-            <p style={{ fontSize: 10, color: '#aeaeb2', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</p>
+            <p style={{ fontSize: 10, color: th.textFaint, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</p>
           </div>
         </div>
       ))}
@@ -424,7 +475,14 @@ function ProfilePageContent() {
   );
 
   return (
-    <div style={{ height: '100dvh', background: '#f2f2f7', fontFamily: "-apple-system,'SF Pro Display',BlinkMacSystemFont,'Helvetica Neue',sans-serif", WebkitFontSmoothing: 'antialiased', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{
+      height: '100dvh',
+      background: th.pageBg,
+      fontFamily: "-apple-system,'SF Pro Display',BlinkMacSystemFont,'Helvetica Neue',sans-serif",
+      WebkitFontSmoothing: 'antialiased',
+      display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      transition: 'background 0.3s ease',
+    }}>
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes skel-pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
@@ -452,65 +510,36 @@ function ProfilePageContent() {
           overflow: hidden;
           animation: lo-fade-in 0.32s cubic-bezier(0.22,1,0.36,1) forwards;
         }
-        .lo-orb {
-          position: absolute; border-radius: 50%; pointer-events: none;
-        }
+        .lo-orb { position: absolute; border-radius: 50%; pointer-events: none; }
         .lo-orb-1 { width:380px;height:380px;background:radial-gradient(circle,rgba(255,149,0,0.18) 0%,transparent 70%);filter:blur(80px);top:-100px;right:-100px;animation:lo-orb-1 7s ease-in-out infinite alternate; }
         .lo-orb-2 { width:340px;height:340px;background:radial-gradient(circle,rgba(0,122,255,0.14) 0%,transparent 70%);filter:blur(75px);bottom:-80px;left:-80px;animation:lo-orb-2 6s ease-in-out infinite alternate; }
         .lo-orb-3 { width:260px;height:260px;background:radial-gradient(circle,rgba(191,90,242,0.10) 0%,transparent 70%);filter:blur(70px);top:40%;left:-60px;animation:lo-orb-1 5s ease-in-out infinite alternate; }
-
         .lo-icon-wrap { position:relative;width:110px;height:110px;display:flex;align-items:center;justify-content:center;margin-bottom:28px; }
         .lo-ring      { position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,149,0,0.20);animation:lo-ring 2.2s ease-in-out infinite; }
         .lo-ring-2    { inset:-12px;border-color:rgba(255,149,0,0.12);animation-delay:0.4s; }
         .lo-ring-3    { inset:-24px;border-color:rgba(255,149,0,0.06);animation-delay:0.8s; }
         .lo-icon      { width:90px;height:90px;border-radius:28px;background:#fff;border:1px solid rgba(255,149,0,0.18);box-shadow:0 8px 36px rgba(255,149,0,0.16),0 2px 8px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;position:relative;z-index:1;animation:lo-icon-in 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.12s both;font-size:40px;line-height:1; }
-
         .lo-text  { text-align:center;padding:0 32px;animation:lo-msg-in 0.5s cubic-bezier(0.22,1,0.36,1) 0.24s both; }
         .lo-title { font-size:clamp(26px,8vw,32px);font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:8px;background:linear-gradient(135deg,#1c1c1e 0%,#3a3a3c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
         .lo-sub   { font-size:14.5px;color:#6e6e73;font-weight:400;line-height:1.6; }
-
         .lo-bar-wrap { margin-top:36px;width:120px;height:3px;background:rgba(0,0,0,0.07);border-radius:99px;overflow:hidden;animation:lo-msg-in 0.5s cubic-bezier(0.22,1,0.36,1) 0.35s both; }
         .lo-bar      { height:100%;border-radius:99px;background:linear-gradient(90deg,#ff9500,#ff6b00);animation:lo-bar 1.65s cubic-bezier(0.4,0,0.2,1) 0.4s forwards; }
 
-        /* ✅ FIX: Only apply hover on devices that support it (prevents stuck hover on mobile) */
         @media (hover: hover) {
-          .pf-tap-row:hover  { background: rgba(0,0,0,0.03) !important; }
+          .pf-tap-row:hover { background: rgba(128,128,128,0.06) !important; }
         }
-        .pf-tap-row:active { background: rgba(0,0,0,0.06) !important; }
+        .pf-tap-row:active { background: rgba(128,128,128,0.10) !important; }
         .pf-copy-btn:active { opacity: 0.6; }
-
-        .pf-card {
-          background: #fff;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 2px 12px rgba(0,0,0,0.04);
-        }
-
-        .pf-section-label {
-          font-size: 11.5px;
-          font-weight: 500;
-          color: #6e6e73;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          padding: 0 4px;
-          margin-bottom: 6px;
-        }
-
         .balance-num { animation: number-in 0.4s ease both; }
 
-        /* ✅ FIX: Mobile layout uses column direction explicitly */
         .pf-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
         .pf-mob-header { display: flex; flex-shrink: 0; }
         .pf-desk-header { display: none; }
         .pf-left { display: none; }
         .pf-right {
-          flex: 1;
-          overflow-y: auto;
-          overscroll-behavior-y: contain;
-          -webkit-overflow-scrolling: touch;
+          flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;
           padding: 20px 16px calc(56px + env(safe-area-inset-bottom, 0px) + 24px);
-          display: flex; flex-direction: column; gap: 22px;
-          min-height: 0;
+          display: flex; flex-direction: column; gap: 22px; min-height: 0;
         }
         .pf-right::-webkit-scrollbar { width: 0; }
         .pf-mob-only { display: block; }
@@ -521,18 +550,13 @@ function ProfilePageContent() {
           .pf-desk-header { display: flex !important; align-items: center; justify-content: space-between; padding-bottom: 4px; }
           .pf-left {
             display: flex; flex-direction: column; gap: 20px;
-            width: 272px; min-width: 272px;
-            height: 100%; overflow-y: auto;
+            width: 272px; min-width: 272px; height: 100%; overflow-y: auto;
             padding: 24px 20px 100px;
-            background: rgba(228,228,235,0.55);
-            border-right: 0.5px solid rgba(60,60,67,0.11);
+            border-right: 0.5px solid;
+            transition: background 0.3s ease, border-color 0.3s ease;
           }
           .pf-left::-webkit-scrollbar { width: 0; }
-          .pf-right {
-            padding: 24px 28px 100px;
-            gap: 20px;
-            overscroll-behavior-y: auto;
-          }
+          .pf-right { padding: 24px 28px 100px; gap: 20px; overscroll-behavior-y: auto; }
           .pf-mob-only { display: none; }
           .pf-left > * { animation: fade-up 0.4s cubic-bezier(0.22,1,0.36,1) both; }
           .pf-left > *:nth-child(1) { animation-delay: 0.05s; }
@@ -571,9 +595,15 @@ function ProfilePageContent() {
       )}
 
       {/* ── MOBILE HEADER ── */}
-      <div className="pf-mob-header" style={{ width: '100%', zIndex: 50, background: 'rgba(242,242,247,0.92)', backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)', borderBottom: '0.5px solid rgba(60,60,67,0.16)' }}>
+      <div className="pf-mob-header" style={{
+        width: '100%', zIndex: 50,
+        background: th.headerBg,
+        backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+        borderBottom: `0.5px solid ${th.border}`,
+        transition: 'background 0.3s ease, border-color 0.3s ease',
+      }}>
         <div style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <h1 style={{ fontSize: 17, fontWeight: 600, color: '#1c1c1e', letterSpacing: -0.4 }}>{t('profile.title')}</h1>
+          <h1 style={{ fontSize: 17, fontWeight: 600, color: th.textPrimary, letterSpacing: -0.4 }}>{t('profile.title')}</h1>
         </div>
       </div>
 
@@ -581,9 +611,15 @@ function ProfilePageContent() {
       <div className="pf-body">
 
         {/* ══ LEFT SIDEBAR (desktop only) ══ */}
-        <div className="pf-left">
+        <div
+          className="pf-left"
+          style={{
+            background: th.sidebarBg,
+            borderRightColor: th.sidebarBorder,
+          } as React.CSSProperties}
+        >
           <AvatarBlock />
-          <div style={{ height: '0.5px', background: 'rgba(60,60,67,0.10)', margin: '0 4px' }} />
+          <div style={{ height: '0.5px', background: th.separator, margin: '0 4px' }} />
           <div>
             <SectionLabel>{t('common.balance')}</SectionLabel>
             <BalanceBlock />
@@ -609,25 +645,28 @@ function ProfilePageContent() {
                 iconBg="#ff3b30" label={t('profile.logout')} danger onClick={() => setShowLogout(true)} last
               />
             </Card>
-            <p style={{ textAlign: 'center', fontSize: 11.5, color: '#c7c7cc', marginTop: 14 }}>STC AutoTrade v2.0.0</p>
+            <p style={{ textAlign: 'center', fontSize: 11.5, color: th.textPlaceholder, marginTop: 14 }}>StockAutoTrade v2.0.0</p>
           </div>
         </div>
 
         {/* ══ RIGHT PANEL ══ */}
-        <div className="pf-right">
+        <div
+          className="pf-right"
+          style={{ background: th.pageBg, transition: 'background 0.3s ease' } as React.CSSProperties}
+        >
 
           <div className="pf-desk-header">
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1c1c1e', letterSpacing: -0.5 }}>{t('profile.title')}</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: th.textPrimary, letterSpacing: -0.5 }}>{t('profile.title')}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <button
                 onClick={() => setLangSheetOpen(true)}
-                style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,0,0,0.05)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}
+                style={{ width: 36, height: 36, borderRadius: 10, background: th.btnBg, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}
                 title={t('language.title')}
               >
                 🌐
               </button>
               <button onClick={() => loadProfile(true)} disabled={refreshing || isLoading}
-                style={{ width: 32, height: 32, background: 'rgba(0,0,0,0.05)', border: 'none', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#007aff', opacity: (refreshing || isLoading) ? 0.4 : 1, transition: 'opacity 0.15s' }}>
+                style={{ width: 32, height: 32, background: th.btnBg, border: 'none', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#007aff', opacity: (refreshing || isLoading) ? 0.4 : 1, transition: 'opacity 0.15s' }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" style={{ animation: (refreshing || isLoading) ? 'spin 0.8s linear infinite' : 'none' }}>
                   <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
                   <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
@@ -637,7 +676,7 @@ function ProfilePageContent() {
           </div>
 
           {error && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 10, background: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.16)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 10, background: 'rgba(255,59,48,0.10)', border: '1px solid rgba(255,59,48,0.20)' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
               <span style={{ fontSize: 13, color: '#ff3b30', flex: 1 }}>{error}</span>
               <button onClick={() => setError(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ff3b30', opacity: 0.6, padding: 4, flexShrink: 0 }}>
@@ -659,7 +698,7 @@ function ProfilePageContent() {
             <Card>
               {isLoading ? (
                 <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[1,2,3,4].map(i => <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}><Skel w={80} h={13} /><Skel w={130} h={13} /></div>)}
+                  {[1,2,3,4].map(i => <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}><Skel w={80} h={13} dark={D} /><Skel w={130} h={13} dark={D} /></div>)}
                 </div>
               ) : (
                 <>
@@ -679,13 +718,13 @@ function ProfilePageContent() {
             <SectionLabel>{t('profile.settings')}</SectionLabel>
             <Card>
               {/* Dark Mode Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px 10px 14px', borderBottom: '1px solid rgba(60,60,67,0.07)', gap: 12 }}>
-                <div style={{ width: 30, height: 30, borderRadius: 7, background: 'linear-gradient(135deg, #1a1a2e, #16213e)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px 10px 14px', borderBottom: `1px solid ${th.separator}`, gap: 12 }}>
+                <div style={{ width: 30, height: 30, borderRadius: 7, background: D ? 'linear-gradient(135deg, #3a3a4e, #2a2a3e)' : 'linear-gradient(135deg, #1a1a2e, #16213e)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                   </svg>
                 </div>
-                <span style={{ flex: 1, fontSize: 15, color: '#1c1c1e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Dark Mode (Dashboard)</span>
+                <span style={{ flex: 1, fontSize: 15, color: th.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Dark Mode</span>
                 <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
                   <input
                     type="checkbox"
@@ -732,7 +771,6 @@ function ProfilePageContent() {
 
           <div>
             <SectionLabel>{t('profile.help')}</SectionLabel>
-
             <Card>
               <TappableRow
                 icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"/></svg>}
@@ -744,6 +782,7 @@ function ProfilePageContent() {
               />
             </Card>
           </div>
+
           <div>
             <SectionLabel>Pembaruan</SectionLabel>
             <AppUpdateCard />
@@ -756,15 +795,20 @@ function ProfilePageContent() {
                 iconBg="#ff3b30" label={t('profile.logout')} danger onClick={() => setShowLogout(true)} last
               />
             </Card>
-            <p style={{ textAlign: 'center', fontSize: 12, color: '#c7c7cc', marginTop: 14 }}>STC AutoTrade v2.0.0</p>
+            <p style={{ textAlign: 'center', fontSize: 12, color: th.textPlaceholder, marginTop: 14 }}>StockAutoTrade v2.0.0</p>
           </div>
 
         </div>
       </div>
 
-      <CurrencySheet open={sheetOpen} onClose={() => setSheetOpen(false)} currencies={currencies} current={currency} onSelect={handleUpdateCurrency} loading={currencyLoading} />
+      <CurrencySheet
+        open={sheetOpen} onClose={() => setSheetOpen(false)}
+        currencies={currencies} current={currency}
+        onSelect={handleUpdateCurrency} loading={currencyLoading}
+        dark={D}
+      />
       <LanguageSheet open={langSheetOpen} onClose={() => setLangSheetOpen(false)} />
-      <LogoutAlert open={showLogout} onCancel={() => setShowLogout(false)} onConfirm={handleLogout} />
+      <LogoutAlert open={showLogout} onCancel={() => setShowLogout(false)} onConfirm={handleLogout} dark={D} />
     </div>
   );
 }

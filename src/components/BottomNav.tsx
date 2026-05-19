@@ -23,10 +23,8 @@ export function BottomNav() {
   // Sembunyikan nav di halaman webview agar konten full-screen
   if (pathname === '/webview') return null;
 
-  const isDashboard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
-  const useDarkNav  = isDashboard && isDarkMode;
-
-  const theme = useDarkNav
+  // ✅ Dark mode berlaku di semua halaman, bukan hanya dashboard
+  const theme = isDarkMode
     ? {
         navBg:      'rgb(28,28,30)',
         navBorder:  '0.5px solid rgba(255,255,255,0.10)',
@@ -97,7 +95,7 @@ export function BottomNav() {
           background: theme.navBg,
           borderTop: theme.navBorder,
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          boxShadow: useDarkNav
+          boxShadow: isDarkMode
             ? '0 -0.5px 0 rgba(255,255,255,0.08)'
             : '0 -0.5px 0 rgba(60,60,67,0.12)',
           transition: 'background 0.3s ease',

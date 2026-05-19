@@ -1,18 +1,11 @@
 'use client';
 // components/AppUpdateCard.tsx
-// ✅ v4 — Native in-app download + auto install (tanpa Chrome)
-//
-// Di Android Capacitor:
-//   - Download dilakukan oleh ApkInstallerPlugin.java (native HTTP, bukan XHR)
-//   - Progress 0-100% dikirim via Capacitor event "downloadProgress"
-//   - Setelah selesai, package installer Android muncul otomatis (in-app, bukan Chrome)
-//
-// Di browser web (bukan Capacitor):
-//   - Fallback ke XHR download + <a download> blob URL (perilaku lama)
+// ✅ v5 — Dark mode support via useDarkMode context
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { checkForUpdate, UpdateCheckResult } from '@/lib/appUpdateApi';
 import { APP_VERSION_NAME } from '@/lib/appVersion';
+import { useDarkMode } from '@/lib/DarkModeContext';
 
 // ── State ──────────────────────────────────────────────────────────────────────
 type CardState =
@@ -34,8 +27,6 @@ function isCapacitorNative(): boolean {
 }
 
 // ── getApkInstallerPlugin ──────────────────────────────────────────────────────
-// Ambil instance plugin ApkInstaller dari Capacitor.Plugins.
-// Mengembalikan null jika belum running di native (web preview, dsb).
 function getApkInstallerPlugin(): any | null {
   if (!isCapacitorNative()) return null;
   const plugins = (window as any).Capacitor?.Plugins;
@@ -43,8 +34,6 @@ function getApkInstallerPlugin(): any | null {
 }
 
 // ── downloadWithProgressWeb ────────────────────────────────────────────────────
-// Fallback untuk browser web (bukan Capacitor native).
-// Download APK via XHR + blob URL → <a download>.
 function downloadWithProgressWeb(
   url: string,
   onProgress: (pct: number) => void,
@@ -62,7 +51,7 @@ function downloadWithProgressWeb(
     if (e.lengthComputable && e.total > 0) {
       onProgress(Math.min(99, Math.round((e.loaded / e.total) * 100)));
     } else {
-      onProgress(-1); // indeterminate
+      onProgress(-1);
     }
   };
 
@@ -85,7 +74,6 @@ function downloadWithProgressWeb(
 }
 
 // ── triggerInstallWeb ──────────────────────────────────────────────────────────
-// Fallback install untuk web: blob URL → <a download>.
 async function triggerInstallWeb(blob: Blob, originalUrl: string): Promise<void> {
   const blobUrl = URL.createObjectURL(blob);
   try {
@@ -109,7 +97,33 @@ async function triggerInstallWeb(blob: Blob, originalUrl: string): Promise<void>
 }
 
 // ── buildColors ────────────────────────────────────────────────────────────────
-function buildColors() {
+function buildColors(dark: boolean) {
+  if (dark) {
+    return {
+      card:         'rgb(28,28,30)',
+      cardBorder:   'rgba(255,255,255,0.10)',
+      cardShadow:   '0 1px 0 rgba(0,0,0,0.30), 0 2px 10px rgba(0,0,0,0.25)',
+      text:         'rgba(255,255,255,0.92)',
+      subtext:      'rgba(235,235,245,0.55)',
+      muted:        'rgba(235,235,245,0.40)',
+      divider:      'rgba(255,255,255,0.07)',
+      trackBg:      'rgba(255,255,255,0.06)',
+      badgeGreen:   'rgba(52,199,89,0.18)',
+      badgeGreenTx: '#34C759',
+      badgeBlue:    'rgba(10,132,255,0.18)',
+      badgeBlueTx:  '#0A84FF',
+      badgeRed:     'rgba(255,69,58,0.18)',
+      badgeRedTx:   '#FF453A',
+      iconBg:       'rgba(10,132,255,0.18)',
+      btnPrimary:   '#0A84FF',
+      btnSecondary: 'rgba(118,118,128,0.18)',
+      btnSecTx:     'rgba(235,235,245,0.75)',
+      spinner:      'rgba(235,235,245,0.30)',
+      progressFill: '#0A84FF',
+      progressBg:   'rgba(10,132,255,0.15)',
+    };
+  }
+
   return {
     card:         '#FFFFFF',
     cardBorder:   'rgba(60,60,67,0.12)',
@@ -137,15 +151,15 @@ function buildColors() {
 
 // ── AppUpdateCard (main export) ────────────────────────────────────────────────
 export function AppUpdateCard() {
-  const colors = buildColors();
+  const { isDarkMode } = useDarkMode();
+  const colors = buildColors(isDarkMode);
 
   const [result,    setResult]    = useState<UpdateCheckResult | null>(null);
   const [cardState, setCardState] = useState<CardState>('idle');
   const [progress,  setProgress]  = useState(0);
 
-  // Refs untuk cleanup — tidak trigger re-render
-  const webAbortRef      = useRef<(() => void) | null>(null);   // XHR abort (web fallback)
-  const listenerRef      = useRef<{ remove: () => void } | null>(null); // Capacitor event listener
+  const webAbortRef  = useRef<(() => void) | null>(null);
+  const listenerRef  = useRef<{ remove: () => void } | null>(null);
 
   // ── Cek update ───────────────────────────────────────────────────────────────
   const runCheck = useCallback(async () => {
@@ -169,14 +183,12 @@ export function AppUpdateCard() {
   // ── Cleanup saat unmount ─────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
-      // Batalkan download web jika sedang berjalan
       webAbortRef.current?.();
-      // Hapus listener Capacitor event
       listenerRef.current?.remove();
     };
   }, []);
 
-  // ── handleDownload: entry point saat user klik "Perbarui Sekarang" ───────────
+  // ── handleDownload ────────────────────────────────────────────────────────────
   const handleDownload = useCallback(async () => {
     const url = result?.resolvedDownloadUrl;
     if (!url || cardState === 'downloading' || cardState === 'installing') return;
@@ -187,55 +199,32 @@ export function AppUpdateCard() {
     const plugin = getApkInstallerPlugin();
 
     if (plugin) {
-      // ════════════════════════════════════════════════════════════════════
-      // PATH A: Capacitor native — pakai ApkInstallerPlugin.java
-      //
-      // Plugin melakukan download via native HTTP (bukan XHR) dan mengirim
-      // progress melalui Capacitor event "downloadProgress".
-      // Setelah selesai, install prompt muncul otomatis dari Java.
-      // ════════════════════════════════════════════════════════════════════
       try {
-        // Daftar listener progress sebelum mulai download
         const listener = await plugin.addListener(
           'downloadProgress',
-          (event: { progress: number }) => {
-            setProgress(event.progress);
-          },
+          (event: { progress: number }) => { setProgress(event.progress); },
         );
         listenerRef.current = listener;
 
-        // Mulai download native — ini blocking sampai download selesai atau error
         await plugin.downloadAndInstall({ url });
 
-        // Download selesai → state "installing" (prompt install sedang tampil di Android)
         setProgress(100);
         setCardState('installing');
-
-        // Setelah 2 detik, kembali ke "done" (user mungkin masih di app)
         setTimeout(() => setCardState('done'), 2000);
 
       } catch (err: any) {
         const msg: string = err?.message ?? 'Download gagal';
-
-        // Jika bukan cancel yang disengaja, tampilkan error
         if (!msg.includes('dibatalkan') && !msg.includes('cancelled')) {
           console.error('[AppUpdateCard]', msg);
           setResult(prev => prev ? { ...prev, error: msg } : prev);
-          setCardState('update-available');
-        } else {
-          setCardState('update-available');
         }
+        setCardState('update-available');
         setProgress(0);
       } finally {
         listenerRef.current?.remove();
         listenerRef.current = null;
       }
-
     } else {
-      // ════════════════════════════════════════════════════════════════════
-      // PATH B: Web browser fallback — XHR download + blob URL install
-      // Digunakan saat preview di browser atau di luar Capacitor.
-      // ════════════════════════════════════════════════════════════════════
       webAbortRef.current = downloadWithProgressWeb(
         url,
         (pct) => setProgress(pct),
@@ -262,15 +251,12 @@ export function AppUpdateCard() {
     const plugin = getApkInstallerPlugin();
 
     if (plugin) {
-      // Native: minta plugin batalkan download
       try { await plugin.cancelDownload(); } catch { /* ignore */ }
     } else {
-      // Web: abort XHR
       webAbortRef.current?.();
       webAbortRef.current = null;
     }
 
-    // Hapus listener
     listenerRef.current?.remove();
     listenerRef.current = null;
 
@@ -366,7 +352,7 @@ function CardShell({ colors, cardState, result, progress, onCheck, onDownload, o
       case 'done':
         return <Badge bg={colors.badgeGreen} tx={colors.badgeGreenTx} label="✓ Selesai" />;
       case 'error':
-        return <Badge bg={colors.badgeRed} tx={colors.badgeRedTx} label="Gagal cek" />;
+        return <Badge bg={colors.badgeBlue} tx={colors.badgeBlueTx} label="Terbaru" />;
       default:
         return null;
     }
@@ -491,7 +477,6 @@ function CardShell({ colors, cardState, result, progress, onCheck, onDownload, o
       {/* ── Tombol ───────────────────────────────────────────────────────── */}
       <div style={{ padding: 16, display: 'flex', gap: 8 }}>
         {isBusy ? (
-          // Saat download: tampilkan tombol Batalkan
           <button
             onClick={onCancel}
             disabled={isInstalling}
@@ -550,7 +535,6 @@ function CardShell({ colors, cardState, result, progress, onCheck, onDownload, o
           </button>
 
         ) : (
-          // up-to-date / error / checking / idle
           <button
             onClick={onCheck}
             disabled={isChecking}
