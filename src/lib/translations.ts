@@ -56,6 +56,7 @@ export interface Translations {
     virtual: string;
     encrypted: string;
     secure: string;
+    show: string;
   };
 
   // Login Page
@@ -83,6 +84,31 @@ export interface Translations {
     enterPassword: string;
     invalidEmail: string;
     invalidPassword: string;
+    verifyingAccount: string;
+    checkingWhitelist: string;
+    savingSession: string;
+    signingInPill: string;
+    welcomeBack: string;
+    registerSuccess: string;
+    registerSuccessEmailPrefix: string;
+    registerSuccessEmailSuffix: string;
+    sslBadge: string;
+    troubleRegistering: string;
+    viewTutorial: string;
+    tutorialTitle: string;
+    tutorialStep1: string;
+    tutorialStep2: string;
+    tutorialStep3: string;
+    tutorialText1: string;
+    tutorialText2: string;
+    tutorialText3: string;
+    tutorialImgAlt: string;
+    leftHeadline: string;
+    leftDesc: string;
+    leftStatEncrypted: string;
+    leftStatUptime: string;
+    leftStatReliability: string;
+    toastCloseLabel: string;
   };
 
   // Profile Page
@@ -116,6 +142,11 @@ export interface Translations {
     version: string;
     loadError: string;
     updateError: string;
+    logoutSplashTitle: string;
+    logoutSplashMessage: string;
+    darkMode: string;
+    updates: string;
+    adminPanel: string;
   };
 
   // History Page
@@ -429,6 +460,7 @@ const translations: Record<Language, Translations> = {
       virtual: 'Virtual',
       encrypted: 'Encrypted',
       secure: 'Secure',
+      show: 'Show',
     },
     login: {
       title: 'StockAutoTrade',
@@ -454,6 +486,31 @@ const translations: Record<Language, Translations> = {
       enterPassword: 'Please enter your password',
       invalidEmail: 'Please enter a valid email',
       invalidPassword: 'Password must be at least 6 characters',
+      verifyingAccount: 'Verifying account…',
+      checkingWhitelist: 'Checking whitelist access…',
+      savingSession: 'Saving session…',
+      signingInPill: 'Signing in to your account',
+      welcomeBack: 'Good to see you again 🎉',
+      registerSuccess: 'Registration successful! Please log in with your Stockity account.',
+      registerSuccessEmailPrefix: 'Registration successful! Account ',
+      registerSuccessEmailSuffix: ' has been added to the whitelist.',
+      sslBadge: 'Secure 256-bit SSL connection',
+      troubleRegistering: 'Having trouble registering?',
+      viewTutorial: 'view tutorial',
+      tutorialTitle: 'Registration Tutorial',
+      tutorialStep1: 'Step 1 — Create Account',
+      tutorialStep2: 'Step 2 — Registration Successful',
+      tutorialStep3: 'Step 3 — Sign In',
+      tutorialText1: 'Use a new account! Fill in your email, create a password, choose the appropriate currency, then press Register.',
+      tutorialText2: 'Congratulations! A success message will appear as shown above. Next, press the "Login StockAutoTrade" button to go directly to the login page 🎉',
+      tutorialText3: 'Almost done! Enter the email and password you just registered, then press login. Welcome to StockAutoTrade! 🚀',
+      tutorialImgAlt: 'Tutorial step',
+      leftHeadline: 'Automate your trades.\nGrow your wealth.',
+      leftDesc: 'A non-stop automated trading bot platform that monitors the market and executes your best strategies.',
+      leftStatEncrypted: 'Encrypted',
+      leftStatUptime: 'System uptime',
+      leftStatReliability: 'Reliability',
+      toastCloseLabel: 'Close notification',
     },
     profile: {
       title: 'Profile',
@@ -485,6 +542,11 @@ const translations: Record<Language, Translations> = {
       version: 'Version',
       loadError: 'Failed to load profile. Please try again.',
       updateError: 'Failed to update. Please try again.',
+      logoutSplashTitle: 'Goodbye!',
+      logoutSplashMessage: 'You have successfully logged out.\nSee you again soon.',
+      darkMode: 'Dark Mode',
+      updates: 'Updates',
+      adminPanel: 'Admin Panel',
     },
     history: {
       title: 'History',
@@ -791,6 +853,7 @@ const translations: Record<Language, Translations> = {
       virtual: 'Virtual',
       encrypted: 'Terenkripsi',
       secure: 'Aman',
+      show: 'Tampilkan',
     },
     login: {
       title: 'StockAutoTrade',
@@ -816,6 +879,31 @@ const translations: Record<Language, Translations> = {
       enterPassword: 'Silakan masukkan password Anda',
       invalidEmail: 'Silakan masukkan email yang valid',
       invalidPassword: 'Password minimal 6 karakter',
+      verifyingAccount: 'Memverifikasi akun…',
+      checkingWhitelist: 'Memeriksa akses whitelist…',
+      savingSession: 'Menyimpan sesi…',
+      signingInPill: 'Masuk ke akun Anda',
+      welcomeBack: 'Senang melihat Anda kembali 🎉',
+      registerSuccess: 'Registrasi berhasil! Silakan login dengan akun Stockity Anda.',
+      registerSuccessEmailPrefix: 'Registrasi berhasil! Akun ',
+      registerSuccessEmailSuffix: ' telah ditambahkan ke whitelist.',
+      sslBadge: 'Koneksi aman 256-bit SSL',
+      troubleRegistering: 'Kesulitan mendaftar?',
+      viewTutorial: 'lihat tutorial',
+      tutorialTitle: 'Tutorial Pendaftaran',
+      tutorialStep1: 'Langkah 1 — Buat Akun',
+      tutorialStep2: 'Langkah 2 — Registrasi Berhasil',
+      tutorialStep3: 'Langkah 3 — Masuk ke Akun',
+      tutorialText1: 'Gunakan akun baru ya! Isi email, buat password, pilih mata uang yang sesuai, lalu tekan tombol Daftar.',
+      tutorialText2: 'Selamat! Akan muncul pesan sukses seperti gambar di atas. Selanjutnya, tekan tombol "Login StockAutoTrade" untuk langsung menuju halaman login 🎉',
+      tutorialText3: 'Hampir selesai! Masukkan email dan password yang tadi didaftarkan, lalu tekan login. Selamat bergabung di StockAutoTrade! 🚀',
+      tutorialImgAlt: 'Tutorial langkah',
+      leftHeadline: 'Otomatiskan trading Anda.\nKembangkan kekayaan Anda.',
+      leftDesc: 'Platform bot trading otomatis yang bekerja non-stop, memantau pasar, dan mengeksekusi strategi terbaik Anda.',
+      leftStatEncrypted: 'Terenkripsi',
+      leftStatUptime: 'Uptime sistem',
+      leftStatReliability: 'Keandalan',
+      toastCloseLabel: 'Tutup notifikasi',
     },
     profile: {
       title: 'Profil',
@@ -847,6 +935,11 @@ const translations: Record<Language, Translations> = {
       version: 'Versi',
       loadError: 'Gagal memuat profil. Coba lagi.',
       updateError: 'Gagal memperbarui. Coba lagi.',
+      logoutSplashTitle: 'Sampai jumpa!',
+      logoutSplashMessage: 'Anda berhasil keluar.\nSampai bertemu kembali.',
+      darkMode: 'Mode Gelap',
+      updates: 'Pembaruan',
+      adminPanel: 'Panel Admin',
     },
     history: {
       title: 'Riwayat',
@@ -1153,6 +1246,7 @@ const translations: Record<Language, Translations> = {
       virtual: 'Виртуальный',
       encrypted: 'Зашифровано',
       secure: 'Безопасно',
+      show: 'Показать',
     },
     login: {
       title: 'StockAutoTrade',
@@ -1178,6 +1272,31 @@ const translations: Record<Language, Translations> = {
       enterPassword: 'Пожалуйста, введите ваш пароль',
       invalidEmail: 'Пожалуйста, введите действительный email',
       invalidPassword: 'Пароль должен быть не менее 6 символов',
+      verifyingAccount: 'Проверка аккаунта…',
+      checkingWhitelist: 'Проверка доступа к белому списку…',
+      savingSession: 'Сохранение сессии…',
+      signingInPill: 'Вход в аккаунт',
+      welcomeBack: 'Рады видеть вас снова 🎉',
+      registerSuccess: 'Регистрация успешна! Войдите в свой аккаунт Stockity.',
+      registerSuccessEmailPrefix: 'Регистрация успешна! Аккаунт ',
+      registerSuccessEmailSuffix: ' добавлен в белый список.',
+      sslBadge: 'Защищённое соединение 256-bit SSL',
+      troubleRegistering: 'Проблемы с регистрацией?',
+      viewTutorial: 'посмотреть туториал',
+      tutorialTitle: 'Учебник по регистрации',
+      tutorialStep1: 'Шаг 1 — Создание аккаунта',
+      tutorialStep2: 'Шаг 2 — Регистрация успешна',
+      tutorialStep3: 'Шаг 3 — Вход в аккаунт',
+      tutorialText1: 'Используйте новый аккаунт! Заполните email, создайте пароль, выберите подходящую валюту и нажмите «Зарегистрироваться».',
+      tutorialText2: 'Поздравляем! Появится сообщение об успехе, как показано выше. Затем нажмите «Войти в StockAutoTrade», чтобы перейти на страницу входа 🎉',
+      tutorialText3: 'Почти готово! Введите email и пароль, которые вы только что зарегистрировали, и нажмите «Войти». Добро пожаловать в StockAutoTrade! 🚀',
+      tutorialImgAlt: 'Шаг туториала',
+      leftHeadline: 'Автоматизируйте торговлю.\nУмножьте капитал.',
+      leftDesc: 'Платформа для автоматической торговли, работающая круглосуточно, мониторит рынок и исполняет ваши лучшие стратегии.',
+      leftStatEncrypted: 'Шифрование',
+      leftStatUptime: 'Время работы',
+      leftStatReliability: 'Надёжность',
+      toastCloseLabel: 'Закрыть уведомление',
     },
     profile: {
       title: 'Профиль',
@@ -1209,6 +1328,11 @@ const translations: Record<Language, Translations> = {
       version: 'Версия',
       loadError: 'Не удалось загрузить профиль. Попробуйте снова.',
       updateError: 'Не удалось обновить. Попробуйте снова.',
+      logoutSplashTitle: 'До свидания!',
+      logoutSplashMessage: 'Вы успешно вышли из системы.\nДо скорой встречи.',
+      darkMode: 'Тёмный режим',
+      updates: 'Обновления',
+      adminPanel: 'Панель администратора',
     },
     history: {
       title: 'История',
@@ -1515,6 +1639,7 @@ const translations: Record<Language, Translations> = {
       virtual: 'Virtual',
       encrypted: 'Encriptado',
       secure: 'Seguro',
+      show: 'Mostrar',
     },
     login: {
       title: 'StockAutoTrade',
@@ -1540,6 +1665,31 @@ const translations: Record<Language, Translations> = {
       enterPassword: 'Por favor ingresa tu contraseña',
       invalidEmail: 'Por favor ingresa un correo válido',
       invalidPassword: 'La contraseña debe tener al menos 6 caracteres',
+      verifyingAccount: 'Verificando cuenta…',
+      checkingWhitelist: 'Verificando acceso a lista blanca…',
+      savingSession: 'Guardando sesión…',
+      signingInPill: 'Iniciando sesión en tu cuenta',
+      welcomeBack: '¡Qué bueno verte de nuevo! 🎉',
+      registerSuccess: '¡Registro exitoso! Inicia sesión con tu cuenta Stockity.',
+      registerSuccessEmailPrefix: '¡Registro exitoso! Cuenta ',
+      registerSuccessEmailSuffix: ' ha sido agregada a la lista blanca.',
+      sslBadge: 'Conexión segura SSL de 256 bits',
+      troubleRegistering: '¿Problemas para registrarse?',
+      viewTutorial: 'ver tutorial',
+      tutorialTitle: 'Tutorial de Registro',
+      tutorialStep1: 'Paso 1 — Crear Cuenta',
+      tutorialStep2: 'Paso 2 — Registro Exitoso',
+      tutorialStep3: 'Paso 3 — Iniciar Sesión',
+      tutorialText1: '¡Usa una cuenta nueva! Completa tu email, crea una contraseña, elige la moneda adecuada y presiona Registrar.',
+      tutorialText2: '¡Felicidades! Aparecerá un mensaje de éxito como se muestra arriba. Luego presiona el botón "Login StockAutoTrade" para ir directamente a la página de inicio de sesión 🎉',
+      tutorialText3: '¡Casi listo! Ingresa el email y la contraseña que acabas de registrar, luego presiona iniciar sesión. ¡Bienvenido a StockAutoTrade! 🚀',
+      tutorialImgAlt: 'Paso del tutorial',
+      leftHeadline: 'Automatiza tus operaciones.\nHaz crecer tu riqueza.',
+      leftDesc: 'Una plataforma de bot de trading automático que trabaja sin parar, monitorea el mercado y ejecuta tus mejores estrategias.',
+      leftStatEncrypted: 'Encriptado',
+      leftStatUptime: 'Tiempo activo',
+      leftStatReliability: 'Fiabilidad',
+      toastCloseLabel: 'Cerrar notificación',
     },
     profile: {
       title: 'Perfil',
@@ -1571,6 +1721,11 @@ const translations: Record<Language, Translations> = {
       version: 'Versión',
       loadError: 'Error al cargar el perfil. Inténtalo de nuevo.',
       updateError: 'Error al actualizar. Inténtalo de nuevo.',
+      logoutSplashTitle: '¡Hasta luego!',
+      logoutSplashMessage: 'Has cerrado sesión correctamente.\nHasta pronto.',
+      darkMode: 'Modo Oscuro',
+      updates: 'Actualizaciones',
+      adminPanel: 'Panel de Admin',
     },
     history: {
       title: 'Historial',
@@ -1877,6 +2032,7 @@ const translations: Record<Language, Translations> = {
       virtual: 'Maya',
       encrypted: 'Disulitkan',
       secure: 'Selamat',
+      show: 'Tunjukkan',
     },
     login: {
       title: 'StockAutoTrade',
@@ -1902,6 +2058,31 @@ const translations: Record<Language, Translations> = {
       enterPassword: 'Sila masukkan kata laluan anda',
       invalidEmail: 'Sila masukkan e-mel yang sah',
       invalidPassword: 'Kata laluan mestilah sekurang-kurangnya 6 aksara',
+      verifyingAccount: 'Mengesahkan akaun…',
+      checkingWhitelist: 'Memeriksa akses senarai putih…',
+      savingSession: 'Menyimpan sesi…',
+      signingInPill: 'Log masuk ke akaun anda',
+      welcomeBack: 'Seronok melihat anda kembali 🎉',
+      registerSuccess: 'Pendaftaran berjaya! Sila log masuk dengan akaun Stockity anda.',
+      registerSuccessEmailPrefix: 'Pendaftaran berjaya! Akaun ',
+      registerSuccessEmailSuffix: ' telah ditambahkan ke senarai putih.',
+      sslBadge: 'Sambungan SSL 256-bit yang selamat',
+      troubleRegistering: 'Masalah mendaftar?',
+      viewTutorial: 'lihat tutorial',
+      tutorialTitle: 'Tutorial Pendaftaran',
+      tutorialStep1: 'Langkah 1 — Buat Akaun',
+      tutorialStep2: 'Langkah 2 — Pendaftaran Berjaya',
+      tutorialStep3: 'Langkah 3 — Log Masuk',
+      tutorialText1: 'Gunakan akaun baru! Isikan email, buat kata laluan, pilih mata wang yang sesuai, kemudian tekan butang Daftar.',
+      tutorialText2: 'Tahniah! Mesej kejayaan akan muncul seperti gambar di atas. Seterusnya, tekan butang "Login StockAutoTrade" untuk terus ke halaman log masuk 🎉',
+      tutorialText3: 'Hampir selesai! Masukkan email dan kata laluan yang baru didaftarkan, kemudian tekan log masuk. Selamat bergabung dengan StockAutoTrade! 🚀',
+      tutorialImgAlt: 'Langkah tutorial',
+      leftHeadline: 'Automatikkan dagangan anda.\nKembangkan kekayaan anda.',
+      leftDesc: 'Platform bot dagangan automatik yang bekerja tanpa henti, memantau pasaran dan melaksanakan strategi terbaik anda.',
+      leftStatEncrypted: 'Disulitkan',
+      leftStatUptime: 'Masa beroperasi',
+      leftStatReliability: 'Kebolehpercayaan',
+      toastCloseLabel: 'Tutup pemberitahuan',
     },
     profile: {
       title: 'Profil',
@@ -1933,6 +2114,11 @@ const translations: Record<Language, Translations> = {
       version: 'Versi',
       loadError: 'Gagal memuatkan profil. Sila cuba lagi.',
       updateError: 'Gagal mengemas kini. Sila cuba lagi.',
+      logoutSplashTitle: 'Selamat tinggal!',
+      logoutSplashMessage: 'Anda berjaya log keluar.\nJumpa lagi.',
+      darkMode: 'Mod Gelap',
+      updates: 'Kemas Kini',
+      adminPanel: 'Panel Admin',
     },
     history: {
       title: 'Sejarah',
@@ -2239,6 +2425,7 @@ const translations: Record<Language, Translations> = {
       virtual: 'वर्चुअल',
       encrypted: 'एन्क्रिप्टेड',
       secure: 'सुरक्षित',
+      show: 'दिखाएं',
     },
     login: {
       title: 'StockAutoTrade',
@@ -2264,6 +2451,31 @@ const translations: Record<Language, Translations> = {
       enterPassword: 'कृपया अपना पासवर्ड दर्ज करें',
       invalidEmail: 'कृपया एक वैध ईमेल दर्ज करें',
       invalidPassword: 'पासवर्ड कम से कम 6 अक्षर का होना चाहिए',
+      verifyingAccount: 'खाता सत्यापित हो रहा है…',
+      checkingWhitelist: 'व्हाइटलिस्ट एक्सेस जांचा जा रहा है…',
+      savingSession: 'सत्र सहेजा जा रहा है…',
+      signingInPill: 'आपके खाते में साइन इन हो रहा है',
+      welcomeBack: 'आपको फिर से देखकर खुशी हुई 🎉',
+      registerSuccess: 'पंजीकरण सफल! अपने Stockity खाते से लॉगिन करें।',
+      registerSuccessEmailPrefix: 'पंजीकरण सफल! खाता ',
+      registerSuccessEmailSuffix: ' को व्हाइटलिस्ट में जोड़ा गया।',
+      sslBadge: '256-बिट SSL सुरक्षित कनेक्शन',
+      troubleRegistering: 'रजिस्टर करने में समस्या?',
+      viewTutorial: 'ट्यूटोरियल देखें',
+      tutorialTitle: 'पंजीकरण ट्यूटोरियल',
+      tutorialStep1: 'चरण 1 — खाता बनाएं',
+      tutorialStep2: 'चरण 2 — पंजीकरण सफल',
+      tutorialStep3: 'चरण 3 — साइन इन करें',
+      tutorialText1: 'नए खाते का उपयोग करें! ईमेल भरें, पासवर्ड बनाएं, उचित मुद्रा चुनें, फिर Register बटन दबाएं।',
+      tutorialText2: 'बधाई हो! ऊपर दिखाए अनुसार सफलता संदेश दिखेगा। इसके बाद, लॉगिन पेज पर जाने के लिए "Login StockAutoTrade" बटन दबाएं 🎉',
+      tutorialText3: 'लगभग हो गया! अभी-अभी पंजीकृत ईमेल और पासवर्ड दर्ज करें, फिर लॉगिन दबाएं। StockAutoTrade में आपका स्वागत है! 🚀',
+      tutorialImgAlt: 'ट्यूटोरियल चरण',
+      leftHeadline: 'अपनी ट्रेडिंग स्वचालित करें।\nअपनी संपत्ति बढ़ाएं।',
+      leftDesc: 'एक नॉन-स्टॉप स्वचालित ट्रेडिंग बॉट प्लेटफ़ॉर्म जो बाज़ार की निगरानी करता है और आपकी सर्वश्रेष्ठ रणनीतियाँ निष्पादित करता है।',
+      leftStatEncrypted: 'एन्क्रिप्टेड',
+      leftStatUptime: 'सिस्टम अपटाइम',
+      leftStatReliability: 'विश्वसनीयता',
+      toastCloseLabel: 'सूचना बंद करें',
     },
     profile: {
       title: 'प्रोफ़ाइल',
@@ -2295,6 +2507,11 @@ const translations: Record<Language, Translations> = {
       version: 'संस्करण',
       loadError: 'प्रोफ़ाइल लोड करने में विफल। पुनः प्रयास करें।',
       updateError: 'अपडेट करने में विफल। पुनः प्रयास करें।',
+      logoutSplashTitle: 'अलविदा!',
+      logoutSplashMessage: 'आप सफलतापूर्वक लॉग आउट हो गए।\nफिर मिलेंगे।',
+      darkMode: 'डार्क मोड',
+      updates: 'अपडेट',
+      adminPanel: 'एडमिन पैनल',
     },
     history: {
       title: 'इतिहास',
@@ -2601,6 +2818,7 @@ const translations: Record<Language, Translations> = {
       virtual: 'เสมือน',
       encrypted: 'เข้ารหัสแล้ว',
       secure: 'ปลอดภัย',
+      show: 'แสดง',
     },
     login: {
       title: 'StockAutoTrade',
@@ -2626,6 +2844,31 @@ const translations: Record<Language, Translations> = {
       enterPassword: 'กรุณากรอกรหัสผ่านของคุณ',
       invalidEmail: 'กรุณากรอกอีเมลที่ถูกต้อง',
       invalidPassword: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
+      verifyingAccount: 'กำลังตรวจสอบบัญชี…',
+      checkingWhitelist: 'กำลังตรวจสอบสิทธิ์ไวท์ลิสต์…',
+      savingSession: 'กำลังบันทึกเซสชัน…',
+      signingInPill: 'กำลังเข้าสู่บัญชีของคุณ',
+      welcomeBack: 'ดีใจที่ได้เจอคุณอีกครั้ง 🎉',
+      registerSuccess: 'ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบด้วยบัญชี Stockity ของคุณ',
+      registerSuccessEmailPrefix: 'ลงทะเบียนสำเร็จ! บัญชี ',
+      registerSuccessEmailSuffix: ' ถูกเพิ่มเข้าไวท์ลิสต์แล้ว',
+      sslBadge: 'การเชื่อมต่อ SSL 256 บิตที่ปลอดภัย',
+      troubleRegistering: 'ลงทะเบียนมีปัญหา?',
+      viewTutorial: 'ดูบทช่วยสอน',
+      tutorialTitle: 'บทช่วยสอนการลงทะเบียน',
+      tutorialStep1: 'ขั้นตอนที่ 1 — สร้างบัญชี',
+      tutorialStep2: 'ขั้นตอนที่ 2 — ลงทะเบียนสำเร็จ',
+      tutorialStep3: 'ขั้นตอนที่ 3 — เข้าสู่ระบบ',
+      tutorialText1: 'ใช้บัญชีใหม่นะ! กรอกอีเมล สร้างรหัสผ่าน เลือกสกุลเงินที่เหมาะสม แล้วกดปุ่มลงทะเบียน',
+      tutorialText2: 'ยินดีด้วย! จะมีข้อความสำเร็จปรากฏขึ้นดังภาพด้านบน ถัดไปให้กดปุ่ม "Login StockAutoTrade" เพื่อไปยังหน้าเข้าสู่ระบบโดยตรง 🎉',
+      tutorialText3: 'เกือบเสร็จแล้ว! ใส่อีเมลและรหัสผ่านที่เพิ่งลงทะเบียน แล้วกดเข้าสู่ระบบ ยินดีต้อนรับสู่ StockAutoTrade! 🚀',
+      tutorialImgAlt: 'ขั้นตอนบทช่วยสอน',
+      leftHeadline: 'ทำให้การเทรดเป็นอัตโนมัติ\nเพิ่มพูนความมั่งคั่งของคุณ',
+      leftDesc: 'แพลตฟอร์มบอทเทรดอัตโนมัติที่ทำงานไม่หยุด ติดตามตลาดและดำเนินกลยุทธ์ที่ดีที่สุดของคุณ',
+      leftStatEncrypted: 'เข้ารหัสแล้ว',
+      leftStatUptime: 'อัพไทม์ระบบ',
+      leftStatReliability: 'ความน่าเชื่อถือ',
+      toastCloseLabel: 'ปิดการแจ้งเตือน',
     },
     profile: {
       title: 'โปรไฟล์',
@@ -2657,6 +2900,11 @@ const translations: Record<Language, Translations> = {
       version: 'เวอร์ชัน',
       loadError: 'โหลดโปรไฟล์ล้มเหลว กรุณาลองใหม่',
       updateError: 'อัปเดตล้มเหลว กรุณาลองใหม่',
+      logoutSplashTitle: 'ลาก่อน!',
+      logoutSplashMessage: 'คุณออกจากระบบสำเร็จแล้ว\nพบกันใหม่เร็วๆ นี้',
+      darkMode: 'โหมดมืด',
+      updates: 'อัปเดต',
+      adminPanel: 'แผงแอดมิน',
     },
     history: {
       title: 'ประวัติ',
@@ -2963,6 +3211,7 @@ const translations: Record<Language, Translations> = {
       virtual: 'Sanal',
       encrypted: 'Şifreli',
       secure: 'Güvenli',
+      show: 'Göster',
     },
     login: {
       title: 'StockAutoTrade',
@@ -2988,6 +3237,31 @@ const translations: Record<Language, Translations> = {
       enterPassword: 'Lütfen şifrenizi girin',
       invalidEmail: 'Lütfen geçerli bir e-posta girin',
       invalidPassword: 'Şifre en az 6 karakter olmalıdır',
+      verifyingAccount: 'Hesap doğrulanıyor…',
+      checkingWhitelist: 'Beyaz liste erişimi kontrol ediliyor…',
+      savingSession: 'Oturum kaydediliyor…',
+      signingInPill: 'Hesabınıza giriş yapılıyor',
+      welcomeBack: 'Sizi yeniden görmek güzel 🎉',
+      registerSuccess: 'Kayıt başarılı! Stockity hesabınızla giriş yapın.',
+      registerSuccessEmailPrefix: 'Kayıt başarılı! Hesap ',
+      registerSuccessEmailSuffix: ' beyaz listeye eklendi.',
+      sslBadge: 'Güvenli 256-bit SSL bağlantısı',
+      troubleRegistering: 'Kayıt olmakta sorun mu yaşıyorsunuz?',
+      viewTutorial: 'eğitimi görüntüle',
+      tutorialTitle: 'Kayıt Eğitimi',
+      tutorialStep1: 'Adım 1 — Hesap Oluştur',
+      tutorialStep2: 'Adım 2 — Kayıt Başarılı',
+      tutorialStep3: 'Adım 3 — Giriş Yap',
+      tutorialText1: 'Yeni bir hesap kullanın! E-postanızı doldurun, şifre oluşturun, uygun para birimini seçin, ardından Kayıt ol butonuna basın.',
+      tutorialText2: 'Tebrikler! Yukarıdaki gibi bir başarı mesajı görünecek. Ardından doğrudan giriş sayfasına gitmek için "Login StockAutoTrade" butonuna basın 🎉',
+      tutorialText3: 'Neredeyse bitti! Az önce kaydettiğiniz e-posta ve şifreyi girin, ardından giriş yapın. StockAutoTrade\'e hoş geldiniz! 🚀',
+      tutorialImgAlt: 'Eğitim adımı',
+      leftHeadline: 'İşlemlerinizi otomatikleştirin.\nServetinizi büyütün.',
+      leftDesc: 'Duraksama olmadan çalışan, piyasayı izleyen ve en iyi stratejilerinizi uygulayan otomatik işlem botu platformu.',
+      leftStatEncrypted: 'Şifreli',
+      leftStatUptime: 'Sistem çalışma süresi',
+      leftStatReliability: 'Güvenilirlik',
+      toastCloseLabel: 'Bildirimi kapat',
     },
     profile: {
       title: 'Profil',
@@ -3019,6 +3293,11 @@ const translations: Record<Language, Translations> = {
       version: 'Sürüm',
       loadError: 'Profil yüklenemedi. Lütfen tekrar deneyin.',
       updateError: 'Güncelleme başarısız. Lütfen tekrar deneyin.',
+      logoutSplashTitle: 'Hoşça kalın!',
+      logoutSplashMessage: 'Başarıyla çıkış yaptınız.\nYakında görüşürüz.',
+      darkMode: 'Karanlık Mod',
+      updates: 'Güncellemeler',
+      adminPanel: 'Yönetici Paneli',
     },
     history: {
       title: 'Geçmiş',

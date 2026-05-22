@@ -76,6 +76,10 @@ function HistoryPageContent() {
     cardShadow:    D
       ? '0 1px 0 rgba(255,255,255,0.04), 0 2px 12px rgba(0,0,0,0.35)'
       : '0 1px 0 rgba(0,0,0,0.04), 0 2px 12px rgba(0,0,0,0.04)',
+    // Desktop-specific
+    deskSidebarBg: D ? '#0d0d0f'                        : '#f7f7fa',
+    deskRowHover:  D ? 'rgba(255,255,255,0.025)'        : 'rgba(0,0,0,0.018)',
+    deskTableHead: D ? 'rgba(255,255,255,0.04)'         : 'rgba(60,60,67,0.04)',
   };
 
   const [isLoading, setIsLoading]       = useState(true);
@@ -295,6 +299,7 @@ function HistoryPageContent() {
     </div>
   );
 
+  // ── Mobile LogRow (unchanged) ───────────────────────────────────────────────
   const LogRow: React.FC<{ log: CombinedLog; last: boolean }> = ({ log, last }) => {
     const type      = TYPE_META[log.type] || TYPE_META.fastrade;
     const res       = log.result ? (RESULT_META[log.result] || null) : null;
@@ -391,6 +396,269 @@ function HistoryPageContent() {
     );
   };
 
+  // ── Desktop Table Row ──────────────────────────────────────────────────────
+  // Grid: 3px accent | 72px type | 100px time | 72px date | 80px dir | 1fr amount | 88px result | 100px p&l
+  const DesktopLogRow: React.FC<{ log: CombinedLog; last: boolean }> = ({ log, last }) => {
+    const type      = TYPE_META[log.type] || TYPE_META.fastrade;
+    const res       = log.result ? (RESULT_META[log.result] || null) : null;
+    const isCall    = log.trend === 'call';
+    const profitPos = (log.profit ?? 0) >= 0;
+    const pending   = !log.result;
+
+    const accentColor = res
+      ? res.color
+      : pending ? th.borderFaint : th.borderFaint;
+
+    return (
+      <div
+        className="hist-drow"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '3px 72px 108px 68px 80px 1fr 92px 108px',
+          alignItems: 'center',
+          borderBottom: last ? 'none' : `1px solid ${th.separator}`,
+          transition: 'background 0.12s ease',
+          cursor: 'default',
+        }}
+      >
+        {/* Accent bar */}
+        <div style={{
+          alignSelf: 'stretch',
+          width: 3,
+          background: accentColor,
+          margin: '10px 0',
+          borderRadius: '0 2px 2px 0',
+          opacity: res ? 1 : 0.25,
+        }} />
+
+        {/* Type badge */}
+        <div style={{ padding: '14px 10px 14px 14px' }}>
+          <span style={{
+            fontSize: 9, fontWeight: 700, letterSpacing: '0.07em',
+            textTransform: 'uppercase', color: type.color,
+            background: type.bg, padding: '3px 7px', borderRadius: 5,
+            border: `1px solid ${type.color}28`, whiteSpace: 'nowrap',
+          }}>
+            {type.label}
+          </span>
+        </div>
+
+        {/* Time */}
+        <div style={{ padding: '14px 8px' }}>
+          <span style={{
+            fontSize: 12, fontWeight: 600, color: th.textSecondary,
+            fontFamily: "'SF Mono','Fira Mono','Consolas',monospace",
+            letterSpacing: '0.01em',
+          }}>
+            {log.time}
+          </span>
+          {log.martingaleStep !== undefined && log.martingaleStep > 0 && (
+            <span style={{
+              display: 'block', marginTop: 2,
+              fontSize: 9, fontWeight: 700, color: '#ff9500',
+            }}>
+              MG ×{log.martingaleStep}
+            </span>
+          )}
+        </div>
+
+        {/* Date */}
+        <div style={{ padding: '14px 8px' }}>
+          <span style={{ fontSize: 11.5, color: th.textQuaternary }}>
+            {fmtDate(log.executedAt)}
+          </span>
+        </div>
+
+        {/* Direction */}
+        <div style={{ padding: '14px 8px' }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            fontSize: 12, fontWeight: 700, color: isCall ? '#34c759' : '#ff3b30',
+          }}>
+            {isCall
+              ? <><TrendingUp size={13} strokeWidth={2.4} /> Buy</>
+              : <><TrendingDown size={13} strokeWidth={2.4} /> Sell</>
+            }
+          </span>
+          {log.note && (
+            <span style={{
+              display: 'block', marginTop: 2,
+              fontSize: 9.5, color: th.textQuaternary,
+              fontStyle: 'italic',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {log.note}
+            </span>
+          )}
+        </div>
+
+        {/* Amount */}
+        <div style={{ padding: '14px 8px' }}>
+          <span style={{
+            fontSize: 13, fontWeight: 700, color: th.textPrimary,
+            letterSpacing: -0.2,
+          }}>
+            Rp {fmt(log.amount)}
+          </span>
+        </div>
+
+        {/* Result badge */}
+        <div style={{ padding: '14px 8px' }}>
+          {res ? (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
+              color: res.color, background: res.bg,
+              padding: '4px 10px', borderRadius: 99,
+              border: `1px solid ${res.color}30`,
+              whiteSpace: 'nowrap',
+            }}>
+              {res.icon} {res.label}
+            </span>
+          ) : (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center',
+              fontSize: 10.5, color: th.textFaint, background: th.labelBg,
+              padding: '4px 10px', borderRadius: 99, border: `1px solid ${th.border}`,
+              whiteSpace: 'nowrap',
+            }}>
+              {pending ? (t('history.pending') || '—') : '—'}
+            </span>
+          )}
+        </div>
+
+        {/* P&L */}
+        <div style={{ padding: '14px 16px 14px 8px', textAlign: 'right' }}>
+          {log.profit != null && log.result ? (
+            <span style={{
+              fontSize: 13, fontWeight: 700,
+              color: profitPos ? '#34c759' : '#ff3b30',
+              letterSpacing: -0.2,
+            }}>
+              {profitPos ? '+' : '−'}Rp {fmt(log.profit)}
+            </span>
+          ) : (
+            <span style={{ fontSize: 12, color: th.textFaint }}>—</span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // ── Desktop: sidebar filter section renderer ───────────────────────────────
+  const SidebarSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+    <div style={{ padding: '20px 0 4px' }}>
+      <p style={{
+        fontSize: 10, fontWeight: 600, color: th.textQuaternary,
+        textTransform: 'uppercase', letterSpacing: '0.09em',
+        padding: '0 20px', marginBottom: 6,
+      }}>
+        {title}
+      </p>
+      {children}
+    </div>
+  );
+
+  type FilterVal = LogType | ResultFilter | DateFilter;
+
+  const SidebarFilterItem: React.FC<{
+    label: string;
+    active: boolean;
+    color?: string;
+    onClick: () => void;
+    dot?: boolean;
+  }> = ({ label, active, color = '#007aff', onClick, dot }) => (
+    <button
+      onClick={onClick}
+      className="hist-sidebar-item"
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+        padding: '8px 20px', background: 'transparent',
+        border: 'none', cursor: 'pointer', textAlign: 'left',
+        WebkitTapHighlightColor: 'transparent', position: 'relative',
+      }}
+    >
+      {/* Active left indicator */}
+      <div style={{
+        position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
+        width: 2.5, height: active ? 18 : 0, borderRadius: 99,
+        background: color,
+        transition: 'height 0.2s cubic-bezier(0.34,1.56,0.64,1)',
+      }} />
+      {dot && (
+        <span style={{
+          width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+          background: active ? color : th.textFaint,
+          transition: 'background 0.15s',
+        }} />
+      )}
+      <span style={{
+        fontSize: 13.5, color: active ? color : th.textSecondary,
+        fontWeight: active ? 600 : 400,
+        transition: 'color 0.15s',
+      }}>
+        {label}
+      </span>
+    </button>
+  );
+
+  // ── Desktop stats bar (4 metrics in a row) ────────────────────────────────
+  const DesktopStatBar = () => (
+    <div className="hist-desktop-stats" style={{ display: 'none' }}>
+      {[
+        {
+          label: t('history.totalTrades'),
+          value: isLoading ? '—' : stats.totalTrades,
+          color: '#007aff',
+          sub: isLoading ? '' : `${stats.wins}W · ${stats.losses}L${stats.draws > 0 ? ` · ${stats.draws}D` : ''}`,
+        },
+        {
+          label: t('history.winRate'),
+          value: isLoading ? '—' : `${stats.winRate}%`,
+          color: stats.winRate >= 50 ? '#34c759' : '#ff3b30',
+          sub: '',
+        },
+        {
+          label: 'Profit',
+          value: isLoading ? '—' : stats.wins,
+          color: '#34c759',
+          sub: '',
+        },
+        {
+          label: t('history.profitLoss'),
+          value: isLoading ? '—' : `${pnlPos ? '+' : '−'}Rp ${fmt(stats.totalPnL)}`,
+          color: pnlPos ? '#34c759' : '#ff3b30',
+          sub: '',
+        },
+      ].map(({ label, value, color, sub }) => (
+        <div key={label} style={{
+          padding: '16px 20px',
+          borderRight: `1px solid ${th.separator}`,
+          display: 'flex', flexDirection: 'column', gap: 4,
+        }}>
+          <p style={{
+            fontSize: 10, fontWeight: 500, color: th.textQuaternary,
+            textTransform: 'uppercase', letterSpacing: '0.09em',
+          }}>
+            {label}
+          </p>
+          {isLoading
+            ? <Skel w={60} h={20} r={4} dark={D} />
+            : <p style={{ fontSize: 20, fontWeight: 700, color, letterSpacing: -0.5, lineHeight: 1 }}>{value}</p>
+          }
+          {sub && !isLoading && (
+            <p style={{ fontSize: 10.5, color: th.textFaint }}>{sub}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
+  const TYPE_COLORS: Record<LogType, string> = {
+    all: '#007aff', schedule: '#34c759', fastrade: '#007aff',
+    ctc: '#af52de', indicator: '#ff9500', momentum: '#ff2d55',
+  };
+
   return (
     <div style={{
       minHeight: '100%',
@@ -398,6 +666,7 @@ function HistoryPageContent() {
       fontFamily: "-apple-system,'SF Pro Display',BlinkMacSystemFont,'Helvetica Neue',sans-serif",
       WebkitFontSmoothing: 'antialiased',
       transition: 'background 0.3s ease',
+      display: 'flex', flexDirection: 'column',
     }}>
       <style>{`
         @keyframes skel-pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
@@ -417,195 +686,509 @@ function HistoryPageContent() {
         .hist-row:nth-child(5)  { animation-delay: 0.15s; }
         .hist-row:nth-child(n+6){ animation-delay: 0.18s; }
 
+        /* Mobile: desktop-only elements hidden */
+        .hist-drow          { display: none !important; }
+        .hist-desktop-stats { display: none !important; }
+        .hist-table-head    { display: none !important; }
+        .hist-desktop-only  { display: none !important; }
+
         @media (hover: hover) {
-          .hist-sidebar button:hover { background: rgba(128,128,128,0.06) !important; }
+          .hist-sidebar-item:hover { background: rgba(128,128,128,0.06) !important; }
+          .hist-drow:hover { background: var(--row-hover) !important; }
         }
 
+        /* ══════════════════════════════════════════
+           DESKTOP REDESIGN — min-width: 768px
+           ══════════════════════════════════════════ */
         @media (min-width: 768px) {
-          .hist-grid-2 { grid-template-columns: 1fr 1fr !important; }
-          .hist-grid-4 { grid-template-columns: repeat(4,1fr) !important; }
-          .hist-layout { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
-          .hist-sidebar { display: flex !important; }
-          .hist-main-top { display: none !important; }
+
+          /* ── Root: fixed viewport height, no page overflow (like profile page) ── */
+          .hist-root {
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+          }
+
+          /* ── Body: fill remaining space, each panel scrolls internally ── */
+          .hist-body {
+            display: flex !important;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            max-width: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+          }
+
+          /* ── layout: contents so sidebar+main become direct flex children ── */
+          .hist-layout {
+            display: contents !important;
+          }
+
+          /* ── Sidebar: fixed width, scrolls internally ── */
+          .hist-sidebar {
+            display: flex !important;
+            flex-direction: column;
+            flex-shrink: 0;
+            width: 220px;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            border-right: 1px solid var(--sidebar-border);
+            padding-bottom: 32px;
+          }
+          .hist-sidebar::-webkit-scrollbar { display: none; }
+
+          /* ── Main column: fills rest, scrolls internally ── */
+          .hist-main-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+          }
+          .hist-main-col::-webkit-scrollbar { width: 0; }
+
+          /* ── Desktop stats bar ── */
+          .hist-desktop-stats {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr);
+            border-bottom: 1px solid var(--separator);
+            flex-shrink: 0;
+          }
+
+          /* ── Desktop table header ── */
+          .hist-table-head {
+            display: grid !important;
+            grid-template-columns: 3px 72px 108px 68px 80px 1fr 92px 108px;
+            padding: 0;
+            border-bottom: 1px solid var(--separator);
+            background: var(--table-head-bg);
+          }
+
+          /* ── Desktop log rows ── */
+          .hist-drow {
+            display: grid !important;
+            animation: fade-up 0.25s cubic-bezier(0.22,1,0.36,1) both;
+          }
+          .hist-drow:nth-child(1)  { animation-delay: 0.02s; }
+          .hist-drow:nth-child(2)  { animation-delay: 0.04s; }
+          .hist-drow:nth-child(3)  { animation-delay: 0.06s; }
+          .hist-drow:nth-child(4)  { animation-delay: 0.08s; }
+          .hist-drow:nth-child(5)  { animation-delay: 0.10s; }
+          .hist-drow:nth-child(n+6){ animation-delay: 0.12s; }
+
+          /* ── Mobile-only elements hidden on desktop ── */
+          .hist-main-top    { display: none !important; }
+          .hist-row         { display: none !important; }
+          .hist-filter-btn  { display: none !important; }
+
+          /* ── Desktop-only elements shown ── */
+          .hist-desktop-only { display: flex !important; }
+
+          /* ── Log wrap: clean desktop padding, no bottom-nav offset ── */
+          .hist-log-wrap {
+            padding: 24px 28px 40px !important;
+            flex: 1;
+          }
+
+          /* ── Header: desktop variant ── */
+          .hist-header-inner {
+            max-width: none !important;
+            padding: 0 24px !important;
+          }
         }
       `}</style>
 
-      {/* ── HEADER ── */}
-      <div style={{
-        width: '100%',
-        background: th.headerBg,
-        borderBottom: `0.5px solid ${th.border}`,
-        transition: 'background 0.3s ease, border-color 0.3s ease',
-      }}>
-        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <h1 style={{ flex: 1, fontSize: 17, fontWeight: 600, color: th.textPrimary, letterSpacing: -0.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('history.title')}</h1>
+      {/* CSS variables injected via inline style on root */}
+      <div
+        className="hist-root"
+        style={{
+          // Expose theme tokens as CSS vars for media-query-driven styles
+          ['--sidebar-border' as any]: th.sidebarBorder,
+          ['--separator' as any]:      th.separator,
+          ['--row-hover' as any]:      th.deskRowHover,
+          ['--table-head-bg' as any]:  th.deskTableHead,
+        }}
+      >
 
-          <button onClick={() => loadHistory(true)} disabled={refreshing || isLoading} className="hist-tap"
-            style={{ width: 32, height: 32, borderRadius: 8, background: th.btnBg, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#007aff', cursor: 'pointer', opacity: (refreshing || isLoading) ? 0.4 : 1, flexShrink: 0 }}>
-            <RotateCcw size={15} style={{ animation: (refreshing || isLoading) ? 'spin 0.8s linear infinite' : 'none' }} />
-          </button>
-          <button onClick={() => setShowFilters(v => !v)} className="hist-tap"
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 99, background: showFilters ? 'rgba(0,122,255,0.12)' : th.btnBg, border: `1px solid ${showFilters ? 'rgba(0,122,255,0.28)' : th.border}`, color: showFilters ? '#007aff' : th.textSecondary, fontSize: 13, fontWeight: 500, cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>
-            <Filter size={13} />
-            <span style={{ whiteSpace: 'nowrap' }}>{t('common.filter')}</span>
-            {hasActiveFilter && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#007aff', marginLeft: 1, flexShrink: 0 }} />}
-          </button>
-        </div>
-      </div>
+        {/* ── HEADER ── */}
+        <div style={{
+          width: '100%',
+          background: th.headerBg,
+          borderBottom: `0.5px solid ${th.border}`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          flexShrink: 0,
+          transition: 'background 0.3s ease, border-color 0.3s ease',
+        }}>
+          <div className="hist-header-inner" style={{ maxWidth: 1120, margin: '0 auto', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <h1 style={{ fontSize: 17, fontWeight: 600, color: th.textPrimary, letterSpacing: -0.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 4 }}>
+              {t('history.title')}
+            </h1>
 
-      {/* ── BODY ── */}
-      <div style={{
-        maxWidth: 1120, margin: '0 auto', width: '100%',
-        padding: '20px 16px calc(56px + env(safe-area-inset-bottom, 0px) + 24px)',
-      }}>
-        <div className="hist-layout" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-          {/* ══ SIDEBAR (desktop) ══ */}
-          <div className="hist-sidebar" style={{ display: 'none', flexDirection: 'column', gap: 16 }}>
-            <div style={{ background: th.cardBg, borderRadius: 14, overflow: 'hidden', boxShadow: th.cardShadow }}>
-              <div style={{ padding: '14px 16px 10px', borderBottom: `1px solid ${th.separator}` }}>
-                <p style={{ fontSize: 11, fontWeight: 500, color: th.textTertiary, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{t('history.summary')}</p>
-                {isLoading ? <Skel w={100} h={28} r={6} dark={D} /> : (
-                  <p style={{ fontSize: 26, fontWeight: 700, color: th.textPrimary, letterSpacing: -0.6, lineHeight: 1 }}>
-                    {stats.totalTrades} <span style={{ fontSize: 13, fontWeight: 400, color: th.textTertiary }}>{t('history.trades')}</span>
-                  </p>
-                )}
-              </div>
-              {[
-                { label: 'Profit', value: stats.wins,   color: '#34c759' },
-                { label: 'Loss',   value: stats.losses, color: '#ff3b30' },
-                { label: t('history.draw'), value: stats.draws, color: '#ff9500' },
-              ].map(({ label, value, color }, i, arr) => (
-                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: i < arr.length - 1 ? `1px solid ${th.separator}` : 'none' }}>
-                  <span style={{ fontSize: 14, color: th.textSecondary }}>{label}</span>
-                  {isLoading ? <Skel w={30} h={13} r={4} dark={D} /> : <span style={{ fontSize: 14, fontWeight: 600, color }}>{value}</span>}
-                </div>
-              ))}
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div style={{ background: th.cardBg, borderRadius: 14, padding: '12px', boxShadow: th.cardShadow }}>
-                <p style={{ fontSize: 10, fontWeight: 500, color: th.textTertiary, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>{t('history.winRate')}</p>
-                {isLoading ? <Skel w="70%" h={22} r={5} dark={D} /> : <p style={{ fontSize: 20, fontWeight: 700, color: stats.winRate >= 50 ? '#34c759' : '#ff3b30', letterSpacing: -0.4 }}>{stats.winRate}%</p>}
-              </div>
-              <div style={{ background: th.cardBg, borderRadius: 14, padding: '12px', boxShadow: th.cardShadow }}>
-                <p style={{ fontSize: 10, fontWeight: 500, color: th.textTertiary, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>{t('history.profitLoss')}</p>
-                {isLoading ? <Skel w="80%" h={22} r={5} dark={D} /> : <p style={{ fontSize: 14, fontWeight: 700, color: pnlPos ? '#34c759' : '#ff3b30', letterSpacing: -0.3, lineHeight: 1.2 }}>{pnlPos ? '+' : '-'}Rp {fmt(stats.totalPnL)}</p>}
-              </div>
-            </div>
-
-            <div style={{ background: th.cardBg, borderRadius: 14, overflow: 'hidden', boxShadow: th.cardShadow }}>
-              <p style={{ fontSize: 11, fontWeight: 500, color: th.textTertiary, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '12px 16px 8px' }}>{t('history.type')}</p>
-              {(['all', 'schedule', 'fastrade', 'ctc', 'indicator', 'momentum'] as LogType[]).map((val, i, arr) => {
-                const active = typeFilter === val;
-                const colors: Record<LogType, string> = {
-                  all: '#007aff', schedule: '#34c759', fastrade: '#007aff',
-                  ctc: '#af52de', indicator: '#ff9500', momentum: '#ff2d55',
-                };
-                return (
-                  <button key={val} onClick={() => setTypeFilter(val)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', background: active ? `${colors[val]}0e` : 'transparent', border: 'none', borderBottom: i < arr.length - 1 ? `1px solid ${th.separator}` : 'none', borderLeft: active ? `2px solid ${colors[val]}` : '2px solid transparent', cursor: 'pointer', textAlign: 'left', WebkitTapHighlightColor: 'transparent' }}>
-                    <span style={{ fontSize: 14, color: active ? colors[val] : th.textPrimary, fontWeight: active ? 600 : 400 }}>{getTypeLabel(val)}</span>
-                    {active && <ChevronRight size={13} color={colors[val]} />}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div style={{ background: th.cardBg, borderRadius: 14, overflow: 'hidden', boxShadow: th.cardShadow }}>
-              <p style={{ fontSize: 11, fontWeight: 500, color: th.textTertiary, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '12px 16px 8px' }}>{t('history.period')}</p>
-              {(['all', 'today', 'week', 'month'] as DateFilter[]).map((val, i, arr) => {
-                const active = dateFilter === val;
-                return (
-                  <button key={val} onClick={() => setDateFilter(val)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', background: active ? 'rgba(0,122,255,0.08)' : 'transparent', border: 'none', borderBottom: i < arr.length - 1 ? `1px solid ${th.separator}` : 'none', borderLeft: active ? '2px solid #007aff' : '2px solid transparent', cursor: 'pointer', textAlign: 'left', WebkitTapHighlightColor: 'transparent' }}>
-                    <span style={{ fontSize: 14, color: active ? '#007aff' : th.textPrimary, fontWeight: active ? 600 : 400 }}>{getPeriodLabel(val)}</span>
-                    {active && <ChevronRight size={13} color="#007aff" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ══ MAIN COLUMN ══ */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
-
-            <div className="hist-main-top" style={{ display: 'block' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <StatTile
-                  label={t('history.totalTrades')}
-                  value={isLoading ? '—' : stats.totalTrades}
-                  sub={isLoading ? '' : `${stats.wins}P · ${stats.losses}L${stats.draws > 0 ? ` · ${stats.draws}${t('history.draw')[0]}` : ''}`}
-                  color="#007aff"
-                  icon={<BarChart3 size={14} />}
-                />
-                <StatTile
-                  label={t('history.winRate')}
-                  value={isLoading ? '—' : `${stats.winRate}%`}
-                  sub={isLoading ? '' : `${pnlPos ? '+' : '-'}Rp ${fmt(stats.totalPnL)}`}
-                  color={stats.winRate >= 50 ? '#34c759' : '#ff3b30'}
-                  icon={stats.winRate >= 50 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                />
-              </div>
-            </div>
-
-            {showFilters && (
-              <div style={{ background: th.cardBg, borderRadius: 14, boxShadow: th.cardShadow, padding: '14px 16px', animation: 'fade-up 0.22s ease both' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, minWidth: 0 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: th.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('common.filter')}</span>
-                  {hasActiveFilter && (
-                    <button onClick={() => { setTypeFilter('all'); setResultFilter('all'); setDateFilter('all'); }}
-                      style={{ fontSize: 13, color: '#ff3b30', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>{t('history.resetFilters')}</button>
-                  )}
-                </div>
-                <p style={{ fontSize: 11, color: th.textTertiary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('history.filterByType')}</p>
-                <div className="hist-chip-scroll" style={{ marginBottom: 14 }}>
-                  {(['all','schedule','fastrade','ctc','indicator','momentum'] as LogType[]).map((v) => (
-                    <Chip key={v} label={getTypeLabel(v)} active={typeFilter===v} color={TYPE_META[v]?.color || '#007aff'} onClick={() => setTypeFilter(v)} />
-                  ))}
-                </div>
-                <p style={{ fontSize: 11, color: th.textTertiary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('history.filterByResult')}</p>
-                <div className="hist-chip-scroll" style={{ marginBottom: 14 }}>
-                  {(['all','win','loss','draw'] as ResultFilter[]).map((v) => (
-                    <Chip key={v} label={getResultLabel(v)} active={resultFilter===v} color={v==='win'?'#34c759':v==='loss'?'#ff3b30':v==='draw'?'#ff9500':'#007aff'} onClick={() => setResultFilter(v)} />
-                  ))}
-                </div>
-                <p style={{ fontSize: 11, color: th.textTertiary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('history.filterByPeriod')}</p>
-                <div className="hist-chip-scroll">
-                  {(['all','today','week','month'] as DateFilter[]).map((v) => (
-                    <Chip key={v} label={getPeriodLabel(v)} active={dateFilter===v} onClick={() => setDateFilter(v)} />
-                  ))}
-                </div>
+            {/* Desktop: subtle summary in header */}
+            {!isLoading && (
+              <div className="hist-desktop-only" style={{ display: 'none', alignItems: 'center', gap: 16, flex: 1, paddingLeft: 8 }}>
+                <span style={{ fontSize: 12.5, color: th.textTertiary }}>
+                  <span style={{ fontWeight: 600, color: th.textPrimary }}>{stats.totalTrades}</span> {t('history.trades')}
+                </span>
+                <span style={{ width: 1, height: 14, background: th.border, flexShrink: 0 }} />
+                <span style={{ fontSize: 12.5, color: th.textTertiary }}>
+                  Win rate{' '}
+                  <span style={{ fontWeight: 600, color: stats.winRate >= 50 ? '#34c759' : '#ff3b30' }}>
+                    {stats.winRate}%
+                  </span>
+                </span>
+                <span style={{ width: 1, height: 14, background: th.border, flexShrink: 0 }} />
+                <span style={{ fontSize: 12.5, color: th.textTertiary }}>
+                  P&L{' '}
+                  <span style={{ fontWeight: 600, color: pnlPos ? '#34c759' : '#ff3b30' }}>
+                    {pnlPos ? '+' : '−'}Rp {fmt(stats.totalPnL)}
+                  </span>
+                </span>
               </div>
             )}
 
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, padding: '0 4px' }}>
-                <p style={{ fontSize: 11.5, fontWeight: 500, color: th.textTertiary, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('history.trades')}</p>
-                <p style={{ fontSize: 11.5, color: th.textFaint, whiteSpace: 'nowrap', flexShrink: 0 }}>{filteredLogs.length} {t('common.data')}</p>
-              </div>
-              <div style={{ background: th.cardBg, borderRadius: 14, overflow: 'hidden', boxShadow: th.cardShadow, transition: 'background 0.3s ease' }}>
+            <div style={{ flex: 1 }} className="hist-filter-btn" />
+
+            <button
+              onClick={() => loadHistory(true)}
+              disabled={refreshing || isLoading}
+              className="hist-tap"
+              style={{
+                width: 32, height: 32, borderRadius: 8, background: th.btnBg,
+                border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#007aff', cursor: 'pointer', opacity: (refreshing || isLoading) ? 0.4 : 1, flexShrink: 0,
+              }}
+            >
+              <RotateCcw size={15} style={{ animation: (refreshing || isLoading) ? 'spin 0.8s linear infinite' : 'none' }} />
+            </button>
+
+            {/* Filter button — mobile only */}
+            <button
+              onClick={() => setShowFilters(v => !v)}
+              className="hist-tap hist-filter-btn"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '7px 13px', borderRadius: 99,
+                background: showFilters ? 'rgba(0,122,255,0.12)' : th.btnBg,
+                border: `1px solid ${showFilters ? 'rgba(0,122,255,0.28)' : th.border}`,
+                color: showFilters ? '#007aff' : th.textSecondary,
+                fontSize: 13, fontWeight: 500, cursor: 'pointer', flexShrink: 0,
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <Filter size={13} />
+              <span style={{ whiteSpace: 'nowrap' }}>{t('common.filter')}</span>
+              {hasActiveFilter && (
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#007aff', marginLeft: 1, flexShrink: 0 }} />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* ── BODY ── */}
+        <div className="hist-body" style={{ maxWidth: 1120, margin: '0 auto', width: '100%' }}>
+          <div className="hist-layout" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {/* ══ SIDEBAR ══ */}
+            <div
+              className="hist-sidebar"
+              style={{ display: 'none', flexDirection: 'column', background: th.deskSidebarBg, transition: 'background 0.3s ease' }}
+            >
+              {/* Sidebar header */}
+              <div style={{
+                padding: '20px 20px 16px',
+                borderBottom: `1px solid ${th.separator}`,
+              }}>
+                <p style={{
+                  fontSize: 10, fontWeight: 600, color: th.textQuaternary,
+                  textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10,
+                }}>
+                  {t('history.summary')}
+                </p>
                 {isLoading ? (
-                  <div style={{ padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(0,122,255,0.18)', borderTopColor: '#007aff', animation: 'spin 0.8s linear infinite' }} />
-                    <p style={{ fontSize: 13, color: th.textTertiary }}>{t('history.loading')}</p>
-                  </div>
-                ) : filteredLogs.length === 0 ? (
-                  <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-                    <History size={36} style={{ color: th.textPlaceholder, margin: '0 auto 12px', display: 'block' }} />
-                    <p style={{ fontSize: 15, fontWeight: 500, color: th.textSecondary, marginBottom: 4 }}>{t('history.noTransactions')}</p>
-                    <p style={{ fontSize: 13, color: th.textFaint }}>{logs.length > 0 ? t('history.noTransactionsFilter') : t('history.startTrading')}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <Skel w={80} h={26} r={5} dark={D} />
+                    <Skel w={120} h={13} r={4} dark={D} />
                   </div>
                 ) : (
-                  <div>
-                    {filteredLogs.map((log, idx) => (
-                      <div key={log.id} className="hist-row">
-                        <LogRow log={log} last={idx === filteredLogs.length - 1} />
-                      </div>
+                  <>
+                    <p style={{
+                      fontSize: 28, fontWeight: 700, color: th.textPrimary,
+                      letterSpacing: -0.8, lineHeight: 1, marginBottom: 6,
+                    }}>
+                      {stats.totalTrades}
+                    </p>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <span style={{ fontSize: 11.5, color: '#34c759', fontWeight: 600 }}>{stats.wins}W</span>
+                      <span style={{ fontSize: 11.5, color: '#ff3b30', fontWeight: 600 }}>{stats.losses}L</span>
+                      {stats.draws > 0 && <span style={{ fontSize: 11.5, color: '#ff9500', fontWeight: 600 }}>{stats.draws}D</span>}
+                    </div>
+                    <div style={{
+                      marginTop: 10, paddingTop: 10,
+                      borderTop: `1px solid ${th.separator}`,
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+                    }}>
+                      <span style={{ fontSize: 11, color: th.textQuaternary }}>Win rate</span>
+                      <span style={{
+                        fontSize: 15, fontWeight: 700, letterSpacing: -0.3,
+                        color: stats.winRate >= 50 ? '#34c759' : '#ff3b30',
+                      }}>
+                        {stats.winRate}%
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 6 }}>
+                      <span style={{ fontSize: 11, color: th.textQuaternary }}>P&L</span>
+                      <span style={{
+                        fontSize: 12.5, fontWeight: 700, letterSpacing: -0.2,
+                        color: pnlPos ? '#34c759' : '#ff3b30',
+                      }}>
+                        {pnlPos ? '+' : '−'}Rp {fmt(stats.totalPnL)}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Reset filters */}
+              {hasActiveFilter && (
+                <div style={{ padding: '10px 20px 0' }}>
+                  <button
+                    onClick={() => { setTypeFilter('all'); setResultFilter('all'); setDateFilter('all'); }}
+                    style={{
+                      width: '100%', padding: '8px', borderRadius: 8,
+                      background: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.2)',
+                      color: '#ff3b30', fontSize: 12, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    {t('history.resetFilters')}
+                  </button>
+                </div>
+              )}
+
+              {/* Type filter */}
+              <SidebarSection title={t('history.type')}>
+                {(['all', 'schedule', 'fastrade', 'ctc', 'indicator', 'momentum'] as LogType[]).map((val) => (
+                  <SidebarFilterItem
+                    key={val}
+                    label={getTypeLabel(val)}
+                    active={typeFilter === val}
+                    color={TYPE_COLORS[val]}
+                    onClick={() => setTypeFilter(val)}
+                    dot={val !== 'all'}
+                  />
+                ))}
+              </SidebarSection>
+
+              {/* Separator */}
+              <div style={{ height: 1, background: th.separator, margin: '8px 20px 0' }} />
+
+              {/* Result filter */}
+              <SidebarSection title={t('history.filterByResult')}>
+                {([
+                  { v: 'all'  as ResultFilter, color: '#007aff' },
+                  { v: 'win'  as ResultFilter, color: '#34c759' },
+                  { v: 'loss' as ResultFilter, color: '#ff3b30' },
+                  { v: 'draw' as ResultFilter, color: '#ff9500' },
+                ]).map(({ v, color }) => (
+                  <SidebarFilterItem
+                    key={v}
+                    label={getResultLabel(v)}
+                    active={resultFilter === v}
+                    color={color}
+                    onClick={() => setResultFilter(v)}
+                    dot={v !== 'all'}
+                  />
+                ))}
+              </SidebarSection>
+
+              {/* Separator */}
+              <div style={{ height: 1, background: th.separator, margin: '8px 20px 0' }} />
+
+              {/* Period filter */}
+              <SidebarSection title={t('history.period')}>
+                {(['all', 'today', 'week', 'month'] as DateFilter[]).map((val) => (
+                  <SidebarFilterItem
+                    key={val}
+                    label={getPeriodLabel(val)}
+                    active={dateFilter === val}
+                    color="#007aff"
+                    onClick={() => setDateFilter(val)}
+                  />
+                ))}
+              </SidebarSection>
+            </div>
+
+            {/* ══ MAIN COLUMN ══ */}
+            <div className="hist-main-col" style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
+
+              {/* Mobile stat tiles */}
+              <div className="hist-main-top" style={{ display: 'block', padding: '0 16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <StatTile
+                    label={t('history.totalTrades')}
+                    value={isLoading ? '—' : stats.totalTrades}
+                    sub={isLoading ? '' : `${stats.wins}P · ${stats.losses}L${stats.draws > 0 ? ` · ${stats.draws}${t('history.draw')[0]}` : ''}`}
+                    color="#007aff"
+                    icon={<BarChart3 size={14} />}
+                  />
+                  <StatTile
+                    label={t('history.winRate')}
+                    value={isLoading ? '—' : `${stats.winRate}%`}
+                    sub={isLoading ? '' : `${pnlPos ? '+' : '-'}Rp ${fmt(stats.totalPnL)}`}
+                    color={stats.winRate >= 50 ? '#34c759' : '#ff3b30'}
+                    icon={stats.winRate >= 50 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                  />
+                </div>
+              </div>
+
+              {/* Desktop stats bar (4-col) */}
+              <DesktopStatBar />
+
+              {/* Mobile: filter drawer */}
+              {showFilters && (
+                <div style={{ background: th.cardBg, borderRadius: 14, boxShadow: th.cardShadow, padding: '14px 16px', margin: '0 16px', animation: 'fade-up 0.22s ease both' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, minWidth: 0 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: th.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('common.filter')}</span>
+                    {hasActiveFilter && (
+                      <button onClick={() => { setTypeFilter('all'); setResultFilter('all'); setDateFilter('all'); }}
+                        style={{ fontSize: 13, color: '#ff3b30', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>{t('history.resetFilters')}</button>
+                    )}
+                  </div>
+                  <p style={{ fontSize: 11, color: th.textTertiary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('history.filterByType')}</p>
+                  <div className="hist-chip-scroll" style={{ marginBottom: 14 }}>
+                    {(['all','schedule','fastrade','ctc','indicator','momentum'] as LogType[]).map((v) => (
+                      <Chip key={v} label={getTypeLabel(v)} active={typeFilter===v} color={TYPE_META[v]?.color || '#007aff'} onClick={() => setTypeFilter(v)} />
                     ))}
+                  </div>
+                  <p style={{ fontSize: 11, color: th.textTertiary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('history.filterByResult')}</p>
+                  <div className="hist-chip-scroll" style={{ marginBottom: 14 }}>
+                    {(['all','win','loss','draw'] as ResultFilter[]).map((v) => (
+                      <Chip key={v} label={getResultLabel(v)} active={resultFilter===v} color={v==='win'?'#34c759':v==='loss'?'#ff3b30':v==='draw'?'#ff9500':'#007aff'} onClick={() => setResultFilter(v)} />
+                    ))}
+                  </div>
+                  <p style={{ fontSize: 11, color: th.textTertiary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('history.filterByPeriod')}</p>
+                  <div className="hist-chip-scroll">
+                    {(['all','today','week','month'] as DateFilter[]).map((v) => (
+                      <Chip key={v} label={getPeriodLabel(v)} active={dateFilter===v} onClick={() => setDateFilter(v)} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Log list ── */}
+              <div className="hist-log-wrap" style={{ padding: '0 16px calc(56px + env(safe-area-inset-bottom, 0px) + 24px)' }}>
+
+                {/* Mobile: section label */}
+                <div className="hist-main-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, padding: '0 4px' }}>
+                  <p style={{ fontSize: 11.5, fontWeight: 500, color: th.textTertiary, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('history.trades')}</p>
+                  <p style={{ fontSize: 11.5, color: th.textFaint, whiteSpace: 'nowrap', flexShrink: 0 }}>{filteredLogs.length} {t('common.data')}</p>
+                </div>
+
+                {/* Desktop: table column header */}
+                <div
+                  className="hist-table-head"
+                  style={{ display: 'none', borderRadius: '8px 8px 0 0', overflow: 'hidden' }}
+                >
+                  {/* spacer for accent column */}
+                  <div />
+                  {[
+                    { label: t('history.type') || 'Type',   pad: '10px 10px 10px 14px' },
+                    { label: t('history.time') || 'Time',   pad: '10px 8px' },
+                    { label: t('history.date') || 'Date',   pad: '10px 8px' },
+                    { label: 'Direction',                    pad: '10px 8px' },
+                    { label: t('history.amount') || 'Amount', pad: '10px 8px' },
+                    { label: 'Result',                       pad: '10px 8px' },
+                    { label: 'P&L',                          pad: '10px 16px 10px 8px', right: true },
+                  ].map(({ label, pad, right }) => (
+                    <div key={label} style={{
+                      padding: pad,
+                      fontSize: 10, fontWeight: 600, color: th.textQuaternary,
+                      textTransform: 'uppercase', letterSpacing: '0.08em',
+                      textAlign: right ? 'right' : 'left',
+                    }}>
+                      {label}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Card wrapper (mobile) / flat wrapper (desktop) */}
+                <div style={{
+                  background: th.cardBg,
+                  borderRadius: 14,
+                  overflow: 'hidden',
+                  boxShadow: th.cardShadow,
+                  transition: 'background 0.3s ease',
+                }}>
+                  {isLoading ? (
+                    <div style={{ padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(0,122,255,0.18)', borderTopColor: '#007aff', animation: 'spin 0.8s linear infinite' }} />
+                      <p style={{ fontSize: 13, color: th.textTertiary }}>{t('history.loading')}</p>
+                    </div>
+                  ) : filteredLogs.length === 0 ? (
+                    <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+                      <History size={36} style={{ color: th.textPlaceholder, margin: '0 auto 12px', display: 'block' }} />
+                      <p style={{ fontSize: 15, fontWeight: 500, color: th.textSecondary, marginBottom: 4 }}>{t('history.noTransactions')}</p>
+                      <p style={{ fontSize: 13, color: th.textFaint }}>{logs.length > 0 ? t('history.noTransactionsFilter') : t('history.startTrading')}</p>
+                    </div>
+                  ) : (
+                    <div>
+                      {filteredLogs.map((log, idx) => (
+                        <React.Fragment key={log.id}>
+                          {/* Mobile row */}
+                          <div className="hist-row">
+                            <LogRow log={log} last={idx === filteredLogs.length - 1} />
+                          </div>
+                          {/* Desktop row */}
+                          <DesktopLogRow log={log} last={idx === filteredLogs.length - 1} />
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Desktop: count below table */}
+                {!isLoading && filteredLogs.length > 0 && (
+                  <div className="hist-desktop-only" style={{
+                    display: 'none', justifyContent: 'flex-end',
+                    padding: '10px 2px 0',
+                  }}>
+                    <p style={{ fontSize: 11.5, color: th.textFaint }}>
+                      {filteredLogs.length} {t('common.data')}
+                      {hasActiveFilter && (
+                        <button
+                          onClick={() => { setTypeFilter('all'); setResultFilter('all'); setDateFilter('all'); }}
+                          style={{
+                            marginLeft: 12, fontSize: 11.5, color: '#007aff',
+                            background: 'transparent', border: 'none',
+                            cursor: 'pointer', fontFamily: 'inherit',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
+                        >
+                          {t('history.resetFilters')}
+                        </button>
+                      )}
+                    </p>
                   </div>
                 )}
               </div>
-            </div>
 
+            </div>
           </div>
         </div>
       </div>

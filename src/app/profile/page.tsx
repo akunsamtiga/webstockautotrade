@@ -397,8 +397,8 @@ function ProfilePageContent() {
   );
 
   const AvatarBlock = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-      <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(145deg, #007aff, #5ac8fa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 700, color: '#fff', boxShadow: '0 4px 20px rgba(0,122,255,0.28)', marginBottom: 12, animation: 'pop-in 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.08s both', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
+    <div className="pf-avatar-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+      <div className="pf-av-photo" style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(145deg, #007aff, #5ac8fa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 700, color: '#fff', boxShadow: '0 4px 20px rgba(0,122,255,0.28)', marginBottom: 12, animation: 'pop-in 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.08s both', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
         {isLoading ? '' : profile?.avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -413,33 +413,35 @@ function ProfilePageContent() {
           getInitials()
         )}
       </div>
-      {isLoading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, width: '100%' }}>
-          <Skel w="60%" h={18} r={6} dark={D} /><Skel w="75%" h={13} r={5} dark={D} />
-        </div>
-      ) : (
-        <>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: th.textPrimary, letterSpacing: -0.4, marginBottom: 3, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 12px' }}>{getDisplayName()}</h2>
-          <p style={{ fontSize: 13, color: th.textTertiary, marginBottom: 10, wordBreak: 'break-all', maxWidth: 'min(220px, 80vw)', lineHeight: 1.4 }}>{profile?.email}</p>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {profile?.docsVerified && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#34c759', background: 'rgba(52,199,89,0.12)', padding: '3px 10px', borderRadius: 99 }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                {t('profile.verified')}
-              </span>
-            )}
-            {profile?.id && (
-              <button className="pf-copy-btn" onClick={copyId} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: th.textTertiary, background: D ? 'rgba(255,255,255,0.08)' : 'rgba(116,116,128,0.10)', padding: '3px 10px', borderRadius: 99, border: 'none', cursor: 'pointer', transition: 'opacity 0.15s', WebkitTapHighlightColor: 'transparent' }}>
-                ID: {String(profile.id).slice(0, 8)}…
-                {copied
-                  ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#34c759" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
-                  : <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                }
-              </button>
-            )}
+      <div className="pf-av-info">
+        {isLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, width: '100%' }}>
+            <Skel w="60%" h={18} r={6} dark={D} /><Skel w="75%" h={13} r={5} dark={D} />
           </div>
-        </>
-      )}
+        ) : (
+          <>
+            <h2 className="pf-av-name" style={{ fontSize: 18, fontWeight: 700, color: th.textPrimary, letterSpacing: -0.4, marginBottom: 3, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 12px' }}>{getDisplayName()}</h2>
+            <p className="pf-av-email" style={{ fontSize: 13, color: th.textTertiary, marginBottom: 10, wordBreak: 'break-all', maxWidth: 'min(220px, 80vw)', lineHeight: 1.4 }}>{profile?.email}</p>
+            <div className="pf-av-badges" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {profile?.docsVerified && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#34c759', background: 'rgba(52,199,89,0.12)', padding: '3px 10px', borderRadius: 99 }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  {t('profile.verified')}
+                </span>
+              )}
+              {profile?.id && (
+                <button className="pf-copy-btn" onClick={copyId} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: th.textTertiary, background: D ? 'rgba(255,255,255,0.08)' : 'rgba(116,116,128,0.10)', padding: '3px 10px', borderRadius: 99, border: 'none', cursor: 'pointer', transition: 'opacity 0.15s', WebkitTapHighlightColor: 'transparent' }}>
+                  ID: {String(profile.id).slice(0, 8)}…
+                  {copied
+                    ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#34c759" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                    : <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  }
+                </button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 
@@ -545,30 +547,126 @@ function ProfilePageContent() {
         .pf-mob-only { display: block; }
 
         @media (min-width: 768px) {
+          /* ── Layout ── */
           .pf-body { flex-direction: row; }
           .pf-mob-header { display: none; }
           .pf-desk-header { display: flex !important; align-items: center; justify-content: space-between; padding-bottom: 4px; }
+          .pf-desk-hide { display: none !important; }
+          .pf-mob-only { display: none; }
+
+          /* ── Left Sidebar ── */
           .pf-left {
-            display: flex; flex-direction: column; gap: 20px;
-            width: 272px; min-width: 272px; height: 100%; overflow-y: auto;
-            padding: 24px 20px 100px;
+            display: flex; flex-direction: column; gap: 0;
+            width: 300px; min-width: 300px; height: 100%; overflow-y: auto;
+            padding: 0;
             border-right: 0.5px solid;
             transition: background 0.3s ease, border-color 0.3s ease;
           }
           .pf-left::-webkit-scrollbar { width: 0; }
-          .pf-right { padding: 24px 28px 100px; gap: 20px; overscroll-behavior-y: auto; }
-          .pf-mob-only { display: none; }
-          .pf-left > * { animation: fade-up 0.4s cubic-bezier(0.22,1,0.36,1) both; }
-          .pf-left > *:nth-child(1) { animation-delay: 0.05s; }
-          .pf-left > *:nth-child(2) { animation-delay: 0.10s; }
-          .pf-left > *:nth-child(3) { animation-delay: 0.15s; }
-          .pf-left > *:nth-child(4) { animation-delay: 0.20s; }
-          .pf-right > * { animation: fade-up 0.4s cubic-bezier(0.22,1,0.36,1) both; }
-          .pf-right > *:nth-child(1) { animation-delay: 0.06s; }
-          .pf-right > *:nth-child(2) { animation-delay: 0.11s; }
-          .pf-right > *:nth-child(3) { animation-delay: 0.16s; }
-          .pf-right > *:nth-child(4) { animation-delay: 0.21s; }
-          .pf-right > *:nth-child(5) { animation-delay: 0.26s; }
+
+          /* ── Avatar horizontal on desktop ── */
+          .pf-avatar-wrap {
+            flex-direction: row !important;
+            align-items: center !important;
+            text-align: left !important;
+            padding: 24px 22px 20px !important;
+            gap: 16px;
+          }
+          .pf-av-photo {
+            margin-bottom: 0 !important;
+            width: 56px !important; height: 56px !important;
+            font-size: 20px !important;
+            flex-shrink: 0;
+          }
+          .pf-av-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .pf-av-name {
+            font-size: 15px !important;
+            padding: 0 !important;
+            margin-bottom: 2px !important;
+          }
+          .pf-av-email {
+            font-size: 12px !important;
+            margin-bottom: 6px !important;
+            max-width: 100% !important;
+            word-break: break-all;
+          }
+          .pf-av-badges { justify-content: flex-start !important; }
+
+          /* Sidebar nav sections */
+          .pf-left-sep {
+            height: 0.5px;
+            margin: 0 22px;
+          }
+          .pf-left-section {
+            padding: 16px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
+          .pf-left-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+          }
+
+          /* ── Right Panel ── */
+          .pf-right {
+            padding: 28px 36px 80px;
+            gap: 24px;
+            max-width: 860px;
+          }
+
+          /* ── Desktop header ── */
+          .pf-desk-header-title {
+            font-size: 20px !important;
+            font-weight: 600 !important;
+          }
+
+          /* ── Account info grid: 2 columns ── */
+          .pf-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+          }
+          .pf-info-grid > div {
+            border-bottom: none !important;
+            border-right: 0.5px solid var(--pf-sep, rgba(84,84,88,0.25));
+            border-bottom: 0.5px solid var(--pf-sep, rgba(84,84,88,0.25)) !important;
+          }
+          .pf-info-grid > div:nth-child(2n) {
+            border-right: none;
+          }
+          .pf-info-grid > div:nth-last-child(1),
+          .pf-info-grid > div:nth-last-child(2) {
+            border-bottom: none !important;
+          }
+
+          /* ── Cards: flatter on desktop ── */
+          .pf-right > div > div[style*="border-radius: 12px"],
+          .pf-right > div > div[style*="borderRadius"] {
+            box-shadow: none !important;
+          }
+
+          /* Entrance animations */
+          .pf-left > * { animation: fade-up 0.38s cubic-bezier(0.22,1,0.36,1) both; }
+          .pf-left > *:nth-child(1) { animation-delay: 0.04s; }
+          .pf-left > *:nth-child(2) { animation-delay: 0.08s; }
+          .pf-left > *:nth-child(3) { animation-delay: 0.12s; }
+          .pf-left > *:nth-child(4) { animation-delay: 0.16s; }
+          .pf-right > * { animation: fade-up 0.38s cubic-bezier(0.22,1,0.36,1) both; }
+          .pf-right > *:nth-child(1) { animation-delay: 0.05s; }
+          .pf-right > *:nth-child(2) { animation-delay: 0.10s; }
+          .pf-right > *:nth-child(3) { animation-delay: 0.15s; }
+          .pf-right > *:nth-child(4) { animation-delay: 0.20s; }
+          .pf-right > *:nth-child(5) { animation-delay: 0.25s; }
+          .pf-right > *:nth-child(6) { animation-delay: 0.30s; }
         }
       ` }} />
 
@@ -585,8 +683,8 @@ function ProfilePageContent() {
             <div className="lo-icon">👋</div>
           </div>
           <div className="lo-text">
-            <p className="lo-title">Sampai jumpa!</p>
-            <p className="lo-sub">Anda berhasil keluar.<br/>Sampai bertemu kembali.</p>
+            <p className="lo-title">{t('profile.logoutSplashTitle')}</p>
+            <p className="lo-sub" style={{ whiteSpace: 'pre-line' }}>{t('profile.logoutSplashMessage')}</p>
           </div>
           <div className="lo-bar-wrap">
             <div className="lo-bar" />
@@ -618,26 +716,34 @@ function ProfilePageContent() {
             borderRightColor: th.sidebarBorder,
           } as React.CSSProperties}
         >
+          {/* Avatar */}
           <AvatarBlock />
-          <div style={{ height: '0.5px', background: th.separator, margin: '0 4px' }} />
-          <div>
-            <SectionLabel>{t('common.balance')}</SectionLabel>
+
+          {/* Separator */}
+          <div className="pf-left-sep" style={{ background: th.separator }} />
+
+          {/* Balance section */}
+          <div className="pf-left-section">
+            <p className="pf-left-label" style={{ color: th.textTertiary }}>{t('common.balance')}</p>
             <BalanceBlock />
           </div>
-          <div style={{ marginTop: 'auto' }}>
+
+          {/* Separator */}
+          <div className="pf-left-sep" style={{ background: th.separator }} />
+
+          {/* Bottom actions */}
+          <div style={{ padding: '16px 22px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {isAdminUser && (
-              <div style={{ marginBottom: 12 }}>
-                <Card>
-                  <TappableRow
-                    icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
-                    iconBg="linear-gradient(135deg, #F59E0B, #D97706)"
-                    label="Admin Panel"
-                    value={isSuperAdminUser ? 'Super Admin' : 'Admin'}
-                    onClick={() => router.push('/admin')}
-                    last
-                  />
-                </Card>
-              </div>
+              <Card>
+                <TappableRow
+                  icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
+                  iconBg="linear-gradient(135deg, #F59E0B, #D97706)"
+                  label={t('profile.adminPanel')}
+                  value={isSuperAdminUser ? 'Super Admin' : 'Admin'}
+                  onClick={() => router.push('/admin')}
+                  last
+                />
+              </Card>
             )}
             <Card>
               <TappableRow
@@ -645,7 +751,7 @@ function ProfilePageContent() {
                 iconBg="#ff3b30" label={t('profile.logout')} danger onClick={() => setShowLogout(true)} last
               />
             </Card>
-            <p style={{ textAlign: 'center', fontSize: 11.5, color: th.textPlaceholder, marginTop: 14 }}>StockAutoTrade v2.0.0</p>
+            <p style={{ textAlign: 'center', fontSize: 11, color: th.textPlaceholder, marginTop: 4, letterSpacing: '0.03em' }}>StockAutoTrade Licensed</p>
           </div>
         </div>
 
@@ -656,18 +762,21 @@ function ProfilePageContent() {
         >
 
           <div className="pf-desk-header">
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: th.textPrimary, letterSpacing: -0.5 }}>{t('profile.title')}</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div>
+              <h1 className="pf-desk-header-title" style={{ fontSize: 22, fontWeight: 700, color: th.textPrimary, letterSpacing: -0.5 }}>{t('profile.title')}</h1>
+              <p style={{ fontSize: 12.5, color: th.textTertiary, marginTop: 2, letterSpacing: 0 }}>{profile?.email || ''}</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button
                 onClick={() => setLangSheetOpen(true)}
-                style={{ width: 36, height: 36, borderRadius: 10, background: th.btnBg, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}
+                style={{ height: 34, padding: '0 12px', borderRadius: 8, background: th.btnBg, border: `0.5px solid ${th.border}`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: th.textSecondary, fontFamily: 'inherit' }}
                 title={t('language.title')}
               >
-                🌐
+                🌐 <span>{t(`language.${{ en: 'english', id: 'indonesian', ru: 'russian', es: 'spanish', ms: 'malay', hi: 'hindi', th: 'thai', tr: 'turkish' }[language] ?? 'english'}`).toLowerCase()}</span>
               </button>
               <button onClick={() => loadProfile(true)} disabled={refreshing || isLoading}
-                style={{ width: 32, height: 32, background: th.btnBg, border: 'none', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#007aff', opacity: (refreshing || isLoading) ? 0.4 : 1, transition: 'opacity 0.15s' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" style={{ animation: (refreshing || isLoading) ? 'spin 0.8s linear infinite' : 'none' }}>
+                style={{ width: 34, height: 34, background: th.btnBg, border: `0.5px solid ${th.border}`, borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#007aff', opacity: (refreshing || isLoading) ? 0.4 : 1, transition: 'opacity 0.15s' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" style={{ animation: (refreshing || isLoading) ? 'spin 0.8s linear infinite' : 'none' }}>
                   <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
                   <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
                 </svg>
@@ -696,6 +805,7 @@ function ProfilePageContent() {
           <div>
             <SectionLabel>{t('profile.accountInfo')}</SectionLabel>
             <Card>
+              <div className="pf-info-grid" style={{ '--pf-sep': th.separator } as React.CSSProperties}>
               {isLoading ? (
                 <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {[1,2,3,4].map(i => <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}><Skel w={80} h={13} dark={D} /><Skel w={130} h={13} dark={D} /></div>)}
@@ -711,6 +821,7 @@ function ProfilePageContent() {
                   <InfoRow label={t('profile.birthday')} value={profile?.birthday ? formatDate(new Date(profile.birthday), language, { day: '2-digit', month: 'long', year: 'numeric' }) : null} last />
                 </>
               )}
+              </div>
             </Card>
           </div>
 
@@ -724,7 +835,7 @@ function ProfilePageContent() {
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                   </svg>
                 </div>
-                <span style={{ flex: 1, fontSize: 15, color: th.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Dark Mode</span>
+                <span style={{ flex: 1, fontSize: 15, color: th.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('profile.darkMode')}</span>
                 <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
                   <input
                     type="checkbox"
@@ -754,13 +865,13 @@ function ProfilePageContent() {
           </div>
 
           {isAdminUser && (
-            <div>
-              <SectionLabel>Admin</SectionLabel>
+            <div className="pf-desk-hide">
+              <SectionLabel>{t('profile.adminPanel')}</SectionLabel>
               <Card>
                 <TappableRow
                   icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
                   iconBg="linear-gradient(135deg, #F59E0B, #D97706)"
-                  label="Admin Panel"
+                  label={t('profile.adminPanel')}
                   value={isSuperAdminUser ? 'Super Admin' : 'Admin'}
                   onClick={() => router.push('/admin')}
                   last
@@ -784,7 +895,7 @@ function ProfilePageContent() {
           </div>
 
           <div>
-            <SectionLabel>Pembaruan</SectionLabel>
+            <SectionLabel>{t('profile.updates')}</SectionLabel>
             <AppUpdateCard />
           </div>
 

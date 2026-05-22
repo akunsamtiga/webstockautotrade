@@ -331,21 +331,171 @@ const LOGIN_STYLES = `
   .register-link a:hover { opacity: 0.70; }
 
   /* Logo */
-  .logo-desktop {
-    display: none;
-    position: absolute;
-    top: calc(16px + env(safe-area-inset-top, 0px));
-    left: 16px;
-    z-index: 10;
-    align-items: center;
-  }
-  .logo-desktop img { height: 32px; width: auto; object-fit: contain; }
+  .logo-desktop { display: none; }
   .logo-mobile { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 8px; }
   .logo-mobile img { height: 120px; width: auto; object-fit: contain; }
   .logo-mobile-name { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: var(--text-1); line-height: 1; }
+
+  /* Mobile: hide split panels */
+  .lr-left  { display: none; }
+  .lr-right { display: contents; }
+
+  /* ── Desktop split layout ─────────────────────────────────────────── */
   @media (min-width: 600px) {
-    .logo-desktop { display: flex; }
-    .logo-mobile  { display: none; }
+    .logo-mobile { display: none; }
+
+    .lr-page {
+      flex-direction: row;
+      padding: 0;
+      align-items: stretch;
+      justify-content: stretch;
+      overflow: hidden;
+    }
+
+    /* ── Left panel ── */
+    .lr-left {
+      display: flex;
+      flex: 0 0 44%;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 44px 52px;
+      background: #0a0f1a;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle noise-like dot grid */
+    .lr-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    /* Single soft glow — bottom-left */
+    .lr-left::after {
+      content: '';
+      position: absolute;
+      width: 360px; height: 360px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,122,255,0.18) 0%, transparent 70%);
+      filter: blur(64px);
+      bottom: -80px; left: -80px;
+      pointer-events: none;
+    }
+
+    .lr-left-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative; z-index: 2;
+    }
+    .lr-left-top img {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      object-fit: contain;
+    }
+    .lr-left-top-name {
+      font-size: 15px;
+      font-weight: 650;
+      color: rgba(255,255,255,0.90);
+      letter-spacing: -0.3px;
+    }
+
+    .lr-left-mid {
+      position: relative; z-index: 2;
+    }
+    .lr-left-headline {
+      font-size: clamp(28px, 2.8vw, 40px);
+      font-weight: 700;
+      line-height: 1.18;
+      letter-spacing: -1.2px;
+      color: #fff;
+      margin: 0 0 16px;
+    }
+    .lr-left-headline span {
+      color: rgba(255,255,255,0.30);
+    }
+    .lr-left-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: rgba(235,235,245,0.40);
+      letter-spacing: -0.05px;
+      max-width: 300px;
+    }
+
+    .lr-left-bottom {
+      position: relative; z-index: 2;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding-top: 22px;
+    }
+    .lr-left-stat-row {
+      display: flex;
+      gap: 36px;
+    }
+    .lr-left-stat-num {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.6px;
+      margin-bottom: 3px;
+    }
+    .lr-left-stat-lbl {
+      font-size: 11.5px;
+      color: rgba(235,235,245,0.32);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Right panel ── */
+    .lr-right {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+      padding: 48px 40px;
+      background: #f5f5f7;
+      position: relative;
+    }
+
+    .orb { display: none; }
+
+    .card {
+      max-width: 400px;
+      width: 100%;
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .brand { display: none; }
+
+    .panel {
+      padding: 28px 24px 22px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.96);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.07);
+    }
+
+    .brand-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .register-link { margin-top: 18px; }
+
+    /* Lang selector — top right of right panel */
+    .lang-selector {
+      position: absolute;
+      top: 20px; right: 22px;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .lr-left { flex: 0 0 46%; }
   }
 
   /* Language Selector */
@@ -695,8 +845,8 @@ function LoginPageContent() {
         const registerEmail = sessionStorage.getItem('stc_register_email');
         if (registerSuccess === '1') {
           const msg = registerEmail
-            ? `Registrasi berhasil! Akun ${registerEmail} telah ditambahkan ke whitelist.`
-            : 'Registrasi berhasil! Silakan login dengan akun Stockity Anda.';
+            ? `${t('login.registerSuccessEmailPrefix')}${registerEmail}${t('login.registerSuccessEmailSuffix')}`
+            : t('login.registerSuccess');
           setToast({ visible: true, message: msg, hiding: false });
           // Clear sessionStorage
           sessionStorage.removeItem('stc_register_success');
@@ -813,9 +963,9 @@ function LoginPageContent() {
 
   const stepHintLabel = (): string => {
     switch (loginStep) {
-      case 'auth':      return 'Memverifikasi akun…';
-      case 'whitelist': return 'Memeriksa akses whitelist…';
-      case 'saving':    return 'Menyimpan sesi…';
+      case 'auth':      return t('login.verifyingAccount');
+      case 'whitelist': return t('login.checkingWhitelist');
+      case 'saving':    return t('login.savingSession');
       default:          return '';
     }
   };
@@ -912,7 +1062,7 @@ function LoginPageContent() {
           {splash === 'welcome' && (
             <div className="sp-pill" style={{ marginBottom: 18 }}>
               <div className="sp-pill-dot" />
-              Masuk ke akun Anda
+              {t('login.signingInPill')}
             </div>
           )}
 
@@ -921,7 +1071,7 @@ function LoginPageContent() {
             {splash === 'welcome' && (
               <div className="sp-msg sp-msg-welcome-in">
                 <span className="sp-title">{t('login.welcome')}</span>
-                <span className="sp-sub">Senang melihat Anda kembali 🎉</span>
+                <span className="sp-sub">{t('login.welcomeBack')}</span>
               </div>
             )}
             {(splash === 'verified' || splash === 'out') && (
@@ -950,7 +1100,7 @@ function LoginPageContent() {
               </svg>
             </div>
             <span style={{ lineHeight: 1.4 }}>{toast.message}</span>
-            <button className="toast-close" onClick={dismissToast} aria-label="Tutup notifikasi">
+            <button className="toast-close" onClick={dismissToast} aria-label={t('login.toastCloseLabel')}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
@@ -964,10 +1114,44 @@ function LoginPageContent() {
           className="lr-page"
           style={splash !== 'hidden' ? { visibility: 'hidden', pointerEvents: 'none' } : undefined}
         >
-          {/* Logo Desktop */}
-          <div className="logo-desktop">
-            <Image src="/logo.png" alt="StockAutoTrade" width={32} height={32} style={{ height: '32px', width: 'auto' }} />
+          {/* ── Left panel (desktop only) ───────────────────────────────── */}
+          <div className="lr-left">
+            <div className="lr-left-top">
+              <Image src="/logo.png" alt="StockAutoTrade" width={36} height={36} />
+              <span className="lr-left-top-name">StockAutoTrade</span>
+            </div>
+
+            <div className="lr-left-mid">
+              <h1 className="lr-left-headline">
+                {t('login.leftHeadline').split('\n').map((line, i, arr) => (
+                  <span key={i}>{line}{i < arr.length - 1 && <br/>}</span>
+                ))}
+              </h1>
+              <p className="lr-left-desc">
+                {t('login.leftDesc')}
+              </p>
+            </div>
+
+            <div className="lr-left-bottom">
+              <div className="lr-left-stat-row">
+                <div>
+                  <div className="lr-left-stat-num">100%</div>
+                  <div className="lr-left-stat-lbl">{t('login.leftStatEncrypted')}</div>
+                </div>
+                <div>
+                  <div className="lr-left-stat-num">24/7</div>
+                  <div className="lr-left-stat-lbl">{t('login.leftStatUptime')}</div>
+                </div>
+                <div>
+                  <div className="lr-left-stat-num">99.9%</div>
+                  <div className="lr-left-stat-lbl">{t('login.leftStatReliability')}</div>
+                </div>
+              </div>
+            </div>
           </div>
+
+          {/* ── Right panel (desktop) / passthrough (mobile) ─────────────── */}
+          <div className="lr-right">
 
           {/* Language Selector */}
           <div className="lang-selector" ref={langRef}>
@@ -1056,8 +1240,7 @@ function LoginPageContent() {
                       <button type="button" className="eye-btn"
                         onClick={() => setShowPass(p => !p)}
                         tabIndex={-1}
-                        aria-label={showPass ? t('common.close') : t('common.show')}
-                      >
+                        aria-label={showPass ? t('common.close') : t('common.show')}                      >
                         {showPass ? (
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
@@ -1112,7 +1295,7 @@ function LoginPageContent() {
                     <rect x="3" y="11" width="18" height="11" rx="2"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                   </svg>
-                  <span className="badge-txt">Koneksi aman 256-bit SSL</span>
+                  <span className="badge-txt">{t('login.sslBadge')}</span>
                 </div>
               </div>
             </div>
@@ -1122,12 +1305,12 @@ function LoginPageContent() {
             </div>
 
             <div style={{ textAlign: 'center', marginTop: 10 }}>
-              <span style={{ fontSize: 13, color: '#6e6e73' }}>Kesulitan mendaftar? </span>
+              <span style={{ fontSize: 13, color: '#6e6e73' }}>{t('login.troubleRegistering')} </span>
               <button
                 className="foot-lnk"
                 onClick={() => { setTutorialPage(0); setShowTutorial(true); }}
               >
-                lihat tutorial
+                {t('login.viewTutorial')}
               </button>
             </div>
 
@@ -1139,6 +1322,7 @@ function LoginPageContent() {
             © 2026 StockAutoTrade ·{' '}
             <a href="https://stockity.id/information/privacy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-3)', fontWeight: 500, cursor: 'pointer', transition: 'opacity 0.14s' }}>{t('login.terms')}</a>
           </div>
+          </div>{/* /lr-right */}
         </div>
       )}
 
@@ -1146,16 +1330,16 @@ function LoginPageContent() {
       {showTutorial && typeof document !== 'undefined' && createPortal((() => {
         const TUTOR_CAPTIONS = [
           {
-            step: 'Langkah 1 — Buat Akun',
-            text: <span>Gunakan <strong>akun baru</strong> ya! Isi <strong>email</strong>, buat <strong>password</strong>, pilih <strong>mata uang</strong> yang sesuai, lalu tekan tombol <strong>Daftar</strong>.</span>,
+            step: t('login.tutorialStep1'),
+            text: <span dangerouslySetInnerHTML={{ __html: t('login.tutorialText1').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />,
           },
           {
-            step: 'Langkah 2 — Registrasi Berhasil',
-            text: <span>Selamat! Akan muncul pesan sukses seperti gambar di atas. Selanjutnya, tekan tombol <strong>&ldquo;Login StockAutoTrade&rdquo;</strong> untuk langsung menuju halaman login 🎉</span>,
+            step: t('login.tutorialStep2'),
+            text: <span dangerouslySetInnerHTML={{ __html: t('login.tutorialText2').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />,
           },
           {
-            step: 'Langkah 3 — Masuk ke Akun',
-            text: <span>Hampir selesai! Masukkan <strong>email</strong> dan <strong>password</strong> yang tadi didaftarkan, lalu tekan login. Selamat bergabung di StockAutoTrade! 🚀</span>,
+            step: t('login.tutorialStep3'),
+            text: <span dangerouslySetInnerHTML={{ __html: t('login.tutorialText3').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />,
           },
         ];
         const cap = TUTOR_CAPTIONS[tutorialPage];
@@ -1163,8 +1347,8 @@ function LoginPageContent() {
           <div className="tutor-overlay" onClick={() => setShowTutorial(false)}>
             <div className="tutor-modal" onClick={e => e.stopPropagation()}>
               <div className="tutor-header">
-                <span className="tutor-title">Tutorial Pendaftaran</span>
-                <button className="tutor-close" onClick={() => setShowTutorial(false)} aria-label="Tutup">
+                <span className="tutor-title">{t('login.tutorialTitle')}</span>
+                <button className="tutor-close" onClick={() => setShowTutorial(false)} aria-label={t('common.close')}>
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                     <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                   </svg>
@@ -1174,7 +1358,7 @@ function LoginPageContent() {
               <div className="tutor-img-wrap">
                 <Image
                   src={`/tutor${tutorialPage + 1}.jpeg`}
-                  alt={`Tutorial langkah ${tutorialPage + 1}`}
+                  alt={`${t('login.tutorialImgAlt')} ${tutorialPage + 1}`}
                   fill
                   style={{ objectFit: 'contain' }}
                   priority
@@ -1201,7 +1385,7 @@ function LoginPageContent() {
                   className="tutor-next-btn"
                   onClick={() => tutorialPage < 2 ? setTutorialPage(p => p + 1) : setShowTutorial(false)}
                 >
-                  {tutorialPage < 2 ? 'Selanjutnya' : 'Selesai'}
+                  {tutorialPage < 2 ? t('common.next') : t('common.done')}
                 </button>
               </div>
             </div>
