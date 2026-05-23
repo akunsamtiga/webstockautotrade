@@ -77,9 +77,12 @@ type FastTradeTimeframe = '1m' | '5m' | '15m' | '30m' | '1h';
 
 interface MartingaleConfig { enabled:boolean; maxStep:number; multiplier:number; alwaysSignal?:boolean; }
 
-const FT_TF: {value:FastTradeTimeframe; label:string}[] = [
-  {value:'1m',label:'1 Menit'},{value:'5m',label:'5 Menit'},
-  {value:'15m',label:'15 Menit'},{value:'30m',label:'30 Menit'},{value:'1h',label:'1 Jam'},
+const FT_TF = (): {value:FastTradeTimeframe; label:string}[] => [
+  {value:'1m',label:`1 ${T('dashboard.minuteUnit')}`},
+  {value:'5m',label:`5 ${T('dashboard.minuteUnit')}`},
+  {value:'15m',label:`15 ${T('dashboard.minuteUnit')}`},
+  {value:'30m',label:`30 ${T('dashboard.minuteUnit')}`},
+  {value:'1h',label:`1 ${T('dashboard.hourUnit')}`},
 ];
 
 const IDR_MIN_DISPLAY = 14_000;
@@ -842,7 +845,7 @@ const PickerModal: React.FC<{open:boolean;onClose:()=>void;title:string;options:
         </div>
         {searchable&&(
           <div style={{padding:'10px 14px',borderBottom:`1px solid ${headerBorder}`,flexShrink:0}}>
-            <input className="ds-input" style={{fontSize:13,borderRadius:8}} placeholder="Cari aset..." value={q} onChange={e=>setQ(e.target.value)}/>
+            <input className="ds-input" style={{fontSize:13,borderRadius:8}} {...{placeholder: T('dashboard.searchAsset')}} value={q} onChange={e=>setQ(e.target.value)}/>
           </div>
         )}
         <div style={{overflowY:'auto',flex:1}}>
@@ -875,7 +878,7 @@ const PickerModal: React.FC<{open:boolean;onClose:()=>void;title:string;options:
               </button>
             );
           })}
-          {filtered.length===0&&<div style={{padding:'40px 20px',textAlign:'center',color:C.muted,fontSize:12}}>Tidak ditemukan</div>}
+          {filtered.length===0&&<div style={{padding:'40px 20px',textAlign:'center',color:C.muted,fontSize:12}}>{T('common.notFound')}</div>}
         </div>
       </div>
     </div>
@@ -1459,7 +1462,7 @@ const OrderInputModal: React.FC<{open:boolean;onClose:()=>void;orders:ScheduleOr
                               border:`1px solid ${isBuy?C.cyan:C.coral}35`,
                             }}>{isBuy?'BUY':'SELL'}</span>
                             <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-                              {i === 0 && <span style={{fontSize:10,color:C.muted}}>Menunggu…</span>}
+                              {i === 0 && <span style={{fontSize:10,color:C.muted}}>{T('dashboard.aiSignal.waiting').replace('...','…')}</span>}
                               <button onClick={()=>onDelete(o.id)} disabled={isBusy} style={{
                                 width:28,height:28,borderRadius:'50%',flexShrink:0,
                                 display:'flex',alignItems:'center',justifyContent:'center',
@@ -1478,7 +1481,7 @@ const OrderInputModal: React.FC<{open:boolean;onClose:()=>void;orders:ScheduleOr
                   {/* Semua pending sudah selesai tapi masih ada history */}
                   {pendingOrders.length === 0 && activeOrders.length === 0 && historyOrders.length > 0 && (
                     <div style={{padding:'12px',borderRadius:10,background:`${C.cyan}08`,border:`1px solid ${C.cyan}18`,textAlign:'center'}}>
-                      <p style={{fontSize:12,color:C.muted,margin:0}}>Semua order telah selesai</p>
+                      <p style={{fontSize:12,color:C.muted,margin:0}}>{T('dashboard.schedule.allCompleted')}</p>
                     </div>
                   )}
 
@@ -1597,7 +1600,7 @@ const SchedulePanel: React.FC<{orders:ScheduleOrder[];logs:ExecutionLog[];onOpen
                 <span style={{fontSize:timeFz,fontFamily:'monospace',color:C.text,fontWeight:600,flexShrink:0}}>{o.time}</span>
                 <span style={{fontSize:compact?8:9,fontWeight:700,padding:'1px 5px',borderRadius:4,color:isCall?C.cyan:C.coral,background:isCall?`${C.cyan}12`:`${C.coral}12`,flexShrink:0}}>{isCall?'B':'S'}</span>
                 <span style={{fontSize:compact?8:9,fontWeight:700,padding:'1px 6px',borderRadius:99,color:col,background:`${col}12`,border:`1px solid ${col}28`,flexShrink:0,marginLeft:'auto'}}>
-                  {isMartingale ? `K${ms!.currentStep}` : 'Monitor'}
+                  {isMartingale ? `K${ms!.currentStep}` : T('dashboard.schedule.monitor')}
                 </span>
               </div>
             );
@@ -1641,7 +1644,7 @@ const SchedulePanel: React.FC<{orders:ScheduleOrder[];logs:ExecutionLog[];onOpen
           }}
         >
           <Info style={{width:12,height:12,flexShrink:0}}/>
-          {isRunning ? T('dashboard.viewSession') : (pendingOrders.length===0 ? T('dashboard.schedule.add') : 'View')}
+          {isRunning ? T('dashboard.viewSession') : (pendingOrders.length===0 ? T('dashboard.schedule.add') : T('common.viewAll'))}
         </button>
       </div>
     </PanelWrap>
@@ -1680,7 +1683,7 @@ const PnlHero: React.FC<{pnl:number;pnlCol:string;children?:React.ReactNode}> = 
 
   return (
     <div style={{padding:'24px 20px 20px',borderBottom:`1px solid ${C.bdr}`,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
-      <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted}}>Session P&L</div>
+      <div style={{fontSize:10,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:C.muted}}>{T('dashboard.sessionPnl')}</div>
       <div ref={wrapRef} style={{width:'100%',textAlign:'center',overflow:'hidden'}}>
         <span ref={textRef} style={{
           fontSize:fs,fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,
@@ -1766,9 +1769,9 @@ const FastradePanel: React.FC<{status:FastradeStatus|null;logs:FastradeLog[];isL
               {/* Stats row */}
               <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
                 {[
-                  {val:wins,label:'WIN',col:C.cyan},
-                  {val:losses,label:'LOSS',col:C.coral},
-                  ...(wr!==null?[{val:`${wr}%`,label:'WIN RATE',col:wr>=50?accent:C.coral}]:[]),
+                  {val:wins,label:T('history.win').toUpperCase(),col:C.cyan},
+                  {val:losses,label:T('history.loss').toUpperCase(),col:C.coral},
+                  ...(wr!==null?[{val:`${wr}%`,label:T('history.winRate').toUpperCase(),col:wr>=50?accent:C.coral}]:[]),
                 ].map((s,i)=>(
                   <div key={i} style={{padding:'16px 12px',background:C.card,display:'flex',flexDirection:'column',alignItems:'center',gap:4,willChange:'contents'}}>
                     <span style={{fontSize:24,fontWeight:800,color:s.col,lineHeight:1,fontVariantNumeric:'tabular-nums',transition:'color 0.25s ease'}}>{s.val}</span>
@@ -2018,9 +2021,9 @@ const AISignalPanel: React.FC<{
               {/* Stats row */}
               <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
                 {[
-                  {val:wins,label:'WIN',col:C.cyan},
-                  {val:losses,label:'LOSS',col:C.coral},
-                  ...(wr!==null?[{val:`${wr}%`,label:'WIN RATE',col:wr>=50?C.sky:C.coral}]:[]),
+                  {val:wins,label:T('history.win').toUpperCase(),col:C.cyan},
+                  {val:losses,label:T('history.loss').toUpperCase(),col:C.coral},
+                  ...(wr!==null?[{val:`${wr}%`,label:T('history.winRate').toUpperCase(),col:wr>=50?C.sky:C.coral}]:[]),
                 ].map((s,i)=>(
                   <div key={i} style={{padding:'16px 12px',background:C.card,display:'flex',flexDirection:'column',alignItems:'center',gap:4,willChange:'contents'}}>
                     <span style={{fontSize:24,fontWeight:800,color:s.col,lineHeight:1,fontVariantNumeric:'tabular-nums',transition:'color 0.25s ease'}}>{s.val}</span>
@@ -2196,9 +2199,9 @@ const IndicatorPanel: React.FC<{status:IndicatorStatus|null;isLoading:boolean;fi
               {/* Stats row */}
               <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
                 {[
-                  {val:wins,label:'WIN',col:C.cyan},
-                  {val:losses,label:'LOSS',col:C.coral},
-                  ...(wr!==null?[{val:`${wr}%`,label:'WIN RATE',col:wr>=50?C.orange:C.coral}]:[]),
+                  {val:wins,label:T('history.win').toUpperCase(),col:C.cyan},
+                  {val:losses,label:T('history.loss').toUpperCase(),col:C.coral},
+                  ...(wr!==null?[{val:`${wr}%`,label:T('history.winRate').toUpperCase(),col:wr>=50?C.orange:C.coral}]:[]),
                 ].map((s,i)=>(
                   <div key={i} style={{padding:'16px 12px',background:C.card,display:'flex',flexDirection:'column',alignItems:'center',gap:4,willChange:'contents'}}>
                     <span style={{fontSize:24,fontWeight:800,color:s.col,lineHeight:1,fontVariantNumeric:'tabular-nums',transition:'color 0.25s ease'}}>{s.val}</span>
@@ -2255,10 +2258,10 @@ const MomentumPanel: React.FC<{status:MomentumStatus|null;isLoading:boolean;fill
   const pnlCol = pnl>=0?'#30D158':C.coral;
 
   const PATTERN_LABELS: Record<string,string> = {
-    CANDLE_SABIT:'Candle Sabit',
-    DOJI_TERJEPIT:'Doji Terjepit',
-    DOJI_PEMBATALAN:'Doji Pembatalan',
-    BB_SAR_BREAK:'BB + SAR Break',
+    CANDLE_SABIT: T('dashboard.momentum.patterns.candleSabit'),
+    DOJI_TERJEPIT: T('dashboard.momentum.patterns.dojiTerjepit'),
+    DOJI_PEMBATALAN: T('dashboard.momentum.patterns.dojiPembatalan'),
+    BB_SAR_BREAK: T('dashboard.momentum.patterns.bbSarBreak'),
   };
 
   const Row: React.FC<{label:string;right:React.ReactNode;border?:boolean}> = ({label,right,border=true}) => (
@@ -2279,7 +2282,7 @@ const MomentumPanel: React.FC<{status:MomentumStatus|null;isLoading:boolean;fill
           <>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
               <Waves style={{width:14,height:14,color:C.pink}}/>
-              <span style={{fontSize:12,fontWeight:600,color:C.sub}}>Momentum</span>
+              <span style={{fontSize:12,fontWeight:600,color:C.sub}}>{T('dashboard.momentum.title')}</span>
             </div>
 <StatusChip col={C.pink} label={T('common.active')} pulse/>
           </>
@@ -2307,9 +2310,9 @@ const MomentumPanel: React.FC<{status:MomentumStatus|null;isLoading:boolean;fill
               {/* Stats row */}
               <div style={{display:'grid',gridTemplateColumns:`repeat(${wr!==null?3:2},1fr)`,gap:1,background:C.bdr,borderBottom:`1px solid ${C.bdr}`}}>
                 {[
-                  {val:wins,label:'WIN',col:C.cyan},
-                  {val:losses,label:'LOSS',col:C.coral},
-                  ...(wr!==null?[{val:`${wr}%`,label:'WIN RATE',col:wr>=50?C.pink:C.coral}]:[]),
+                  {val:wins,label:T('history.win').toUpperCase(),col:C.cyan},
+                  {val:losses,label:T('history.loss').toUpperCase(),col:C.coral},
+                  ...(wr!==null?[{val:`${wr}%`,label:T('history.winRate').toUpperCase(),col:wr>=50?C.pink:C.coral}]:[]),
                 ].map((s,i)=>(
                   <div key={i} style={{padding:'16px 12px',background:C.card,display:'flex',flexDirection:'column',alignItems:'center',gap:4,willChange:'contents'}}>
                     <span style={{fontSize:24,fontWeight:800,color:s.col,lineHeight:1,fontVariantNumeric:'tabular-nums',transition:'color 0.25s ease'}}>{s.val}</span>
@@ -2382,12 +2385,20 @@ const MobileSessionSheet: React.FC<{
   const ac = modeAccent(mode);
 
   const modeLabel: Record<TradingMode,string> = {
-    schedule:'Signal Mode', fastrade:'Fastrade FTT Mode', ctc:'Fastrade CTC',
-    aisignal:'AI Signal Mode', indicator:'Analysis Strategy Mode', momentum:'Momentum Mode',
+    schedule: T('dashboard.modeLabel.schedule'),
+    fastrade: T('dashboard.modeLabel.fastrade'),
+    ctc:      T('dashboard.modeLabel.ctc'),
+    aisignal: T('dashboard.modeLabel.aisignal'),
+    indicator:T('dashboard.modeLabel.indicator'),
+    momentum: T('dashboard.modeLabel.momentum'),
   };
-  const modeDesc: Record<TradingMode,string> = {
-    schedule:'Manual Input Signal', fastrade:'Fast Trade Execution', ctc:'Ultra-Fast Execution',
-    aisignal:'AI Signal Automation', indicator:'Technical Analysis', momentum:'Parallel Momentum',
+    const modeDesc: Record<TradingMode,string> = {
+    schedule: T('dashboard.modeDesc.schedule'),
+    fastrade: T('dashboard.modeDesc.fastrade'),
+    ctc: T('dashboard.modeDesc.ctc'),
+    aisignal: T('dashboard.modeDesc.aisignal'),
+    indicator: T('dashboard.modeDesc.indicator'),
+    momentum: T('dashboard.modeDesc.momentum'),
   };
   const modeIcon: Record<TradingMode, React.ReactNode> = {
     schedule:  <Calendar  style={{width:20,height:20}}/>,
@@ -2449,7 +2460,7 @@ const MobileSessionSheet: React.FC<{
               textTransform:'uppercase', color:ac, margin:0, marginBottom:5,
               opacity:0.85,
             }}>
-              Sesi Trading
+              {T('dashboard.tradingSession')}
             </p>
             {/* Title */}
             <p style={{
@@ -2470,7 +2481,7 @@ const MobileSessionSheet: React.FC<{
                 color:isRunning ? ac : C.muted,
                 letterSpacing:'0.01em',
               }}>
-                {isRunning ? 'Sedang Berjalan' : 'Tidak Aktif'}
+                {isRunning ? T('dashboard.running') : T('dashboard.notActive')}
               </span>
             </div>
           </div>
@@ -2535,39 +2546,39 @@ const ModePickerModal: React.FC<{
 
   const MODES: { v: TradingMode; label: string; icon: React.ReactNode; accent: string; desc: string; info: string }[] = [
     {
-      v: 'schedule', label: 'Signal Mode',
+      v: 'schedule', label: T('dashboard.modeLabel.schedule'),
       icon: <Calendar style={{ width: 15, height: 15 }} />,
-      accent: C.cyan, desc: 'Eksekusi berdasarkan sinyal manual',
+      accent: C.cyan, desc: T('dashboard.modeDesc.schedule'),
       info: 'Bot mengeksekusi order sesuai jadwal dan arah sinyal yang kamu input secara manual. Cocok untuk trader yang sudah punya sinyal dari sumber eksternal (grup, tools, dll). Martingale & stop loss tersedia.',
     },
     {
-      v: 'fastrade', label: 'Fastrade FTT Mode',
+      v: 'fastrade', label: T('dashboard.modeLabel.fastrade'),
       icon: <Zap style={{ width: 15, height: 15 }} />,
-      accent: C.amber, desc: 'Fast trade berdasarkan timeframe',
+      accent: C.amber, desc: T('dashboard.modeDesc.fastrade'),
       info: 'Bot melakukan fast trade otomatis berdasarkan timeframe yang dipilih (1m–1h). Setiap candle dianalisis untuk menentukan arah entry. Cocok untuk scalping cepat dengan risiko terukur.',
     },
     {
-      v: 'ctc', label: 'Fastrade CTC',
+      v: 'ctc', label: T('dashboard.modeLabel.ctc'),
       icon: <Copy style={{ width: 15, height: 15 }} />,
-      accent: C.violet, desc: 'Ultra-fast execution dengan delay minimum',
+      accent: C.violet, desc: T('dashboard.modeDesc.ctc'),
       info: 'Copy-Trade-Close — eksekusi ultra-cepat dengan jeda minimum antar order. Dirancang untuk kecepatan maksimal. Tidak ada analisis tambahan; eksekusi langsung sesuai trigger yang diterima.',
     },
     {
-      v: 'aisignal', label: 'AI Signal Mode',
+      v: 'aisignal', label: T('dashboard.modeLabel.aisignal'),
       icon: <Radio style={{ width: 15, height: 15 }} />,
-      accent: C.sky, desc: 'Sinyal otomatis dari analisis AI',
+      accent: C.sky, desc: T('dashboard.modeDesc.aisignal'),
       info: 'Bot menggunakan model AI untuk menganalisis pergerakan harga secara real-time dan menghasilkan sinyal trading otomatis. Tidak perlu input manual — AI yang tentukan arah dan timing entry.',
     },
     {
-      v: 'indicator', label: 'Analysis Strategy Mode',
+      v: 'indicator', label: T('dashboard.modeLabel.indicator'),
       icon: <BarChart style={{ width: 15, height: 15 }} />,
-      accent: C.orange, desc: 'Strategi berbasis indikator teknikal',
+      accent: C.orange, desc: T('dashboard.modeDesc.indicator'),
       info: 'Trading menggunakan indikator teknikal seperti SMA, EMA, dan RSI. Kamu bisa atur periode, sensitivitas, level overbought/oversold. Cocok untuk trader yang percaya pada analisis teknikal klasik.',
     },
     {
-      v: 'momentum', label: 'Momentum Mode',
+      v: 'momentum', label: T('dashboard.modeLabel.momentum'),
       icon: <Waves style={{ width: 15, height: 15 }} />,
-      accent: C.pink, desc: 'Deteksi pola momentum candle & BB-SAR',
+      accent: C.pink, desc: T('dashboard.modeDesc.momentum'),
       info: 'Bot mendeteksi pola momentum seperti Candle Sabit, Doji Terjepit, Doji Pembatalan, dan BB-SAR Break untuk menentukan entry. Analisis berjalan paralel di beberapa timeframe sekaligus.',
     },
   ];
@@ -2591,8 +2602,8 @@ const ModePickerModal: React.FC<{
         {/* Header */}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 18px 12px',flexShrink:0}}>
           <div>
-            <p style={{fontSize:15,fontWeight:700,color:C.text,lineHeight:1,letterSpacing:'-0.02em'}}>Pilih Mode Trading</p>
-            <p style={{fontSize:11,color:C.muted,marginTop:3,letterSpacing:'0.01em'}}>Tap mode untuk aktifkan · Tap ▾ untuk info detail</p>
+            <p style={{fontSize:15,fontWeight:700,color:C.text,lineHeight:1,letterSpacing:'-0.02em'}}>{T('dashboard.modePicker.title')}</p>
+            <p style={{fontSize:11,color:C.muted,marginTop:3,letterSpacing:'0.01em'}}>{T('dashboard.modePicker.subtitle')}</p>
           </div>
           <button onClick={onClose} style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:99,background:C.card2,border:`1px solid ${C.bdr}`,cursor:'pointer',color:C.sub,flexShrink:0}}>
             <X style={{width:13,height:13}}/>
@@ -2766,12 +2777,12 @@ const ModeSessionPanel: React.FC<{
   const [modePickerOpen, setModePickerOpen] = useState(false);
 
   const MODE_LIST = [
-    { v: 'schedule'  as TradingMode, label: 'Signal Mode',             icon: <Calendar  style={{ width: 12, height: 12 }} />, accent: C.cyan,   desc: 'Manual Input Signal' },
-    { v: 'fastrade'  as TradingMode, label: 'Fastrade FTT Mode',      icon: <Zap       style={{ width: 12, height: 12 }} />, accent: C.amber,  desc: 'Fast Trade Execution' },
-    { v: 'ctc'       as TradingMode, label: 'Fastrade CTC',           icon: <Copy      style={{ width: 12, height: 12 }} />, accent: C.violet, desc: 'Ultra-Fast Execution' },
-    { v: 'aisignal'  as TradingMode, label: 'AI Signal Mode',         icon: <Radio     style={{ width: 12, height: 12 }} />, accent: C.sky,    desc: 'AI Signal Automation' },
-    { v: 'indicator' as TradingMode, label: 'Analysis Strategy Mode', icon: <BarChart  style={{ width: 12, height: 12 }} />, accent: C.orange, desc: 'Technical Analysis Based' },
-    { v: 'momentum'  as TradingMode, label: 'Momentum Mode',          icon: <Waves     style={{ width: 12, height: 12 }} />, accent: C.pink,   desc: 'Parallel Momentum Analysis' },
+    { v: 'schedule'  as TradingMode, label: T('dashboard.modeLabel.schedule'), icon: <Calendar  style={{ width: 12, height: 12 }} />, accent: C.cyan,   desc: T('dashboard.modeDesc.schedule') },
+    { v: 'fastrade'  as TradingMode, label: T('dashboard.modeLabel.fastrade'),      icon: <Zap       style={{ width: 12, height: 12 }} />, accent: C.amber,  desc: T('dashboard.modeDesc.fastrade') },
+    { v: 'ctc'       as TradingMode, label: 'Fastrade CTC',           icon: <Copy      style={{ width: 12, height: 12 }} />, accent: C.violet, desc: T('dashboard.modeDesc.ctc') },
+    { v: 'aisignal'  as TradingMode, label: T('dashboard.modeLabel.aisignal'),         icon: <Radio     style={{ width: 12, height: 12 }} />, accent: C.sky,    desc: T('dashboard.modeDesc.aisignal') },
+    { v: 'indicator' as TradingMode, label: T('dashboard.modeLabel.indicator'), icon: <BarChart  style={{ width: 12, height: 12 }} />, accent: C.orange, desc: 'Technical Analysis Based' },
+    { v: 'momentum'  as TradingMode, label: T('dashboard.modeLabel.momentum'),          icon: <Waves     style={{ width: 12, height: 12 }} />, accent: C.pink,   desc: 'Parallel Momentum Analysis' },
   ];
 
   const active = MODE_LIST.find(m => m.v === mode)!;
@@ -3097,12 +3108,19 @@ const SettingsCard: React.FC<{
   useEffect(()=>{ if(disabled) setOpen(false); },[disabled]);
   const set = (k:keyof MartingaleConfig,v:any) => onMartingaleChange({...martingale,[k]:v});
   const assetOpts: PickerOpt[] = assets.map(a=>({value:a.ric,label:a.name,sub:`${a.ric} · ${a.profitRate}%`,icon:a.iconUrl}));
-  const durationOpts = [{value:'60',label:'1 Menit'},{value:'120',label:'2 Menit'},{value:'300',label:'5 Menit'},{value:'600',label:'10 Menit'},{value:'900',label:'15 Menit'},{value:'1800',label:'30 Menit'}];
-  const acOpts: PickerOpt[] = [{value:'demo',label:'Demo',sub:'Virtual · tidak pakai dana nyata'},{value:'real',label:'Real',sub:'Menggunakan saldo sesungguhnya'}];
+  const durationOpts = [{value:'60',label:`1 ${T('dashboard.minuteUnit')}`},{value:'120',label:`2 ${T('dashboard.minuteUnit')}`},{value:'300',label:`5 ${T('dashboard.minuteUnit')}`},{value:'600',label:`10 ${T('dashboard.minuteUnit')}`},{value:'900',label:`15 ${T('dashboard.minuteUnit')}`},{value:'1800',label:`30 ${T('dashboard.minuteUnit')}`}];
+  const acOpts: PickerOpt[] = [{value:'demo',label:T('common.demo'),sub:T('dashboard.settings.demoDesc')},{value:'real',label:T('common.real'),sub:T('dashboard.settings.realDesc')}];
   const ac = modeAccent(mode);
   const isBelowMin = amount > 0 && amount < IDR_MIN_DISPLAY;
   const isNewMode = mode==='aisignal'||mode==='indicator'||mode==='momentum';
-  const modeLabel = mode==='aisignal'?'AI Signal Mode':mode==='indicator'?'Analysis Strategy Mode':mode==='momentum'?'Momentum Mode':mode==='ctc'?'Fastrade CTC':mode==='fastrade'?'Fastrade FTT Mode':'Signal Mode';
+  const modeLabel = ({
+    schedule:T('dashboard.modeLabel.schedule'),
+    fastrade:T('dashboard.modeLabel.fastrade'),
+    ctc:T('dashboard.modeLabel.ctc'),
+    aisignal:T('dashboard.modeLabel.aisignal'),
+    indicator:T('dashboard.modeLabel.indicator'),
+    momentum:T('dashboard.modeLabel.momentum'),
+  } as Record<TradingMode,string>)[mode];
   const acctCol = isDemo ? C.amber : C.cyan;
 
   return (
@@ -3110,7 +3128,7 @@ const SettingsCard: React.FC<{
       <MartingaleDialog open={showMartingaleDialog} onClose={()=>setShowMartingaleDialog(false)} martingale={martingale} onMartingaleChange={onMartingaleChange} mode={mode}/>
       <PickerModal open={pickerOpen==='actype'} onClose={()=>setPickerOpen(null)} title={T('dashboard.settings.accountType')} options={acOpts} value={isDemo?'demo':'real'} onSelect={v=>onDemoChange(v==='demo')}/>
       <PickerModal open={pickerOpen==='duration'} onClose={()=>setPickerOpen(null)} title={T('dashboard.settings.orderDuration')} options={durationOpts} value={String(duration)} onSelect={v=>onDurationChange(+v)}/>
-      <PickerModal open={pickerOpen==='ftTf'} onClose={()=>setPickerOpen(null)} title={T('dashboard.settings.fastradeTimeframe')} options={FT_TF.map(t=>({value:t.value,label:t.label}))} value={ftTf} onSelect={v=>onFtTfChange(v as FastTradeTimeframe)}/>
+      <PickerModal open={pickerOpen==='ftTf'} onClose={()=>setPickerOpen(null)} title={T('dashboard.settings.fastradeTimeframe')} options={FT_TF().map(t=>({value:t.value,label:t.label}))} value={ftTf} onSelect={v=>onFtTfChange(v as FastTradeTimeframe)}/>
 
       <Card style={{ opacity:disabled?0.65:1, border:`1px solid ${C.bdr}`, boxShadow: isDarkMode ? `0 2px 0 ${C.cyan}08 inset, 0 10px 32px rgba(0,0,0,0.35), 0 3px 10px rgba(0,0,0,0.25)` : 'none' }}>
         {/* Header */}
@@ -3143,18 +3161,18 @@ const SettingsCard: React.FC<{
                   boxShadow: isDarkMode ? `0 1px 0 ${C.cyan}08 inset, 0 4px 14px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.15)` : 'none',
                 }}>
                   <Wallet style={{ width:14,height:14,color:acctCol,flexShrink:0 }}/>
-                  <span style={{ fontSize:11,fontWeight:700,color:C.text,whiteSpace:'nowrap' }}>{isDemo?'Demo':'Real'}</span>
+                  <span style={{ fontSize:11,fontWeight:700,color:C.text,whiteSpace:'nowrap' }}>{isDemo?T('common.demo'):T('common.real')}</span>
                   <ChevronDown style={{ width:12,height:12,color:C.text,flexShrink:0 }}/>
                 </button>
                 {/* Durasi / Timeframe */}
                 <div style={{ flex:'0 0 auto',minWidth:0 }}>
                   {!isNewMode&&(mode==='fastrade'
                     ?<button disabled={disabled} onClick={()=>setPickerOpen('ftTf')} style={{ width:'100%',height:44,borderRadius:12,cursor:'pointer',display:'flex',alignItems:'center',gap:6,padding:'0 10px',background:C.card2,border:`0.8px solid ${C.bdr}`,minWidth:0,boxShadow: isDarkMode ? `0 1px 0 ${C.cyan}08 inset, 0 4px 14px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.15)` : 'none' }}>
-                       <Clock style={{ width:13,height:13,color:C.muted,flexShrink:0 }}/><span style={{ fontSize:11,fontWeight:600,color:C.text,flex:1,textAlign:'left',whiteSpace:'nowrap' }}>{FT_TF.find(t=>t.value===ftTf)?.label||''}</span><ChevronDown style={{ width:12,height:12,color:C.muted,flexShrink:0 }}/>
+                       <Clock style={{ width:13,height:13,color:C.muted,flexShrink:0 }}/><span style={{ fontSize:11,fontWeight:600,color:C.text,flex:1,textAlign:'left',whiteSpace:'nowrap' }}>{FT_TF().find(t=>t.value===ftTf)?.label||''}</span><ChevronDown style={{ width:12,height:12,color:C.muted,flexShrink:0 }}/>
                      </button>
                     :mode==='ctc'
                     ?<div style={{ height:44,borderRadius:12,display:'flex',alignItems:'center',gap:6,padding:'0 10px',background:C.faint,border:`0.8px solid ${C.bdr}`,minWidth:0 }}>
-                       <Clock style={{ width:13,height:13,color:C.muted }}/><span style={{ fontSize:11,color:C.text,whiteSpace:'nowrap' }}>1 Menit</span>
+                       <Clock style={{ width:13,height:13,color:C.muted }}/><span style={{ fontSize:11,color:C.text,whiteSpace:'nowrap' }}>{`1 ${T('dashboard.minuteUnit')}`}</span>
                      </div>
                     :<button disabled={disabled} onClick={()=>setPickerOpen('duration')} style={{ width:'100%',height:44,borderRadius:12,cursor:'pointer',display:'flex',alignItems:'center',gap:6,padding:'0 10px',background:C.card2,border:`0.8px solid ${C.bdr}`,minWidth:0,boxShadow: isDarkMode ? `0 1px 0 ${C.cyan}08 inset, 0 4px 14px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.15)` : 'none' }}>
                        <Clock style={{ width:13,height:13,color:C.muted,flexShrink:0 }}/><span style={{ fontSize:11,fontWeight:600,color:C.text,flex:1,textAlign:'left',whiteSpace:'nowrap' }}>{durationOpts.find(d=>d.value===String(duration))?.label||''}</span><ChevronDown style={{ width:12,height:12,color:C.muted,flexShrink:0 }}/>
@@ -3164,7 +3182,7 @@ const SettingsCard: React.FC<{
                 </div>
                 {/* Mata Uang */}
                 <div style={{ flex:1,height:44,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',gap:5,padding:'0 10px',background:`${C.cyan}12`,border:`0.8px solid ${C.cyan}40`,minWidth:0 }}>
-                  <span style={{ fontSize:9,color:C.cyan,whiteSpace:'nowrap',fontWeight:500 }}>Mata Uang:</span>
+                  <span style={{ fontSize:9,color:C.cyan,whiteSpace:'nowrap',fontWeight:500 }}>{T('common.currency')}:</span>
                   <span style={{ fontSize:12,fontWeight:700,color:C.cyan,whiteSpace:'nowrap' }}>{currency??'IDR'}</span>
                   <span style={{ fontSize:14,lineHeight:1,flexShrink:0 }}>
                     {({'IDR':'🇮🇩','USD':'🇺🇸','MYR':'🇲🇾','SGD':'🇸🇬','THB':'🇹🇭','PHP':'🇵🇭','VND':'🇻🇳','BRL':'🇧🇷','INR':'🇮🇳','NGN':'🇳🇬'} as Record<string,string>)[currency??'IDR']??'🏳️'}
@@ -3260,7 +3278,7 @@ const SettingsCard: React.FC<{
                   </div>
                 </div>
                 <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:8 }}>
-                  <div><FL>Period</FL>
+                  <div><FL>{T('dashboard.indicator.period')}</FL>
                     <div style={{ position:'relative' }}>
                       <input
                         type="text"
@@ -3314,7 +3332,7 @@ const SettingsCard: React.FC<{
                 </div>
                 {indicatorType==='RSI'&&(
                   <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:8 }}>
-                    <div><FL>Overbought</FL>
+                    <div><FL>{T('dashboard.indicator.overbought')}</FL>
                       <input
                         type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off"
                         className="ds-input"
@@ -3326,7 +3344,7 @@ const SettingsCard: React.FC<{
                         disabled={disabled} placeholder="70"
                       />
                     </div>
-                    <div><FL>Oversold</FL>
+                    <div><FL>{T('dashboard.indicator.oversold')}</FL>
                       <input
                         type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off"
                         className="ds-input"
@@ -3390,8 +3408,8 @@ const SettingsCard: React.FC<{
               <div style={{ padding:'10px 12px',borderRadius:10,background:`${C.pink}07`,border:`1px solid ${C.pink}20`,display:'flex',gap:8 }}>
                 <Waves style={{ width:14,height:14,color:C.pink,flexShrink:0,marginTop:2 }}/>
                 <div>
-                  <p style={{ fontSize:11,fontWeight:600,color:C.pink,marginBottom:4 }}>Active pola candle</p>
-                  <p style={{ fontSize:10,color:C.muted,lineHeight:1.5 }}>All candlestick patterns are systematically enabled — Hammer, Squeezed Doji, Reversal Doji, Bollinger Band + Parabolic SAR Breakout.</p>
+                  <p style={{ fontSize:11,fontWeight:600,color:C.pink,marginBottom:4 }}>{T('dashboard.momentum.activePatternsTitle')}</p>
+                  <p style={{ fontSize:10,color:C.muted,lineHeight:1.5 }}>{T('dashboard.momentum.activePatternsDesc')}</p>
                 </div>
               </div>
             )}
@@ -3401,8 +3419,8 @@ const SettingsCard: React.FC<{
               <div style={{ padding:'10px 12px',borderRadius:10,background:`${C.sky}07`,border:`1px solid ${C.sky}20`,display:'flex',gap:8 }}>
                 <Radio style={{ width:14,height:14,color:C.sky,flexShrink:0,marginTop:2 }}/>
                 <div>
-                  <p style={{ fontSize:11,fontWeight:600,color:C.sky,marginBottom:4 }}>Mode AI Signal</p>
-                  <p style={{ fontSize:10,color:C.muted,lineHeight:1.5 }}>System sedang mengkonfigurasi sinyal AI</p>
+                  <p style={{ fontSize:11,fontWeight:600,color:C.sky,marginBottom:4 }}>{T('dashboard.aiSignal.modeInfoTitle')}</p>
+                  <p style={{ fontSize:10,color:C.muted,lineHeight:1.5 }}>{T('dashboard.aiSignal.modeInfoDesc')}</p>
                 </div>
               </div>
             )}
@@ -3434,7 +3452,7 @@ const SettingsCard: React.FC<{
                     display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 12px',
                     background:C.card2,border:`0.8px solid ${C.cyan}45`,transition:'all 0.15s',
                   }}>
-                    <span style={{ fontSize:11,fontWeight:600,color:C.text }}>Pengaturan</span>
+                    <span style={{ fontSize:11,fontWeight:600,color:C.text }}>{T('dashboard.settings.martingaleSettings')}</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.cyan} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   </button>
                 )}
@@ -3645,8 +3663,22 @@ const ControlCard: React.FC<{
     momentum:<Waves style={{width:14,height:14}}/>,
   }[mode];
 
-  const modeLabel = {schedule:'Signal Mode',fastrade:'Fastrade FTT Mode',ctc:'Fastrade CTC',aisignal:'AI Signal Mode',indicator:'Analysis Strategy Mode',momentum:'Momentum Mode'}[mode];
-  const modeSub = {schedule:'Eksekusi terjadwal',fastrade:'Auto per candle',ctc:'Copy the Candle · 1m',aisignal:'Terima & eksekusi sinyal',indicator:'Analisis teknikal otomatis',momentum:'Deteksi pola candle'}[mode];
+  const modeLabel = ({
+    schedule:T('dashboard.modeLabel.schedule'),
+    fastrade:T('dashboard.modeLabel.fastrade'),
+    ctc:T('dashboard.modeLabel.ctc'),
+    aisignal:T('dashboard.modeLabel.aisignal'),
+    indicator:T('dashboard.modeLabel.indicator'),
+    momentum:T('dashboard.modeLabel.momentum'),
+  } as Record<TradingMode,string>)[mode];
+  const modeSub = ({
+    schedule: T('dashboard.modeDesc.schedule'),
+    fastrade: T('dashboard.modeDesc.fastrade'),
+    ctc: T('dashboard.modeDesc.ctc'),
+    aisignal: T('dashboard.modeDesc.aisignal'),
+    indicator: T('dashboard.modeDesc.indicator'),
+    momentum: T('dashboard.modeDesc.momentum'),
+  } as Record<TradingMode,string>)[mode];
 
   const pnlPos = profit>=0;
   const wins = ftStatus?.totalWins??aiStatus?.totalWins??indicatorStatus?.totalWins??momentumStatus?.totalWins??0;
@@ -3663,9 +3695,11 @@ const ControlCard: React.FC<{
 
   // Dynamic colors: green=running, amber=paused, red=stopped
   const stateCol = canResumeBot ? C.amber : canStopBot ? C.cyan : C.coral;
-  const stateLabel = canResumeBot ? 'Paused' : canStopBot ? 'Running' : 'Stopped';
-  const stateBg: Record<string,string> = {
-    Running: 'rgba(16,185,129,0.12)', Paused: 'rgba(255,170,0,0.12)', Stopped: 'rgba(255,77,77,0.10)',
+  const stateLabel = canResumeBot ? T('common.paused') : canStopBot ? T('dashboard.running') : T('dashboard.stopped');
+  const stateBg = (label: string): string => {
+    if(label === T('dashboard.running')) return 'rgba(16,185,129,0.12)';
+    if(label === T('common.paused'))    return 'rgba(255,170,0,0.12)';
+    return 'rgba(255,77,77,0.10)';
   };
 
   return (
@@ -3686,14 +3720,14 @@ const ControlCard: React.FC<{
         </div>
         {/* title — left-aligned */}
         <div style={{flex:1,minWidth:0,textAlign:'left',overflow:'hidden'}}>
-          <span style={{fontSize:'clamp(11px,3.8vw,16px)',fontWeight:700,color:C.text,display:'block',lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>Bot Control</span>
+          <span style={{fontSize:'clamp(11px,3.8vw,16px)',fontWeight:700,color:C.text,display:'block',lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{T('dashboard.control.title')}</span>
 
         </div>
         {/* state pill */}
         <div style={{
           display:'flex',alignItems:'center',gap:5,
           padding:'4px 10px',borderRadius:20,flexShrink:0,
-          background:stateBg[stateLabel]??`${C.muted}10`,
+          background:stateBg(stateLabel)??`${C.muted}10`,
           border:`0.5px solid ${stateCol}40`,
         }}>
           <span style={{
@@ -3751,7 +3785,7 @@ const ControlCard: React.FC<{
                 boxShadow: isDarkMode ? `0 1px 0 ${C.coral}15 inset, 0 8px 24px ${C.coral}50, 0 3px 8px rgba(0,0,0,0.25)` : `0 2px 8px ${C.coral}30`,
                 opacity:(!canStopBot||isLoading)?0.45:1,transition:'opacity 0.2s',
               }}>
-                <StopCircle style={{width:16,height:16}}/> Stop
+                <StopCircle style={{width:16,height:16}}/> {T('dashboard.stop')}
               </button>
             </div>
           ) : (
@@ -3766,7 +3800,7 @@ const ControlCard: React.FC<{
                 boxShadow: isDarkMode ? `0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 28px ${ac}55, 0 3px 10px rgba(0,0,0,0.45)` : `0 2px 10px ${ac}40`,
                 opacity:(isLoading||!canStart||isBelowMin)?0.45:1,transition:'opacity 0.2s',
               }}>
-                <PlayCircle style={{width:18,height:18}}/> Start
+                <PlayCircle style={{width:18,height:18}}/> {T('dashboard.start')}
               </button>
               {!canStart&&!error&&!isBelowMin&&(
                 <p style={{fontSize:10,textAlign:'center',color:C.muted}}>
@@ -4460,7 +4494,14 @@ export default function DashboardPage() {
         <Card style={{padding:'11px 14px'}}>
           <p style={{fontSize:10,fontWeight:500,textTransform:'uppercase',letterSpacing:'0.08em',color:C.muted,marginBottom:5}}>{t('dashboard.tradingMode')}</p>
           <p style={{fontSize:16,fontWeight:700,color:isActiveMode?modeAccent(tradingMode):C.muted}}>
-            {{schedule:'Signal Mode',fastrade:'Fastrade FTT Mode',ctc:'Fastrade CTC',aisignal:'AI Signal Mode',indicator:'Analysis Strategy Mode',momentum:'Momentum Mode'}[tradingMode]}
+            {({
+        schedule: T('dashboard.modeLabel.schedule'),
+        fastrade: T('dashboard.modeLabel.fastrade'),
+        ctc: T('dashboard.modeLabel.ctc'),
+        aisignal: T('dashboard.modeLabel.aisignal'),
+        indicator: T('dashboard.modeLabel.indicator'),
+        momentum: T('dashboard.modeLabel.momentum'),
+      } as Record<string,string>)[tradingMode]}
           </p>
           <div style={{marginTop:6}}>
             <StatusChip col={isActiveMode?modeAccent(tradingMode):C.muted} label={isActiveMode?t('dashboard.running'):t('common.standby')}/>
@@ -4986,7 +5027,14 @@ export default function DashboardPage() {
                 <div style={{flex:1,minWidth:0}}>
                   <p style={{fontSize:9,fontWeight:600,color:C.muted,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:3}}>Mode</p>
                   <p style={{fontSize:13,fontWeight:700,color:isActiveMode?modeAccent(tradingMode):C.text,lineHeight:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
-                    {{schedule:'Signal Mode',fastrade:'Fastrade FTT Mode',ctc:'Fastrade CTC',aisignal:'AI Signal Mode',indicator:'Analysis Strategy Mode',momentum:'Momentum Mode'}[tradingMode]}
+                    {({
+        schedule: T('dashboard.modeLabel.schedule'),
+        fastrade: T('dashboard.modeLabel.fastrade'),
+        ctc: T('dashboard.modeLabel.ctc'),
+        aisignal: T('dashboard.modeLabel.aisignal'),
+        indicator: T('dashboard.modeLabel.indicator'),
+        momentum: T('dashboard.modeLabel.momentum'),
+      } as Record<string,string>)[tradingMode]}
                   </p>
                   <p style={{fontSize:9,marginTop:2,color:isActiveMode?modeAccent(tradingMode):C.muted}}>
                     {isActiveMode?'● '+T('dashboard.running'):'○ '+T('common.standby')}
@@ -5075,7 +5123,14 @@ export default function DashboardPage() {
                         ?{label:'Always Signal',icon:<Zap style={{width:13,height:13}}/>,value:`K${asStep}/${martingale.maxStep}`,col:C.amber}
                         :nextT
                         ?{label:'Signal Berikutnya',icon:<Timer style={{width:13,height:13}}/>,value:`${nextT}${nextS!=null?' · '+nextS+'s':''}`,col:ac}
-                        :{label:'Mode',icon:<Radio style={{width:13,height:13}}/>,value:({schedule:'Signal Mode',fastrade:'Fastrade FTT Mode',ctc:'Fastrade CTC',aisignal:'AI Signal Mode',indicator:'Analysis Strategy Mode',momentum:'Momentum Mode'} as Record<string,string>)[tradingMode],col:ac},
+                        :{label:'Mode',icon:<Radio style={{width:13,height:13}}/>,value:(({
+        schedule: T('dashboard.modeLabel.schedule'),
+        fastrade: T('dashboard.modeLabel.fastrade'),
+        ctc: T('dashboard.modeLabel.ctc'),
+        aisignal: T('dashboard.modeLabel.aisignal'),
+        indicator: T('dashboard.modeLabel.indicator'),
+        momentum: T('dashboard.modeLabel.momentum'),
+      } as Record<string,string>) as Record<string,string>)[tradingMode],col:ac},
                     ];
                     return statCards.map((s,i)=>(
                       <div key={i} style={{padding:'11px 13px',borderRadius:12,background:isDarkMode?C.card2:C.card,border:`1px solid ${isDarkMode?'rgba(125,211,252,0.40)':'#9CA3AF'}`}}>
@@ -5180,7 +5235,7 @@ export default function DashboardPage() {
                     <div style={{display:'flex',alignItems:'center',gap:6}}>
                       <span style={{width:6,height:6,borderRadius:'50%',background:modeAccent(tradingMode),animation:'pulse 1.6s ease-in-out infinite',boxShadow:`0 0 5px ${modeAccent(tradingMode)}`}}/>
                       <span style={{fontSize:'clamp(8px,2.8vw,11px)',fontWeight:700,color:modeAccent(tradingMode)}}>
-                        {{schedule:'Signal Mode',fastrade:'Fastrade FTT',ctc:'Fastrade CTC',aisignal:'AI Signal Mode',indicator:'Analysis Strategy Mode',momentum:'Momentum Mode'}[tradingMode]}
+                        {({schedule: T('dashboard.modeLabel.schedule'), fastrade: T('dashboard.modeLabel.fastrade'), ctc: T('dashboard.modeLabel.ctc'), aisignal: T('dashboard.modeLabel.aisignal'), indicator: T('dashboard.modeLabel.indicator'), momentum: T('dashboard.modeLabel.momentum')} as Record<string,string>)[tradingMode]}
                       </span>
                     </div>
                   </div>

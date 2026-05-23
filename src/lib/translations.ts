@@ -57,6 +57,7 @@ export interface Translations {
     encrypted: string;
     secure: string;
     show: string;
+    paused: string;
   };
 
   // Login Page
@@ -212,6 +213,18 @@ export interface Translations {
     viewSession: string;
     sessionPnl: string;
     offStatus: string;
+    tradingSession: string;
+    notActive: string;
+    minuteUnit: string;
+    hourUnit: string;
+    modeLabel: {
+      schedule: string;
+      fastrade: string;
+      ctc: string;
+      aisignal: string;
+      indicator: string;
+      momentum: string;
+    };
     schedule: {
       title: string;
       addSignal: string;
@@ -230,6 +243,7 @@ export interface Translations {
       noSignals: string;
       allCompleted: string;
       completed: string;
+      monitor: string;
     };
     fastTrade: {
       title: string;
@@ -270,6 +284,8 @@ export interface Translations {
       moreItems: string;
       status: string;
       martingaleStep: string;
+      modeInfoTitle: string;
+      modeInfoDesc: string;
     };
     indicator: {
       title: string;
@@ -284,6 +300,9 @@ export interface Translations {
       indicatorType: string;
       amountPerOrder: string;
       sensitivity: string;
+      period: string;
+      overbought: string;
+      oversold: string;
     };
     momentum: {
       title: string;
@@ -298,6 +317,8 @@ export interface Translations {
         dojiPembatalan: string;
         bbSarBreak: string;
       };
+      activePatternsTitle: string;
+      activePatternsDesc: string;
     };
     martingale: {
       title: string;
@@ -337,6 +358,7 @@ export interface Translations {
       sensitivity: string;
       amountPerOrder: string;
       optional: string;
+      martingaleSettings: string;
     };
     stopConfirm: {
       title: string;
@@ -344,6 +366,7 @@ export interface Translations {
       confirm: string;
     };
     control: {
+      title: string;
       start: string;
       startPrompt: string;
       startPromptSchedule: string;
@@ -461,6 +484,7 @@ const translations: Record<Language, Translations> = {
       encrypted: 'Encrypted',
       secure: 'Secure',
       show: 'Show',
+      paused: 'Paused',
     },
     login: {
       title: 'StockAutoTrade',
@@ -608,6 +632,18 @@ const translations: Record<Language, Translations> = {
       viewSession: 'View Session',
       sessionPnl: 'Session P&L',
       offStatus: 'Off',
+      tradingSession: 'Trading Session',
+      notActive: 'Not Active',
+      minuteUnit: 'Minute',
+      hourUnit: 'Hour',
+            modeLabel: {
+        schedule: 'Signal Mode',
+        fastrade: 'Fastrade FTT Mode',
+        ctc: 'Fastrade CTC Mode',
+        aisignal: 'AI Signal Mode',
+        indicator: 'Analysis Strategy Mode',
+        momentum: 'Momentum Mode',
+      },
       schedule: {
         title: 'Signal',
         addSignal: 'Add Signal',
@@ -626,6 +662,7 @@ const translations: Record<Language, Translations> = {
         add: 'Add',
         nextSignal: 'Next Signal',
         completed: 'completed',
+        monitor: 'Monitor',
       },
       fastTrade: {
         title: 'FastTrade',
@@ -666,6 +703,8 @@ const translations: Record<Language, Translations> = {
         moreItems: 'more',
         status: 'Status',
         martingaleStep: 'Martingale Step',
+        modeInfoTitle: 'AI Signal Mode',
+        modeInfoDesc: 'System is configuring AI signal input',
       },
       indicator: {
         title: 'Indicator',
@@ -680,6 +719,9 @@ const translations: Record<Language, Translations> = {
         indicatorType: 'Indicator Type',
         amountPerOrder: 'Amount per Order',
         sensitivity: 'Sensitivity',
+        period: 'Period',
+        overbought: 'Overbought',
+        oversold: 'Oversold',
       },
       momentum: {
         title: 'Momentum',
@@ -694,6 +736,8 @@ const translations: Record<Language, Translations> = {
           dojiPembatalan: 'Doji Pembatalan',
           bbSarBreak: 'BB + SAR Break',
         },
+        activePatternsTitle: 'Active candle patterns',
+        activePatternsDesc: 'All candlestick patterns are systematically enabled — Hammer, Squeezed Doji, Reversal Doji, Bollinger Band + Parabolic SAR Breakout.',
       },
       martingale: {
         title: 'Martingale',
@@ -749,6 +793,7 @@ const translations: Record<Language, Translations> = {
         sensitivity: 'Sensitivity',
         amountPerOrder: 'Amount per Order',
         optional: 'Optional',
+        martingaleSettings: 'Settings',
       },
       stopConfirm: {
         title: 'Stop Bot?',
@@ -756,6 +801,7 @@ const translations: Record<Language, Translations> = {
         confirm: 'Yes, Stop',
       },
       control: {
+        title: 'Bot Control',
         start: 'Start',
         startPrompt: 'Select an asset to start',
         startPromptSchedule: 'Select asset + add signals to start',
@@ -854,6 +900,7 @@ const translations: Record<Language, Translations> = {
       encrypted: 'Terenkripsi',
       secure: 'Aman',
       show: 'Tampilkan',
+      paused: 'Dijeda',
     },
     login: {
       title: 'StockAutoTrade',
@@ -1001,6 +1048,18 @@ const translations: Record<Language, Translations> = {
       viewSession: 'Lihat Sesi',
       sessionPnl: 'Sesi P&L',
       offStatus: 'Off',
+      tradingSession: 'Sesi Trading',
+      notActive: 'Tidak Aktif',
+      minuteUnit: 'Menit',
+      hourUnit: 'Jam',
+            modeLabel: {
+        schedule: 'Signal Mode',
+        fastrade: 'Fastrade FTT Mode',
+        ctc: 'Fastrade CTC Mode',
+        aisignal: 'AI Signal Mode',
+        indicator: 'Analisis Strategi',
+        momentum: 'Momentum Mode',
+      },
       schedule: {
         title: 'Signal',
         addSignal: 'Tambah Signal',
@@ -1019,6 +1078,7 @@ const translations: Record<Language, Translations> = {
         add: 'Tambah',
         nextSignal: 'Signal Berikutnya',
         completed: 'selesai',
+        monitor: 'Monitor',
       },
       fastTrade: {
         title: 'FastTrade',
@@ -1059,6 +1119,8 @@ const translations: Record<Language, Translations> = {
         moreItems: 'lainnya',
         status: 'Status',
         martingaleStep: 'Martingale Step',
+        modeInfoTitle: 'Mode AI Signal',
+        modeInfoDesc: 'Sistem sedang mengkonfigurasi sinyal AI',
       },
       indicator: {
         title: 'Indicator',
@@ -1073,6 +1135,9 @@ const translations: Record<Language, Translations> = {
         indicatorType: 'Tipe Indikator',
         amountPerOrder: 'Jumlah per Order',
         sensitivity: 'Sensitivitas',
+        period: 'Periode',
+        overbought: 'Overbought',
+        oversold: 'Oversold',
       },
       momentum: {
         title: 'Momentum',
@@ -1087,6 +1152,8 @@ const translations: Record<Language, Translations> = {
           dojiPembatalan: 'Doji Pembatalan',
           bbSarBreak: 'BB + SAR Break',
         },
+        activePatternsTitle: 'Pola candle aktif',
+        activePatternsDesc: 'Semua pola candlestick aktif — Hammer, Doji Terjepit, Doji Pembatalan, Bollinger Band + Parabolic SAR Breakout.',
       },
       martingale: {
         title: 'Martingale',
@@ -1142,6 +1209,7 @@ const translations: Record<Language, Translations> = {
         sensitivity: 'Sensitivitas',
         amountPerOrder: 'Jumlah per Order',
         optional: 'Opsional',
+        martingaleSettings: 'Pengaturan',
       },
       stopConfirm: {
         title: 'Hentikan Bot?',
@@ -1149,6 +1217,7 @@ const translations: Record<Language, Translations> = {
         confirm: 'Ya, Hentikan',
       },
       control: {
+        title: 'Kontrol Bot',
         start: 'Mulai',
         startPrompt: 'Pilih aset untuk memulai',
         startPromptSchedule: 'Pilih aset + tambah signal untuk memulai',
@@ -1247,6 +1316,7 @@ const translations: Record<Language, Translations> = {
       encrypted: 'Зашифровано',
       secure: 'Безопасно',
       show: 'Показать',
+      paused: 'На паузе',
     },
     login: {
       title: 'StockAutoTrade',
@@ -1394,6 +1464,18 @@ const translations: Record<Language, Translations> = {
       viewSession: 'Просмотр сессии',
       sessionPnl: 'P&L сессии',
       offStatus: 'Выкл.',
+      tradingSession: 'Торговая сессия',
+      notActive: 'Не активно',
+      minuteUnit: 'Мин.',
+      hourUnit: 'Час',
+            modeLabel: {
+        schedule: 'Режим сигналов',
+        fastrade: 'Режим Fastrade FTT',
+        ctc: 'Режим Fastrade CTC',
+        aisignal: 'Режим AI Signal',
+        indicator: 'Стратегия анализа',
+        momentum: 'Режим Momentum',
+      },
       schedule: {
         title: 'Сигнал',
         addSignal: 'Добавить сигнал',
@@ -1412,6 +1494,7 @@ const translations: Record<Language, Translations> = {
         add: 'Добавить',
         nextSignal: 'Следующий сигнал',
         completed: 'выполнено',
+        monitor: 'Монитор',
       },
       fastTrade: {
         title: 'FastTrade',
@@ -1452,6 +1535,8 @@ const translations: Record<Language, Translations> = {
         moreItems: 'ещё',
         status: 'Статус',
         martingaleStep: 'Шаг мартингала',
+        modeInfoTitle: 'Режим AI Signal',
+        modeInfoDesc: 'Система настраивает входящие AI сигналы',
       },
       indicator: {
         title: 'Индикатор',
@@ -1466,6 +1551,9 @@ const translations: Record<Language, Translations> = {
         indicatorType: 'Тип индикатора',
         amountPerOrder: 'Сумма за ордер',
         sensitivity: 'Чувствительность',
+        period: 'Период',
+        overbought: 'Перекупленность',
+        oversold: 'Перепроданность',
       },
       momentum: {
         title: 'Моментум',
@@ -1480,6 +1568,8 @@ const translations: Record<Language, Translations> = {
           dojiPembatalan: 'Doji Pembatalan',
           bbSarBreak: 'BB + SAR Break',
         },
+        activePatternsTitle: 'Активные паттерны свечей',
+        activePatternsDesc: 'Все паттерны свечей включены — Молот, Сжатый Доджи, Разворотный Доджи, Bollinger Band + Parabolic SAR Breakout.',
       },
       martingale: {
         title: 'Мартингейл',
@@ -1535,6 +1625,7 @@ const translations: Record<Language, Translations> = {
         sensitivity: 'Чувствительность',
         amountPerOrder: 'Сумма за ордер',
         optional: 'Необязательно',
+        martingaleSettings: 'Настройки',
       },
       stopConfirm: {
         title: 'Остановить бота?',
@@ -1542,6 +1633,7 @@ const translations: Record<Language, Translations> = {
         confirm: 'Да, остановить',
       },
       control: {
+        title: 'Управление ботом',
         start: 'Запустить',
         startPrompt: 'Выберите актив для начала',
         startPromptSchedule: 'Выберите актив + добавьте сигналы',
@@ -1640,6 +1732,7 @@ const translations: Record<Language, Translations> = {
       encrypted: 'Encriptado',
       secure: 'Seguro',
       show: 'Mostrar',
+      paused: 'En pausa',
     },
     login: {
       title: 'StockAutoTrade',
@@ -1787,6 +1880,18 @@ const translations: Record<Language, Translations> = {
       viewSession: 'Ver Sesión',
       sessionPnl: 'P&G de Sesión',
       offStatus: 'Off',
+      tradingSession: 'Trading Session',
+      notActive: 'Not Active',
+      minuteUnit: 'Minute',
+      hourUnit: 'Hour',
+            modeLabel: {
+        schedule: 'Signal Mode',
+        fastrade: 'Fastrade FTT Mode',
+        ctc: 'Fastrade CTC Mode',
+        aisignal: 'AI Signal Mode',
+        indicator: 'Analysis Strategy Mode',
+        momentum: 'Momentum Mode',
+      },
       schedule: {
         title: 'Señal',
         addSignal: 'Agregar señal',
@@ -1805,6 +1910,7 @@ const translations: Record<Language, Translations> = {
         add: 'Agregar',
         nextSignal: 'Siguiente Señal',
         completed: 'completado',
+        monitor: 'Monitor',
       },
       fastTrade: {
         title: 'FastTrade',
@@ -1845,6 +1951,8 @@ const translations: Record<Language, Translations> = {
         moreItems: 'más',
         status: 'Estado',
         martingaleStep: 'Paso Martingala',
+        modeInfoTitle: 'Modo AI Signal',
+        modeInfoDesc: 'El sistema está configurando la entrada de señales AI',
       },
       indicator: {
         title: 'Indicador',
@@ -1859,6 +1967,9 @@ const translations: Record<Language, Translations> = {
         indicatorType: 'Tipo de Indicador',
         amountPerOrder: 'Monto por Orden',
         sensitivity: 'Sensibilidad',
+        period: 'Período',
+        overbought: 'Sobrecompra',
+        oversold: 'Sobreventa',
       },
       momentum: {
         title: 'Momentum',
@@ -1873,6 +1984,8 @@ const translations: Record<Language, Translations> = {
           dojiPembatalan: 'Doji Pembatalan',
           bbSarBreak: 'BB + SAR Break',
         },
+        activePatternsTitle: 'Patrones de vela activos',
+        activePatternsDesc: 'Todos los patrones de velas están habilitados — Martillo, Doji Apretado, Doji de Reversión, Bollinger Band + Parabolic SAR Breakout.',
       },
       martingale: {
         title: 'Martingala',
@@ -1928,6 +2041,7 @@ const translations: Record<Language, Translations> = {
         sensitivity: 'Sensibilidad',
         amountPerOrder: 'Monto por Orden',
         optional: 'Opcional',
+        martingaleSettings: 'Configuración',
       },
       stopConfirm: {
         title: '¿Detener Bot?',
@@ -1935,6 +2049,7 @@ const translations: Record<Language, Translations> = {
         confirm: 'Sí, Detener',
       },
       control: {
+        title: 'Control del Bot',
         start: 'Iniciar',
         startPrompt: 'Selecciona un activo para comenzar',
         startPromptSchedule: 'Selecciona activo + agrega señales',
@@ -2033,6 +2148,7 @@ const translations: Record<Language, Translations> = {
       encrypted: 'Disulitkan',
       secure: 'Selamat',
       show: 'Tunjukkan',
+      paused: 'Dijeda',
     },
     login: {
       title: 'StockAutoTrade',
@@ -2180,6 +2296,18 @@ const translations: Record<Language, Translations> = {
       viewSession: 'Lihat Sesi',
       sessionPnl: 'P&L Sesi',
       offStatus: 'Mati',
+      tradingSession: 'Sesi Trading',
+      notActive: 'Tidak Aktif',
+      minuteUnit: 'Minit',
+      hourUnit: 'Jam',
+            modeLabel: {
+        schedule: 'Mod Isyarat',
+        fastrade: 'Mod Fastrade FTT',
+        ctc: 'Mod Fastrade CTC',
+        aisignal: 'Mod AI Signal',
+        indicator: 'Mod Strategi Analisis',
+        momentum: 'Mod Momentum',
+      },
       schedule: {
         title: 'Isyarat',
         addSignal: 'Tambah Isyarat',
@@ -2198,6 +2326,7 @@ const translations: Record<Language, Translations> = {
         add: 'Tambah',
         nextSignal: 'Isyarat Seterusnya',
         completed: 'selesai',
+        monitor: 'Monitor',
       },
       fastTrade: {
         title: 'FastTrade',
@@ -2238,6 +2367,8 @@ const translations: Record<Language, Translations> = {
         moreItems: 'lagi',
         status: 'Status',
         martingaleStep: 'Langkah Martingale',
+        modeInfoTitle: 'Mod AI Signal',
+        modeInfoDesc: 'Sistem sedang mengkonfigurasi input isyarat AI',
       },
       indicator: {
         title: 'Penunjuk',
@@ -2252,6 +2383,9 @@ const translations: Record<Language, Translations> = {
         indicatorType: 'Jenis Penunjuk',
         amountPerOrder: 'Jumlah per Pesanan',
         sensitivity: 'Kepekaan',
+        period: 'Tempoh',
+        overbought: 'Terlebih Beli',
+        oversold: 'Terlebih Jual',
       },
       momentum: {
         title: 'Momentum',
@@ -2266,6 +2400,8 @@ const translations: Record<Language, Translations> = {
           dojiPembatalan: 'Doji Pembatalan',
           bbSarBreak: 'BB + SAR Break',
         },
+        activePatternsTitle: 'Pola lilin aktif',
+        activePatternsDesc: 'Semua pola lilin diaktifkan — Hammer, Doji Terjepit, Doji Pembatalan, Bollinger Band + Parabolic SAR Breakout.',
       },
       martingale: {
         title: 'Martingale',
@@ -2321,6 +2457,7 @@ const translations: Record<Language, Translations> = {
         sensitivity: 'Kepekaan',
         amountPerOrder: 'Jumlah per Pesanan',
         optional: 'Pilihan',
+        martingaleSettings: 'Tetapan',
       },
       stopConfirm: {
         title: 'Hentikan Bot?',
@@ -2328,6 +2465,7 @@ const translations: Record<Language, Translations> = {
         confirm: 'Ya, Hentikan',
       },
       control: {
+        title: 'Kawalan Bot',
         start: 'Mula',
         startPrompt: 'Pilih aset untuk bermula',
         startPromptSchedule: 'Pilih aset + tambah isyarat untuk bermula',
@@ -2426,6 +2564,7 @@ const translations: Record<Language, Translations> = {
       encrypted: 'एन्क्रिप्टेड',
       secure: 'सुरक्षित',
       show: 'दिखाएं',
+      paused: 'रुका हुआ',
     },
     login: {
       title: 'StockAutoTrade',
@@ -2573,6 +2712,18 @@ const translations: Record<Language, Translations> = {
       viewSession: 'सत्र देखें',
       sessionPnl: 'सत्र P&L',
       offStatus: 'बंद',
+      tradingSession: 'ट्रेडिंग सत्र',
+      notActive: 'सक्रिय नहीं',
+      minuteUnit: 'मिनट',
+      hourUnit: 'घंटा',
+            modeLabel: {
+        schedule: 'सिग्नल मोड',
+        fastrade: 'फास्ट्रेड FTT मोड',
+        ctc: 'फास्ट्रेड CTC मोड',
+        aisignal: 'AI सिग्नल मोड',
+        indicator: 'विश्लेषण रणनीति',
+        momentum: 'मोमेंटम मोड',
+      },
       schedule: {
         title: 'सिग्नल',
         addSignal: 'सिग्नल जोड़ें',
@@ -2591,6 +2742,7 @@ const translations: Record<Language, Translations> = {
         add: 'जोड़ें',
         nextSignal: 'अगला संकेत',
         completed: 'पूर्ण',
+        monitor: 'मॉनिटर',
       },
       fastTrade: {
         title: 'FastTrade',
@@ -2631,6 +2783,8 @@ const translations: Record<Language, Translations> = {
         moreItems: 'और',
         status: 'स्थिति',
         martingaleStep: 'मार्टिंगेल चरण',
+        modeInfoTitle: 'AI Signal Mode',
+        modeInfoDesc: 'सिस्टम AI सिग्नल इनपुट कॉन्फ़िगर कर रहा है',
       },
       indicator: {
         title: 'इंडिकेटर',
@@ -2645,6 +2799,9 @@ const translations: Record<Language, Translations> = {
         indicatorType: 'संकेतक प्रकार',
         amountPerOrder: 'प्रति ऑर्डर राशि',
         sensitivity: 'संवेदनशीलता',
+        period: 'अवधि',
+        overbought: 'ओवरबॉट',
+        oversold: 'ओवरसोल्ड',
       },
       momentum: {
         title: 'मोमेंटम',
@@ -2659,6 +2816,8 @@ const translations: Record<Language, Translations> = {
           dojiPembatalan: 'Doji Pembatalan',
           bbSarBreak: 'BB + SAR Break',
         },
+        activePatternsTitle: 'सक्रिय कैंडल पैटर्न',
+        activePatternsDesc: 'सभी कैंडलस्टिक पैटर्न सक्रिय — Hammer, Squeezed Doji, Reversal Doji, Bollinger Band + Parabolic SAR Breakout.',
       },
       martingale: {
         title: 'मार्टिंगेल',
@@ -2714,6 +2873,7 @@ const translations: Record<Language, Translations> = {
         sensitivity: 'संवेदनशीलता',
         amountPerOrder: 'प्रति ऑर्डर राशि',
         optional: 'वैकल्पिक',
+        martingaleSettings: 'सेटिंग्स',
       },
       stopConfirm: {
         title: 'बॉट रोकें?',
@@ -2721,6 +2881,7 @@ const translations: Record<Language, Translations> = {
         confirm: 'हाँ, रोकें',
       },
       control: {
+        title: 'बॉट नियंत्रण',
         start: 'शुरू करें',
         startPrompt: 'शुरू करने के लिए एक संपत्ति चुनें',
         startPromptSchedule: 'संपत्ति चुनें + संकेत जोड़ें',
@@ -2819,6 +2980,7 @@ const translations: Record<Language, Translations> = {
       encrypted: 'เข้ารหัสแล้ว',
       secure: 'ปลอดภัย',
       show: 'แสดง',
+      paused: 'หยุดชั่วคราว',
     },
     login: {
       title: 'StockAutoTrade',
@@ -2966,6 +3128,18 @@ const translations: Record<Language, Translations> = {
       viewSession: 'ดูเซสชัน',
       sessionPnl: 'P&L เซสชัน',
       offStatus: 'ปิด',
+      tradingSession: 'เซสชันเทรด',
+      notActive: 'ไม่ทำงาน',
+      minuteUnit: 'นาที',
+      hourUnit: 'ชั่วโมง',
+            modeLabel: {
+        schedule: 'โหมดสัญญาณ',
+        fastrade: 'โหมด Fastrade FTT',
+        ctc: 'โหมด Fastrade CTC',
+        aisignal: 'โหมด AI Signal',
+        indicator: 'โหมดกลยุทธ์วิเคราะห์',
+        momentum: 'โหมด Momentum',
+      },
       schedule: {
         title: 'สัญญาณ',
         addSignal: 'เพิ่มสัญญาณ',
@@ -2984,6 +3158,7 @@ const translations: Record<Language, Translations> = {
         add: 'เพิ่ม',
         nextSignal: 'สัญญาณถัดไป',
         completed: 'เสร็จแล้ว',
+        monitor: 'ติดตาม',
       },
       fastTrade: {
         title: 'FastTrade',
@@ -3024,6 +3199,8 @@ const translations: Record<Language, Translations> = {
         moreItems: 'เพิ่มเติม',
         status: 'สถานะ',
         martingaleStep: 'ขั้น Martingale',
+        modeInfoTitle: 'โหมด AI Signal',
+        modeInfoDesc: 'ระบบกำลังตั้งค่าอินพุตสัญญาณ AI',
       },
       indicator: {
         title: 'ตัวชี้วัด',
@@ -3038,6 +3215,9 @@ const translations: Record<Language, Translations> = {
         indicatorType: 'ประเภทตัวบ่งชี้',
         amountPerOrder: 'จำนวนต่อคำสั่ง',
         sensitivity: 'ความไว',
+        period: 'ช่วงเวลา',
+        overbought: 'ซื้อมากเกิน',
+        oversold: 'ขายมากเกิน',
       },
       momentum: {
         title: 'โมเมนตัม',
@@ -3052,6 +3232,8 @@ const translations: Record<Language, Translations> = {
           dojiPembatalan: 'Doji Pembatalan',
           bbSarBreak: 'BB + SAR Break',
         },
+        activePatternsTitle: 'รูปแบบแท่งเทียนที่ใช้งาน',
+        activePatternsDesc: 'รูปแบบแท่งเทียนทั้งหมดเปิดใช้งาน — Hammer, Squeezed Doji, Reversal Doji, Bollinger Band + Parabolic SAR Breakout.',
       },
       martingale: {
         title: 'มาร์ติงเกล',
@@ -3107,6 +3289,7 @@ const translations: Record<Language, Translations> = {
         sensitivity: 'ความไว',
         amountPerOrder: 'จำนวนต่อคำสั่ง',
         optional: 'ไม่บังคับ',
+        martingaleSettings: 'การตั้งค่า',
       },
       stopConfirm: {
         title: 'หยุดบอท?',
@@ -3114,6 +3297,7 @@ const translations: Record<Language, Translations> = {
         confirm: 'ใช่ หยุด',
       },
       control: {
+        title: 'ควบคุมบอท',
         start: 'เริ่ม',
         startPrompt: 'เลือกสินทรัพย์เพื่อเริ่ม',
         startPromptSchedule: 'เลือกสินทรัพย์ + เพิ่มสัญญาณ',
@@ -3212,6 +3396,7 @@ const translations: Record<Language, Translations> = {
       encrypted: 'Şifreli',
       secure: 'Güvenli',
       show: 'Göster',
+      paused: 'Duraklatıldı',
     },
     login: {
       title: 'StockAutoTrade',
@@ -3359,6 +3544,18 @@ const translations: Record<Language, Translations> = {
       viewSession: 'Oturumu Gör',
       sessionPnl: 'Oturum K&Z',
       offStatus: 'Kapalı',
+      tradingSession: 'Trading Oturumu',
+      notActive: 'Aktif Değil',
+      minuteUnit: 'Dakika',
+      hourUnit: 'Saat',
+            modeLabel: {
+        schedule: 'Sinyal Modu',
+        fastrade: 'Fastrade FTT Modu',
+        ctc: 'Fastrade CTC Modu',
+        aisignal: 'AI Signal Modu',
+        indicator: 'Analiz Strateji Modu',
+        momentum: 'Momentum Modu',
+      },
       schedule: {
         title: 'Sinyal',
         addSignal: 'Sinyal Ekle',
@@ -3377,6 +3574,7 @@ const translations: Record<Language, Translations> = {
         add: 'Ekle',
         nextSignal: 'Sonraki Sinyal',
         completed: 'tamamlandı',
+        monitor: 'İzle',
       },
       fastTrade: {
         title: 'FastTrade',
@@ -3417,6 +3615,8 @@ const translations: Record<Language, Translations> = {
         moreItems: 'daha fazla',
         status: 'Durum',
         martingaleStep: 'Martingale Adımı',
+        modeInfoTitle: 'AI Signal Modu',
+        modeInfoDesc: 'Sistem AI sinyal girişini yapılandırıyor',
       },
       indicator: {
         title: 'Gösterge',
@@ -3431,6 +3631,9 @@ const translations: Record<Language, Translations> = {
         indicatorType: 'Gösterge Türü',
         amountPerOrder: 'Emir Başına Miktar',
         sensitivity: 'Hassasiyet',
+        period: 'Periyot',
+        overbought: 'Aşırı Alım',
+        oversold: 'Aşırı Satım',
       },
       momentum: {
         title: 'Momentum',
@@ -3445,6 +3648,8 @@ const translations: Record<Language, Translations> = {
           dojiPembatalan: 'Doji Pembatalan',
           bbSarBreak: 'BB + SAR Break',
         },
+        activePatternsTitle: 'Aktif mum desenleri',
+        activePatternsDesc: 'Tüm mum desenleri etkin — Hammer, Sıkışık Doji, Dönüş Doji, Bollinger Band + Parabolic SAR Breakout.',
       },
       martingale: {
         title: 'Martingale',
@@ -3500,6 +3705,7 @@ const translations: Record<Language, Translations> = {
         sensitivity: 'Hassasiyet',
         amountPerOrder: 'Emir Başına Miktar',
         optional: 'İsteğe Bağlı',
+        martingaleSettings: 'Ayarlar',
       },
       stopConfirm: {
         title: 'Botu Durdur?',
@@ -3507,6 +3713,7 @@ const translations: Record<Language, Translations> = {
         confirm: 'Evet, Durdur',
       },
       control: {
+        title: 'Bot Kontrolü',
         start: 'Başlat',
         startPrompt: 'Başlamak için bir varlık seçin',
         startPromptSchedule: 'Varlık seç + sinyal ekle',
